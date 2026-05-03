@@ -1,0 +1,237 @@
+import Link from "next/link"
+
+import { HeroBanner } from "@/components/storefront/hero-banner"
+import { LaunchPromoBanner } from "@/components/storefront/launch-promo-banner"
+import { HomeCategoryPreviewGrid } from "@/components/storefront/home-category-preview-grid"
+import { ScarfCard } from "@/components/storefront/scarf-card"
+import { Button } from "@/components/ui/button"
+import { getStorefrontCategories } from "@/lib/getStorefrontCategories"
+import { getScarvesWithAvailability } from "@/lib/getScarvesStorefront"
+import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH, chalesCategoryPath } from "@/lib/routes"
+import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
+
+export const dynamic = "force-dynamic"
+
+function scarfInCategory(scarf: StorefrontScarf, categorySlug: string): boolean {
+  const cats = scarf.categories
+  if (!cats || !Array.isArray(cats)) return false
+  for (const item of cats) {
+    if (!item || typeof item !== "object") continue
+    const slug = (item as { slug?: string }).slug
+    if (slug === categorySlug) return true
+  }
+  return false
+}
+
+export default async function Home() {
+  const [{ scarves }, categories] = await Promise.all([
+    getScarvesWithAvailability(),
+    getStorefrontCategories(),
+  ])
+
+  const featured = scarves.slice(0, 8)
+
+  const chalesPreviewTitle: Record<string, string> = {
+    "chales-en-crepe": "Crêpe",
+    "chales-en-mousseline": "Mousseline",
+    "chales-en-fil-de-lin": "Fil de lin",
+  }
+
+  function categoryPreviewRow(slug: string) {
+    const cat = categories.find((c) => c.slug === slug)
+    const title =
+      chalesPreviewTitle[slug] ??
+      cat?.name.replace(/^Châles\s+en\s+/i, "").replace(/^Châles\s+/i, "") ??
+      slug
+    return {
+      title,
+      exploreHref: chalesCategoryPath(slug),
+      scarves: scarves.filter((s) => scarfInCategory(s, slug)),
+    }
+  }
+
+  const crepeRow = categoryPreviewRow("chales-en-crepe")
+  const mousselineRow = categoryPreviewRow("chales-en-mousseline")
+  const linRow = categoryPreviewRow("chales-en-fil-de-lin")
+
+  const testimonials = [
+    {
+      quote:
+        "Qualité au rendez-vous, les couleurs sont encore plus belles en vrai. Envoi soigné jusqu’à Tanger.",
+      author: "Soraya",
+      city: "Tanger",
+    },
+    {
+      quote:
+        "Tombé fluide, tissu agréable — mon hijab du quotidien. Service client réactif depuis Marrakech.",
+      author: "Khadija",
+      city: "Marrakech",
+    },
+    {
+      quote:
+        "Colis bien emballé, délais corrects vers l’est. Je recommande Allurina à Oujda et ailleurs.",
+      author: "Nadia",
+      city: "Oujda",
+    },
+  ]
+
+  return (
+    <div className="flex min-h-full flex-1 flex-col bg-[#faf9f7] text-stone-900">
+      <main>
+        <HeroBanner />
+        <LaunchPromoBanner />
+
+        {/* New arrivals */}
+        <section id="nouveautes" className="scroll-mt-28 border-t border-stone-200/80 py-16 md:py-20">
+          <div className="mx-auto max-w-6xl px-4 md:px-6">
+            <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.25em] text-stone-500 uppercase">
+                  Sélection
+                </p>
+                <h2
+                  className={`mt-2 text-3xl font-semibold text-stone-900 md:text-4xl`}
+                >
+                  Nouveautés
+                </h2>
+              </div>
+              <Button variant="outline" size="sm" className="border-stone-300" asChild>
+                <Link href={TOUTES_LES_PIECES_PATH}>Toutes les pièces</Link>
+              </Button>
+            </div>
+
+            {featured.length === 0 ? (
+              <div className="border border-dashed border-stone-300 bg-white/60 px-6 py-16 text-center text-sm text-stone-500">
+                Aucun produit pour le moment. Ajoutez des châles dans l&apos;admin Payload.
+              </div>
+            ) : (
+              <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {featured.map((scarf) => (
+                  <li key={String(scarf.id)}>
+                    <ScarfCard scarf={scarf} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+
+        {/* Trois matières phares — aligné sur le menu Châles */}
+        <section className="grid divide-y divide-stone-200/80 border-b border-stone-200/80 md:grid-cols-3 md:divide-x md:divide-y-0">
+          <Link
+            href={chalesCategoryPath("chales-en-fil-de-lin")}
+            className="group relative flex min-h-52 flex-col justify-end bg-[#f2efe8] px-8 py-10 text-stone-900 transition-colors hover:bg-[#ebe6dc] md:min-h-60"
+          >
+            <p className="text-xs font-semibold tracking-[0.25em] text-stone-500 uppercase transition-colors group-hover:text-stone-700">
+              Naturel
+            </p>
+            <h2 className={`mt-2 text-3xl font-semibold md:text-4xl`}>Fil de lin</h2>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-600">
+              Respirant et élégant, pour un tombé structuré du quotidien aux tenues soignées.
+            </p>
+            <span className="mt-6 inline-flex text-xs font-semibold tracking-widest text-stone-800 uppercase underline underline-offset-4">
+              Shopper
+            </span>
+          </Link>
+          <Link
+            href={chalesCategoryPath("chales-en-crepe")}
+            className="group relative flex min-h-52 flex-col justify-end bg-amber-50 px-8 py-10 text-stone-900 transition-colors hover:bg-amber-100/90 md:min-h-60"
+          >
+            <p className="text-xs font-semibold tracking-[0.25em] text-stone-600 uppercase">
+              Texture
+            </p>
+            <h2 className={`mt-2 text-3xl font-semibold md:text-4xl`}>Crêpe</h2>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-700">
+              Tombé fluide, finitions nettes, idéal du quotidien aux occasions.
+            </p>
+            <span className="mt-6 inline-flex text-xs font-semibold tracking-widest uppercase underline underline-offset-4">
+              Shopper
+            </span>
+          </Link>
+          <Link
+            href={chalesCategoryPath("chales-en-mousseline")}
+            className="group relative flex min-h-52 flex-col justify-end bg-stone-800 px-8 py-10 text-white transition-colors hover:bg-stone-900 md:min-h-60"
+          >
+            <p className="text-xs font-semibold tracking-[0.25em] text-stone-400 uppercase transition-colors group-hover:text-stone-200">
+              Douceur
+            </p>
+            <h2 className={`mt-2 text-3xl font-semibold md:text-4xl`}>Mousseline</h2>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-300">
+              Légère, aérienne, idéale pour le quotidien comme les occasions.
+            </p>
+            <span className="mt-6 inline-flex text-xs font-semibold tracking-widest uppercase underline underline-offset-4">
+              Shopper
+            </span>
+          </Link>
+        </section>
+
+        {/* Editorial strip */}
+        <section className="border-b border-stone-200/80 bg-white py-16 md:py-20">
+          <div className="mx-auto max-w-3xl px-4 text-center md:px-6">
+            <h2
+              className={`text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl`}
+            >
+              Les essentiels
+            </h2>
+            <p className="mt-5 text-pretty text-base leading-relaxed text-stone-600 md:text-lg">
+              Une palette contemporaine — fil de lin, crêpe et mousseline — pour composer des
+              tenues modestes avec personnalité. Matières nobles, tombés étudiés, détails discrets.
+            </p>
+            <Button variant="link" className="mt-6 text-stone-800" asChild>
+              <Link href={NOUVEAUTES_PATH}>Voir les nouveautés</Link>
+            </Button>
+          </div>
+        </section>
+
+        {/* Matières — aperçu 4 pièces */}
+        <div id="matieres" className="scroll-mt-28">
+          <HomeCategoryPreviewGrid
+            title={crepeRow.title}
+            exploreHref={crepeRow.exploreHref}
+            scarves={crepeRow.scarves}
+            variant="cream"
+          />
+          <HomeCategoryPreviewGrid
+            title={mousselineRow.title}
+            exploreHref={mousselineRow.exploreHref}
+            scarves={mousselineRow.scarves}
+            variant="white"
+          />
+          <HomeCategoryPreviewGrid
+            title={linRow.title}
+            exploreHref={linRow.exploreHref}
+            scarves={linRow.scarves}
+            variant="cream"
+          />
+        </div>
+
+        {/* Testimonials — Culture-style social proof strip */}
+        <section className="border-t border-stone-200/80 bg-stone-900 py-16 text-stone-100 md:py-20">
+          <div className="mx-auto max-w-6xl px-4 md:px-6">
+            <p className="text-center text-xs font-semibold tracking-[0.3em] text-stone-400 uppercase">
+              Elles parlent de nous
+            </p>
+            <h2
+              className={`mt-3 text-center text-3xl font-semibold text-white md:text-4xl`}
+            >
+              La confiance avant tout
+            </h2>
+            <ul className="mt-12 grid gap-8 md:grid-cols-3">
+              {testimonials.map((t) => (
+                <li
+                  key={`${t.author}-${t.city}`}
+                  className="border border-stone-700/80 bg-stone-800/50 p-6"
+                >
+                  <p className="text-sm leading-relaxed text-stone-200">&ldquo;{t.quote}&rdquo;</p>
+                  <p className="mt-4 text-xs font-semibold tracking-wide text-stone-400 uppercase">
+                    {t.author} — {t.city}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </main>
+    </div>
+  )
+}
