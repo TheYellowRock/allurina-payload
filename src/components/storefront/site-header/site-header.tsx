@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useCallback, useState } from "react"
 
 import { CartTrigger } from "@/components/storefront/cart/cart-trigger"
+import { brandLogoSerif } from "@/components/storefront/brand-logo-font"
 import { DesktopNav } from "@/components/storefront/site-header/desktop-nav"
 import { HeaderIconButton } from "@/components/storefront/site-header/header-icon-button"
 import { navSans } from "@/components/storefront/site-header/nav-font"
@@ -55,9 +56,12 @@ export function SiteHeader({
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:px-4 md:px-6">
           <Link
             href="/"
-            className="shrink-0 text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl md:text-[1.65rem]"
+            className={cn(
+              brandLogoSerif.className,
+              "shrink-0 text-[1.35rem] leading-none tracking-[0.04em] text-stone-900 sm:text-[1.6rem] md:text-[1.85rem]",
+            )}
           >
-            Allurina
+            AllurinaScarf
           </Link>
 
           <DesktopNav collections={merch} chalesCategories={chalesNav} />

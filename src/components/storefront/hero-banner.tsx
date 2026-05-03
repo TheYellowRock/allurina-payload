@@ -19,7 +19,7 @@ const ROTATE_MS = 5000
 const slides = [
   {
     src: "/hero/boutique.png",
-    alt: "Boutique Allurina — châles et modest fashion",
+    alt: "Boutique AllurinaScarf — châles et modest fashion",
     kicker: "Nouveautés",
     title: "Matières & couleurs",
   },

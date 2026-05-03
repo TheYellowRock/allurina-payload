@@ -21,10 +21,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const collection = await getStorefrontCollectionBySlug(slug)
   if (!collection) {
-    return { title: "Collection — Allurina" }
+    return { title: "Collection — AllurinaScarf" }
   }
   return {
-    title: `${collection.name} — Allurina`,
+    title: `${collection.name} — AllurinaScarf`,
     description:
       collection.description ??
       `Découvrez les pièces de la collection ${collection.name}.`,

@@ -22,9 +22,9 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const scarf = await getStorefrontScarfBySlug(slug)
-  if (!scarf) return { title: "Produit — Allurina" }
+  if (!scarf) return { title: "Produit — AllurinaScarf" }
   return {
-    title: `${scarf.title} — Allurina`,
+    title: `${scarf.title} — AllurinaScarf`,
     description: `Châle ${scarf.title}. ${formatScarfPrice(scarf.price)}.`,
   }
 }

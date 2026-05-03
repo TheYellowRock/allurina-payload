@@ -69,7 +69,7 @@ export default async function Home() {
     },
     {
       quote:
-        "Colis bien emballé, délais corrects vers l’est. Je recommande Allurina à Oujda et ailleurs.",
+        "Colis bien emballé, délais corrects vers l’est. Je recommande AllurinaScarf à Oujda et ailleurs.",
       author: "Nadia",
       city: "Oujda",
     },

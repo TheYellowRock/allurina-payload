@@ -2,9 +2,11 @@
 
 import Link from "next/link"
 
+import { brandLogoSerif } from "@/components/storefront/brand-logo-font"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
+import { cn } from "@/lib/utils"
 
 export function SiteFooter() {
   return (
@@ -59,8 +61,13 @@ export function SiteFooter() {
         </div>
 
         <div className="md:col-span-2 lg:col-span-1">
-          <p className="text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase">
-            Allurina
+          <p
+            className={cn(
+              brandLogoSerif.className,
+              "text-[1.35rem] leading-none tracking-[0.04em] text-stone-900 normal-case sm:text-[1.5rem]",
+            )}
+          >
+            AllurinaScarf
           </p>
           <p className="mt-3 text-sm leading-relaxed text-stone-600">
             Châles et foulards pensés pour le quotidien : matières nobles, couleurs
@@ -71,7 +78,7 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-stone-200/80 py-4 text-center text-xs text-stone-500">
-        © {new Date().getFullYear()} Allurina — Tous droits réservés
+        © {new Date().getFullYear()} AllurinaScarf — Tous droits réservés
       </div>
     </footer>
   )

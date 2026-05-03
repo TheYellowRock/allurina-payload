@@ -6,7 +6,7 @@ import { NOUVEAUTES_PATH } from "@/lib/routes"
 type Props = { searchParams: Promise<{ ref?: string }> }
 
 export const metadata: Metadata = {
-  title: "Commande confirmée — Allurina",
+  title: "Commande confirmée — AllurinaScarf",
 }
 
 export default async function CheckoutConfirmationPage({ searchParams }: Props) {

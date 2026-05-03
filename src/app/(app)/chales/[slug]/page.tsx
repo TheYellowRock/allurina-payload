@@ -21,12 +21,12 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   if (!isChalesNavSlug(slug)) {
-    return { title: "Châles — Allurina" }
+    return { title: "Châles — AllurinaScarf" }
   }
   const categories = await getStorefrontCategories()
   const cat = categories.find((c) => c.slug === slug)
   return {
-    title: cat ? `${cat.name} — Allurina` : "Châles — Allurina",
+    title: cat ? `${cat.name} — AllurinaScarf` : "Châles — AllurinaScarf",
     description: cat?.description ?? undefined,
   }
 }

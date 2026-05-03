@@ -10,7 +10,7 @@ import { NOUVEAUTES_PATH } from "@/lib/routes"
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
-  title: "Toutes les pièces — Allurina",
+  title: "Toutes les pièces — AllurinaScarf",
   description: "Catalogue complet des châles et foulards.",
 }
 
