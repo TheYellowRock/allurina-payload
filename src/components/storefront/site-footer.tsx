@@ -5,7 +5,7 @@ import Link from "next/link"
 import { brandLogoSerif } from "@/components/storefront/brand-logo-font"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
+import { NOUVEAUTES_PATH, PRIVACY_POLICY_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 export function SiteFooter() {
@@ -53,8 +53,8 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/api/store/scarves" className="hover:text-stone-900" prefetch={false}>
-                API catalogue (JSON)
+              <Link href={PRIVACY_POLICY_PATH} className="hover:text-stone-900">
+                Politique de confidentialité
               </Link>
             </li>
           </ul>

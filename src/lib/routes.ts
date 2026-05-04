@@ -13,6 +13,9 @@ export const NOUVEAUTES_PATH = "/nouveautes"
 
 export const TOUTES_LES_PIECES_PATH = "/collections/toutes-les-articles"
 
+/** Politique de confidentialité (exigences légales & vérification Meta). */
+export const PRIVACY_POLICY_PATH = "/politique-confidentialite"
+
 export function collectionPath(slug: string): string {
   return `/collections/${encodeURIComponent(slug)}`
 }

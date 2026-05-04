@@ -41,58 +41,77 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
         <div className="mt-12 border border-stone-200/90 bg-white md:mt-16">
           <ul className="grid md:grid-cols-3 md:divide-x md:divide-stone-200/90">
             <li className="flex flex-col border-b border-stone-200/90 p-8 md:border-b-0 md:p-10 lg:p-12">
-              <div className="flex size-11 items-center justify-center border border-stone-200 bg-[#faf9f7] text-stone-600">
+              <div className="flex size-11 items-center justify-center border border-stone-200 bg-[#faf9f7] text-stone-500">
                 <Percent className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className="mt-8 text-[11px] font-medium tracking-[0.22em] text-stone-500 uppercase">
+              <p className="mt-6 text-[15px] font-medium tracking-[0.14em] text-stone-700 uppercase md:text-base">
                 À l&apos;unité
               </p>
-              <p className="mt-3 text-4xl font-light tabular-nums tracking-tight text-stone-900 md:text-[2.75rem]">
-                65 <span className="text-base font-normal text-stone-500 md:text-lg">DH</span>
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600">
-                Au lieu de{" "}
-                <span className="tabular-nums text-stone-400 line-through decoration-stone-300">
-                  75 DH
+              <div className="mt-4 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <span className="font-light tabular-nums text-[1.625rem] leading-none text-stone-800 line-through decoration-stone-700 decoration-1 md:text-[1.875rem]">
+                  80
                 </span>
-                <span className="mt-2 block text-stone-700">≈ 13&nbsp;% de remise</span>
+                <span className="inline-flex items-baseline gap-0.5 tabular-nums text-[2.125rem] font-medium leading-none text-red-600 md:text-[2.5rem]">
+                  65
+                  <span className="text-base font-normal text-red-600/90 md:text-lg">DH</span>
+                </span>
+                <span className="text-[11px] font-normal leading-none tracking-tight text-stone-500 md:text-xs">
+                  par pièce
+                </span>
+              </div>
+              <p className="mt-3 text-sm font-normal leading-relaxed text-stone-600">
+                ≈ 19&nbsp;% de remise sur le prix catalogue (80&nbsp;DH).
               </p>
             </li>
 
             <li className="flex flex-col border-b border-stone-200/90 bg-[#fcfbfa] p-8 md:border-b-0 md:p-10 lg:p-12">
-              <div className="flex size-11 items-center justify-center border border-stone-200 bg-white text-stone-600">
+              <div className="flex size-11 items-center justify-center border border-stone-200 bg-white text-stone-500">
                 <Package className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className="mt-8 text-[11px] font-medium tracking-[0.22em] text-stone-500 uppercase">
+              <p className="mt-6 text-[15px] font-medium tracking-[0.14em] text-stone-700 uppercase md:text-base">
                 Package de 3 pièces
               </p>
-              <p className="mt-3 text-4xl font-light tabular-nums tracking-tight text-stone-900 md:text-[2.75rem]">
-                180 <span className="text-base font-normal text-stone-500 md:text-lg">DH</span>
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600">
-                Au lieu de{" "}
-                <span className="tabular-nums text-stone-400 line-through decoration-stone-300">
-                  195 DH
+              <div className="mt-4 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <span className="font-light tabular-nums text-[1.625rem] leading-none text-stone-800 line-through decoration-stone-700 decoration-1 md:text-[1.875rem]">
+                  80
                 </span>
-                <span className="mt-2 block text-stone-700">Économisez 15 DH sur le package</span>
+                <span className="inline-flex items-baseline gap-0.5 tabular-nums text-[2.125rem] font-medium leading-none text-red-600 md:text-[2.5rem]">
+                  60
+                  <span className="text-base font-normal text-red-600/90 md:text-lg">DH</span>
+                </span>
+                <span className="text-[11px] font-normal leading-none tracking-tight text-stone-500 md:text-xs">
+                  par pièce · lot de 3
+                </span>
+              </div>
+              <p className="mt-3 text-sm font-normal leading-relaxed text-stone-600">
+                180&nbsp;DH le lot — catalogue à 80&nbsp;DH barré par pièce.
               </p>
             </li>
 
             <li className="flex flex-col p-8 md:p-10 lg:p-12">
-              <div className="flex size-11 items-center justify-center border border-stone-200 bg-[#faf9f7] text-stone-600">
+              <div className="flex size-11 items-center justify-center border border-stone-200 bg-[#faf9f7] text-stone-500">
                 <Truck className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className="mt-8 text-[11px] font-medium tracking-[0.22em] text-stone-500 uppercase">
+              <p className="mt-6 text-[15px] font-medium tracking-[0.14em] text-stone-700 uppercase md:text-base">
                 À partir de 5 pièces
               </p>
-              <p className="mt-3 text-3xl font-light leading-snug tracking-tight text-stone-900 md:text-4xl">
-                Livraison
-                <span className="mt-1 block text-2xl font-normal text-stone-700 md:text-3xl">
-                  gratuite
+              <div className="mt-4 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <span className="font-light tabular-nums text-[1.625rem] leading-none text-stone-800 line-through decoration-stone-700 decoration-1 md:text-[1.875rem]">
+                  80
                 </span>
+                <span className="inline-flex items-baseline gap-0.5 tabular-nums text-[2.125rem] font-medium leading-none text-red-600 md:text-[2.5rem]">
+                  60
+                  <span className="text-base font-normal text-red-600/90 md:text-lg">DH</span>
+                </span>
+                <span className="text-[11px] font-normal leading-none tracking-tight text-stone-500 md:text-xs">
+                  par pièce
+                </span>
+              </div>
+              <p className="mt-3 text-2xl font-light leading-tight tracking-tight text-red-600 md:text-[1.75rem]">
+                + Livraison gratuite
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-stone-600">
-                Frais de port offerts dès cinq articles dans votre commande.
+              <p className="mt-2.5 text-sm font-normal leading-relaxed text-stone-600">
+                Frais de port offerts dès cinq articles. 60&nbsp;DH / pièce au lieu de 80&nbsp;DH.
               </p>
             </li>
           </ul>
