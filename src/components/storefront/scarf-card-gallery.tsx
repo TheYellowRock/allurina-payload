@@ -96,8 +96,8 @@ export function ScarfCardGallery({
         <img
           src={only.src}
           alt={only.alt}
-          className="size-full object-cover"
-          sizes="(max-width: 768px) 50vw, 33vw"
+          className="size-full object-contain object-center"
+          sizes="(max-width: 1024px) 50vw, 33vw"
           draggable={false}
         />
       </button>
@@ -106,7 +106,7 @@ export function ScarfCardGallery({
 
   return (
     <div
-      className="group/gallery relative h-full min-h-0 min-w-0 overflow-hidden bg-muted"
+      className="group/gallery relative h-full min-h-0 min-w-0 overflow-hidden bg-transparent"
       role="region"
       aria-roledescription="carrousel"
       aria-label={`Photos de ${productTitle} — glisser pour parcourir`}
@@ -146,8 +146,8 @@ export function ScarfCardGallery({
             <img
               src={img.src}
               alt={img.alt}
-              className="pointer-events-none size-full object-cover select-none"
-              sizes="(max-width: 768px) 50vw, 33vw"
+              className="pointer-events-none size-full object-contain object-center select-none"
+              sizes="(max-width: 1024px) 50vw, 33vw"
               draggable={false}
             />
           </div>

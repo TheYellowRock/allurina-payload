@@ -16,7 +16,7 @@ export function CollectionPageIntro({
   breadcrumbs: CatalogCrumb[]
 }) {
   return (
-    <div className="border-b border-stone-200/80 bg-[#faf9f7] px-4 pb-8 pt-10 md:px-6 md:pb-10 md:pt-14">
+    <div className="border-b border-stone-200/80 bg-[#faf9f7] px-5 pb-8 pt-10 md:px-6 md:pb-10 md:pt-14">
       <div className="mx-auto max-w-6xl">
         <nav className="text-sm text-stone-600">
           {breadcrumbs.map((c, i) => (
@@ -61,7 +61,7 @@ export function CollectionProductGrid({
 
   return (
     <div className="border-t border-stone-200/80 bg-[#faf9f7] pb-16 pt-8 md:pb-20 md:pt-10">
-      <div className="mx-auto max-w-6xl px-4 md:px-6">
+      <div className="mx-auto max-w-6xl px-5 md:px-6">
         <p className="text-sm text-stone-600">
           {scarves.length} pièce{scarves.length !== 1 ? "s" : ""}
         </p>

@@ -49,7 +49,7 @@ export function ScarfCard({
           "flex min-w-0 w-full flex-col gap-0 overflow-hidden p-0 py-0",
         )}
       >
-        <div className="relative w-full shrink-0 overflow-hidden bg-muted aspect-3/4 max-h-[min(50svh,22rem)] lg:max-h-none lg:aspect-3/5">
+        <div className="relative w-full shrink-0 overflow-hidden bg-stone-100 aspect-4/5 sm:aspect-3/4 lg:aspect-3/5">
           <ScarfCardGallery
             images={productImages}
             productHref={href}
@@ -58,15 +58,15 @@ export function ScarfCard({
           />
         </div>
 
-        <div className="flex shrink-0 flex-col gap-2 px-3 pb-2.5 pt-2 sm:px-3.5 sm:pb-3 sm:pt-2.5">
+        <div className="flex shrink-0 flex-col gap-2 px-3.5 pb-2.5 pt-2 sm:px-3.5 sm:pb-3 sm:pt-2.5">
           <Link
             href={href}
-            className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-2.5 gap-y-0.5 rounded-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-stone-900"
+            className="flex min-w-0 flex-col gap-1 rounded-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-stone-900 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-2.5 sm:gap-y-0.5"
           >
-            <CardTitle className="min-w-0 max-w-[55%] flex-1 truncate text-sm font-semibold leading-snug tracking-wide text-stone-900 transition-colors group-hover/card:text-stone-950 sm:max-w-none sm:flex-none sm:text-[0.9375rem]">
+            <CardTitle className="min-w-0 text-pretty text-sm font-semibold leading-snug tracking-wide text-stone-900 transition-colors group-hover/card:text-stone-950 sm:text-[0.9375rem]">
               {scarf.title}
             </CardTitle>
-            <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
+            <span className="flex shrink-0 items-baseline gap-2 tabular-nums sm:justify-end">
               {showListStrike ? (
                 <span className="text-xs font-light text-red-500/90 line-through decoration-red-400 sm:text-sm">
                   {formatScarfPrice(listPriceDh)}

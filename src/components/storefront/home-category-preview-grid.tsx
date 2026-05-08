@@ -33,7 +33,7 @@ export function HomeCategoryPreviewGrid({
         className,
       )}
     >
-      <div className="mx-auto max-w-6xl px-4 md:px-6">
+      <div className="mx-auto max-w-6xl px-5 md:px-6">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-xl font-semibold tracking-tight text-stone-900 md:text-2xl">
             {title}
