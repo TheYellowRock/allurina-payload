@@ -107,7 +107,7 @@ export default async function Home() {
             ) : (
               <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {featured.map((scarf) => (
-                  <li key={String(scarf.id)}>
+                  <li key={String(scarf.id)} className="min-w-0">
                     <ScarfCard scarf={scarf} />
                   </li>
                 ))}

@@ -106,7 +106,7 @@ export function ScarfCardGallery({
 
   return (
     <div
-      className="group/gallery relative min-h-0 flex-1 basis-0 overflow-hidden bg-muted"
+      className="group/gallery relative min-h-0 min-w-0 flex-1 basis-0 overflow-hidden bg-muted"
       role="region"
       aria-roledescription="carrousel"
       aria-label={`Photos de ${productTitle} — glisser pour parcourir`}
@@ -133,7 +133,7 @@ export function ScarfCardGallery({
         }}
         onClick={() => maybeNavigate()}
         className={cn(
-          "flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain",
+          "flex h-full touch-manipulation snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain",
           "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
         )}
       >

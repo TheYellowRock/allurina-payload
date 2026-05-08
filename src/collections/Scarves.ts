@@ -1,12 +1,17 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 
+import { syncScarfMediaAlt } from './hooks/syncScarfMediaAlt'
+
 export const Scarves: CollectionConfig = {
   slug: 'scarves',
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'price', 'stockQuantity', 'updatedAt'],
     group: 'Catalog',
+  },
+  hooks: {
+    afterChange: [syncScarfMediaAlt],
   },
   fields: [
     {
@@ -64,12 +69,12 @@ export const Scarves: CollectionConfig = {
     },
     {
       name: 'galleryImages',
-      type: 'relationship',
+      type: 'upload',
       relationTo: 'media',
       hasMany: true,
       admin: {
         description:
-          'Photos supplémentaires pour la fiche produit (vues de détail, porté, etc.).',
+          'Glissez-déposez plusieurs images à la fois. Enregistrez la fiche : le champ Alt de chaque fichier est rempli avec Allurina scarf — « titre du châle ».',
       },
     },
     {

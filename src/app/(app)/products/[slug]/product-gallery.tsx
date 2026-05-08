@@ -24,8 +24,8 @@ export function ProductGallery({
   const active = images[index] ?? images[0]
 
   return (
-    <div className="flex flex-col-reverse gap-4 md:flex-row md:items-start md:gap-5">
-      <div className="flex flex-row gap-2 overflow-x-auto pb-0.5 md:w-[4.75rem] md:flex-col md:gap-2.5 md:overflow-y-auto md:pb-0 md:pt-0.5">
+    <div className="flex min-w-0 flex-col-reverse gap-4 md:flex-row md:items-start md:gap-5">
+      <div className="flex min-w-0 flex-row gap-2 overflow-x-auto overscroll-x-contain pb-0.5 touch-manipulation md:w-[4.75rem] md:flex-col md:gap-2.5 md:overflow-y-auto md:pb-0 md:pt-0.5">
         {images.map((img, i) => (
           <button
             key={`${img.src}-${i}`}
@@ -50,7 +50,7 @@ export function ProductGallery({
         ))}
       </div>
 
-      <div className="relative aspect-[4/5] w-full flex-1 overflow-hidden bg-stone-50 md:min-h-[min(70vh,36rem)]">
+      <div className="relative aspect-[4/5] w-full min-w-0 flex-1 touch-manipulation overflow-hidden bg-stone-50 md:min-h-[min(70vh,36rem)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={active.src}

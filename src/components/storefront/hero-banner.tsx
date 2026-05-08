@@ -60,7 +60,7 @@ export function HeroBanner() {
             <div
               key={slide.src}
               className={cn(
-                "absolute inset-0 transition-opacity duration-700 ease-out",
+                "absolute inset-0 touch-manipulation transition-opacity duration-700 ease-out",
                 isOn ? "z-10 opacity-100" : "z-0 opacity-0 pointer-events-none",
               )}
               aria-hidden={!isOn}

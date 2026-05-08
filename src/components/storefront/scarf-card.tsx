@@ -43,10 +43,10 @@ export function ScarfCard({
   const showListStrike = salePrice < listPriceDh
 
   return (
-    <div className={cn("group/card relative", className)}>
+    <div className={cn("group/card relative min-w-0", className)}>
       <Card
         className={cn(
-          "flex w-full flex-col gap-0 overflow-hidden p-0 py-0 aspect-3/5",
+          "flex min-w-0 w-full flex-col gap-0 overflow-hidden p-0 py-0 aspect-3/5",
         )}
       >
         <ScarfCardGallery
