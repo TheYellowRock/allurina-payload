@@ -105,7 +105,7 @@ export default async function Home() {
                 Aucun produit pour le moment. Ajoutez des châles dans l&apos;admin Payload.
               </div>
             ) : (
-              <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
                 {featured.map((scarf) => (
                   <li key={String(scarf.id)} className="min-w-0">
                     <ScarfCard scarf={scarf} />
