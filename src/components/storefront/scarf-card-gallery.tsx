@@ -77,7 +77,7 @@ export function ScarfCardGallery({
 
   if (!images.length) {
     return (
-      <div className="flex h-full min-h-40 items-center justify-center text-sm font-light text-muted-foreground">
+      <div className="flex size-full min-h-40 items-center justify-center text-sm font-light text-muted-foreground">
         Sans visuel
       </div>
     )
@@ -106,7 +106,7 @@ export function ScarfCardGallery({
 
   return (
     <div
-      className="group/gallery relative h-full min-h-0 min-w-0 overflow-hidden bg-transparent"
+      className="group/gallery relative size-full min-h-0 min-w-0 overflow-hidden bg-transparent"
       role="region"
       aria-roledescription="carrousel"
       aria-label={`Photos de ${productTitle} — glisser pour parcourir`}

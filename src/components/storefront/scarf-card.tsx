@@ -49,13 +49,16 @@ export function ScarfCard({
           "flex min-w-0 w-full flex-col gap-0 overflow-hidden p-0 py-0",
         )}
       >
+        {/* iOS WebKit: `h-full` under `aspect-ratio` can resolve to 0; absolute fill fixes it. */}
         <div className="relative w-full shrink-0 overflow-hidden bg-stone-100 aspect-4/5 sm:aspect-3/4 lg:aspect-3/5">
-          <ScarfCardGallery
-            images={productImages}
-            productHref={href}
-            productTitle={scarf.title}
-            onActiveIndexChange={setSlideIndex}
-          />
+          <div className="absolute inset-0 min-h-0 min-w-0">
+            <ScarfCardGallery
+              images={productImages}
+              productHref={href}
+              productTitle={scarf.title}
+              onActiveIndexChange={setSlideIndex}
+            />
+          </div>
         </div>
 
         <div className="flex shrink-0 flex-col gap-2 px-3.5 pb-2.5 pt-2 sm:px-3.5 sm:pb-3 sm:pt-2.5">
