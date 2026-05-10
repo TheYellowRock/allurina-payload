@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { MobileCartScrollPadding } from "@/components/storefront/cart/mobile-cart-scroll-padding";
 import { SiteFooter } from "@/components/storefront/site-footer";
 import { SiteHeader } from "@/components/storefront/site-header";
 import { StorefrontProviders } from "@/components/storefront/storefront-providers";
@@ -52,7 +53,7 @@ export default async function AppLayout({
       >
         <StorefrontProviders>
           <SiteHeader collections={collections} categories={categories} />
-          {children}
+          <MobileCartScrollPadding>{children}</MobileCartScrollPadding>
           <SiteFooter />
         </StorefrontProviders>
       </body>

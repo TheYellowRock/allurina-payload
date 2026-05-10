@@ -2,9 +2,11 @@
 
 import type { ComponentProps } from "react"
 import { ShoppingBag } from "lucide-react"
+import { toast } from "sonner"
 
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { Button } from "@/components/ui/button"
+import { useIsMobile } from "@/hooks/use-is-mobile"
 import type { CartAddPayload } from "@/lib/cart/types"
 import { cn } from "@/lib/utils"
 
@@ -25,6 +27,7 @@ export function AddToCartButton({
   onClick?: ButtonProps["onClick"]
 }) {
   const { addItem, openCart } = useCart()
+  const isMobile = useIsMobile()
 
   return (
     <Button
@@ -38,7 +41,12 @@ export function AddToCartButton({
         e.preventDefault()
         onClick?.(e)
         addItem(item)
-        if (openDrawer) openCart()
+        if (isMobile) {
+          toast.success("Ajouté au panier !")
+        }
+        if (openDrawer && !isMobile) {
+          openCart()
+        }
       }}
     >
       {children ?? (
