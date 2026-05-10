@@ -72,7 +72,7 @@ export function HeroBanner() {
                 priority={index === 0}
                 quality={92}
                 sizes="100vw"
-                className="object-cover object-[center_22%] sm:object-center"
+                className="object-cover object-[62%_22%] sm:object-center"
               />
               {/* Mobile: bottom-heavy scrim for stacked copy; md+: left-to-right */}
               <div

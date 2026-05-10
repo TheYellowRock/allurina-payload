@@ -1,11 +1,10 @@
 "use client"
 
 import { Menu } from "lucide-react"
-import Link from "next/link"
 import { useCallback, useState } from "react"
 
 import { CartTrigger } from "@/components/storefront/cart/cart-trigger"
-import { brandLogoSerif } from "@/components/storefront/brand-logo-font"
+import { BrandLogoLink } from "@/components/storefront/brand-logo-link"
 import { DesktopNav } from "@/components/storefront/site-header/desktop-nav"
 import { HeaderIconButton } from "@/components/storefront/site-header/header-icon-button"
 import { navSans } from "@/components/storefront/site-header/nav-font"
@@ -53,16 +52,10 @@ export function SiteHeader({
           "sticky top-0 z-50 border-b border-stone-200/90 bg-white/95 backdrop-blur-md",
         )}
       >
-        <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:px-4 md:px-6">
-          <Link
-            href="/"
-            className={cn(
-              brandLogoSerif.className,
-              "shrink-0 text-[1.35rem] leading-none tracking-[0.04em] text-stone-900 sm:text-[1.6rem] md:text-[1.85rem]",
-            )}
-          >
-            AllurinaScarf
-          </Link>
+        <div className="mx-auto flex max-w-6xl min-w-0 items-center gap-2 px-3 py-2.5 sm:px-4 md:px-6 md:py-3">
+          <div className="min-w-0 max-w-[calc(100%-5.75rem)] shrink md:max-w-none">
+            <BrandLogoLink variant="header" />
+          </div>
 
           <DesktopNav collections={merch} chalesCategories={chalesNav} />
 
