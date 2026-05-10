@@ -34,7 +34,7 @@ export function BrandLogoLink({
         className={cn(
           "object-contain object-left",
           variant === "header" &&
-            "h-10 w-auto max-w-full md:h-[80px]",
+            "h-10 w-auto max-w-full md:h-14",
           variant === "footer" &&
             "h-7 max-w-35 w-auto sm:h-8 sm:max-w-40",
         )}
