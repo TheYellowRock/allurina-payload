@@ -51,7 +51,7 @@ export async function POST(req: Request) {
         paymentMethod,
         status: "pending",
         items,
-        subtotal: pricing.merchandiseListTotal,
+        subtotal: pricing.merchandiseSaleTotal,
         volumeDiscount: pricing.volumeDiscountDh,
         deliveryFee: pricing.deliveryDh,
         grandTotal: pricing.grandTotal,

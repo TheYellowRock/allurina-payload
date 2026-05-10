@@ -8,7 +8,8 @@ import { createPortal } from "react-dom"
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { Button } from "@/components/ui/button"
-import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath } from "@/lib/routes"
+import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
+import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
 function useLockBody(open: boolean) {
@@ -115,7 +116,13 @@ export function CartDrawer() {
             </div>
           ) : (
             <ul className="divide-y divide-stone-100">
-              {items.map((line) => (
+              {items.map((line) => {
+                const linePresale = CATALOG_LIST_PRICE_DH * line.quantity
+                const lineSale = line.price * line.quantity
+                const showPromo =
+                  line.price < CATALOG_LIST_PRICE_DH - Number.EPSILON
+
+                return (
                 <li key={line.productId} className="flex gap-3 px-4 py-4">
                   <Link
                     href={productPath(line.slug)}
@@ -143,8 +150,21 @@ export function CartDrawer() {
                     >
                       {line.title}
                     </Link>
-                    <p className="mt-1 text-sm font-light tabular-nums text-stone-700">
-                      {formatScarfPrice(line.price)}
+                    <p className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm font-light tabular-nums">
+                      {showPromo ? (
+                        <>
+                          <span className="text-xs text-red-500/90 line-through decoration-red-400">
+                            {formatScarfPrice(linePresale)}
+                          </span>
+                          <span className="font-medium text-red-600">
+                            {formatScarfPrice(lineSale)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-stone-700">
+                          {formatScarfPrice(lineSale)}
+                        </span>
+                      )}
                     </p>
                     <div className="mt-3 flex items-center gap-2">
                       <div className="inline-flex items-center border border-stone-200">
@@ -183,7 +203,8 @@ export function CartDrawer() {
                     </div>
                   </div>
                 </li>
-              ))}
+                )
+              })}
             </ul>
           )}
         </div>
@@ -196,8 +217,17 @@ export function CartDrawer() {
               pièces.
             </p>
             <Button
+              variant="outline"
+              className="mt-4 h-11 w-full rounded-none border-2 border-stone-900 bg-transparent text-xs font-light tracking-[0.2em] text-stone-900 uppercase hover:bg-stone-900 hover:text-white"
               asChild
-              className="mt-4 h-11 w-full rounded-none border-2 border-stone-900 bg-stone-900 text-xs font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800"
+            >
+              <Link href={TOUTES_LES_PIECES_PATH} onClick={closeCart}>
+                Continuer les achats
+              </Link>
+            </Button>
+            <Button
+              asChild
+              className="mt-2 h-11 w-full rounded-none border-2 border-stone-900 bg-stone-900 text-xs font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800"
             >
               <Link href={CHECKOUT_PATH} onClick={closeCart}>
                 Commander

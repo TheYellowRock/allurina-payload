@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { AddToCartButton } from "@/components/storefront/cart/add-to-cart-button"
 import { ScarfCardGallery } from "@/components/storefront/scarf-card-gallery"
 import { Card, CardTitle } from "@/components/ui/card"
+import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 import { productPath } from "@/lib/routes"
@@ -40,10 +41,8 @@ export function ScarfCard({
   const href = productPath(scarf.slug)
   const productId = String(scarf.id)
 
-  /** Catalogue reference for card promo line (strikethrough when sale is lower). */
-  const listPriceDh = 80
   const salePrice = scarf.price
-  const showListStrike = salePrice < listPriceDh
+  const showListStrike = salePrice < CATALOG_LIST_PRICE_DH
 
   return (
     <div className={cn("group/card relative min-w-0", className)}>
@@ -75,7 +74,7 @@ export function ScarfCard({
             <span className="flex shrink-0 items-baseline gap-2 tabular-nums sm:justify-end">
               {showListStrike ? (
                 <span className="text-xs font-light text-red-500/90 line-through decoration-red-400 sm:text-sm">
-                  {formatScarfPrice(listPriceDh)}
+                  {formatScarfPrice(CATALOG_LIST_PRICE_DH)}
                 </span>
               ) : null}
               <span

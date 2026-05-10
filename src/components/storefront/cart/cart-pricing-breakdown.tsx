@@ -16,19 +16,26 @@ export function CartPricingBreakdownView({
 }) {
   const {
     itemCount,
-    merchandiseListTotal,
+    merchandisePresaleTotal,
+    merchandiseSaleTotal,
     volumeDiscountDh,
     deliveryDh,
     deliverySavingDh,
+    presaleGrandTotal,
     grandTotal,
   } = pricing
 
   return (
     <div className={`space-y-2 text-sm font-light ${className}`}>
-      <div className="flex items-baseline justify-between gap-4 text-stone-700">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-stone-700">
         <span>Sous-total articles</span>
-        <span className="tabular-nums text-stone-900">
-          {formatScarfPrice(merchandiseListTotal)}
+        <span className="text-right tabular-nums">
+          <span className="text-xs font-light text-red-500/90 line-through decoration-red-400">
+            {formatScarfPrice(merchandisePresaleTotal)}
+          </span>
+          <span className={`ml-2 font-medium ${red}`}>
+            {formatScarfPrice(merchandiseSaleTotal)}
+          </span>
         </span>
       </div>
 
@@ -66,11 +73,18 @@ export function CartPricingBreakdownView({
         </div>
       ) : null}
 
-      <div className="flex items-baseline justify-between gap-4 border-t border-stone-200 pt-3 text-stone-900">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-stone-200 pt-3 text-stone-900">
         <span className="text-xs font-normal uppercase tracking-[0.2em] text-stone-500">
           Total
         </span>
-        <span className="text-lg font-light tabular-nums">{formatScarfPrice(grandTotal)}</span>
+        <span className="text-right">
+          <span className="text-sm font-light text-red-500/90 line-through decoration-red-400 tabular-nums">
+            {formatScarfPrice(presaleGrandTotal)}
+          </span>
+          <span className={`ml-2 text-lg font-light tabular-nums ${red}`}>
+            {formatScarfPrice(grandTotal)}
+          </span>
+        </span>
       </div>
     </div>
   )

@@ -30,8 +30,13 @@ export function StickyCartBanner() {
             <p className="text-xs font-light uppercase tracking-wide text-stone-500">
               {itemCount} article{itemCount !== 1 ? "s" : ""}
             </p>
-            <p className="truncate text-sm font-semibold tabular-nums text-stone-900">
-              {formatScarfPrice(pricing.grandTotal)}
+            <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0 tabular-nums">
+              <span className="text-xs font-light text-red-500/90 line-through decoration-red-400">
+                {formatScarfPrice(pricing.presaleGrandTotal)}
+              </span>
+              <span className="text-sm font-semibold text-red-600">
+                {formatScarfPrice(pricing.grandTotal)}
+              </span>
             </p>
           </div>
         </div>
