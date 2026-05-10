@@ -1,6 +1,7 @@
 "use client"
 
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 
@@ -10,16 +11,21 @@ type ImageEntry = { src: string; alt: string }
 
 const SWIPE_THRESHOLD_PX = 12
 
+const CARD_IMAGE_SIZES = "(max-width: 768px) 50vw, 33vw"
+
 export function ScarfCardGallery({
   images,
   productHref,
   productTitle,
   onActiveIndexChange,
+  priorityFirstSlide,
 }: {
   images: ImageEntry[]
   productHref: string
   productTitle: string
   onActiveIndexChange?: (index: number) => void
+  /** Eager-load the first slide when the card is in the first grid row (e.g. index 0–3). */
+  priorityFirstSlide?: boolean
 }) {
   const router = useRouter()
   const scrollerRef = useRef<HTMLDivElement>(null)
@@ -92,12 +98,14 @@ export function ScarfCardGallery({
         aria-label={`Voir ${productTitle}`}
         onClick={() => router.push(productHref)}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={only.src}
           alt={only.alt}
-          className="size-full object-contain object-center"
-          sizes="(max-width: 1024px) 50vw, 33vw"
+          fill
+          priority={Boolean(priorityFirstSlide)}
+          sizes={CARD_IMAGE_SIZES}
+          className="object-cover"
+          style={{ objectPosition: "center" }}
           draggable={false}
         />
       </button>
@@ -133,30 +141,30 @@ export function ScarfCardGallery({
         }}
         onClick={() => maybeNavigate()}
         className={cn(
-          "flex h-full touch-manipulation snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain",
+          "flex h-full min-h-0 w-full touch-manipulation snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain",
           "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
         )}
       >
-        {images.map((img) => (
+        {images.map((img, i) => (
           <div
             key={img.src}
-            className="relative h-full min-w-full shrink-0 snap-start snap-always"
+            className="relative h-full min-h-0 min-w-full shrink-0 snap-start snap-always"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={img.src}
               alt={img.alt}
-              className="pointer-events-none size-full object-contain object-center select-none"
-              sizes="(max-width: 1024px) 50vw, 33vw"
+              fill
+              priority={Boolean(priorityFirstSlide && i === 0)}
+              sizes={CARD_IMAGE_SIZES}
+              className="pointer-events-none object-cover select-none"
+              style={{ objectPosition: "center" }}
               draggable={false}
             />
           </div>
         ))}
       </div>
 
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1.5 px-2"
-      >
+      <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1.5 px-2">
         {images.map((_, i) => (
           <button
             key={i}
@@ -164,7 +172,7 @@ export function ScarfCardGallery({
             aria-label={`Image ${i + 1} sur ${images.length}`}
             aria-current={i === activeIndex ? true : undefined}
             className={cn(
-              "pointer-events-auto h-1.5 min-h-0 min-w-0 rounded-full p-0 transition-all duration-200",
+              "pointer-events-auto h-1.5 min-h-0 min-w-0 rounded-full p-0 transition-opacity duration-200",
               i === activeIndex ? "w-5 bg-stone-900" : "w-1.5 bg-stone-100/90 ring-1 ring-stone-900/25",
             )}
             onClick={(e) => {

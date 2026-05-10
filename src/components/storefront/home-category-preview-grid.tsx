@@ -54,9 +54,9 @@ export function HomeCategoryPreviewGrid({
           </p>
         ) : (
           <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-6">
-            {slice.map((scarf) => (
+            {slice.map((scarf, i) => (
               <li key={String(scarf.id)} className="min-w-0">
-                <ScarfCard scarf={scarf} />
+                <ScarfCard scarf={scarf} cardIndex={i} />
               </li>
             ))}
           </ul>

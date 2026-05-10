@@ -16,9 +16,12 @@ import { cn } from "@/lib/utils"
 export function ScarfCard({
   scarf,
   className,
+  cardIndex,
 }: {
   scarf: StorefrontScarf
   className?: string
+  /** Grid position (0-based). First row uses `priority` on images to avoid lazy-load / IO issues on iOS. */
+  cardIndex?: number
 }) {
   const productImages = storefrontProductImages(
     scarf.featuredImage,
@@ -49,14 +52,14 @@ export function ScarfCard({
           "flex min-w-0 w-full flex-col gap-0 overflow-hidden p-0 py-0",
         )}
       >
-        {/* iOS WebKit: `h-full` under `aspect-ratio` can resolve to 0; absolute fill fixes it. */}
         <div className="relative w-full shrink-0 overflow-hidden bg-stone-100 aspect-4/5 sm:aspect-3/4 lg:aspect-3/5">
-          <div className="absolute inset-0 min-h-0 min-w-0">
+          <div className="absolute inset-0 min-h-0 min-w-0 overflow-hidden">
             <ScarfCardGallery
               images={productImages}
               productHref={href}
               productTitle={scarf.title}
               onActiveIndexChange={setSlideIndex}
+              priorityFirstSlide={cardIndex !== undefined && cardIndex < 4}
             />
           </div>
         </div>
@@ -110,3 +113,5 @@ export function ScarfCard({
     </div>
   )
 }
+
+export { ScarfCard as ProductCard }

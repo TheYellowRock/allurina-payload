@@ -67,9 +67,9 @@ export function CollectionProductGrid({
         </p>
 
         <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
-          {scarves.map((scarf) => (
+          {scarves.map((scarf, i) => (
             <li key={String(scarf.id)} className="min-w-0">
-              <ScarfCard scarf={scarf} />
+              <ScarfCard scarf={scarf} cardIndex={i} />
             </li>
           ))}
         </ul>

@@ -131,7 +131,8 @@
     overflow-x: clip;
     max-width: 100%;
   }
-  img,
+  /* Next.js <Image> sets data-nimg; global max-width fights `fill` + absolute sizing on WebKit. */
+  img:not([data-nimg]),
   video,
   canvas {
     max-width: 100%;
