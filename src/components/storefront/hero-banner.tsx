@@ -19,17 +19,20 @@ const ROTATE_MS = 5000
 const slides = [
   {
     src: "/hero/boutique.png",
-    alt: "Boutique AllurinaScarf — châles et modest fashion",
+    alt: "Modèle en boutique AllurinaScarf, foulard fleuri et présentoirs de châles",
     kicker: "Nouveautés",
     title: "Matières & couleurs",
   },
   {
     src: "/hero/courtyard.png",
-    alt: "Inspiration riad — foulards et hijabs",
+    alt: "Modèle dans un riad marocain, hijab à motifs et architecture zellige",
     kicker: "Inspirations",
     title: "L’élégance modeste",
   },
 ] as const
+
+/** Near-lossless for full-bleed hero photography (allowlisted in `next.config` `images.qualities`). */
+const HERO_IMAGE_QUALITY = 95
 
 /** Promo strip (~40px) + compact header row — keeps hero from underlapping chrome on small phones */
 const heroMinHeight =
@@ -70,7 +73,8 @@ export function HeroBanner() {
                 alt={slide.alt}
                 fill
                 priority={index === 0}
-                quality={92}
+                fetchPriority={index === 0 ? "high" : "low"}
+                quality={HERO_IMAGE_QUALITY}
                 sizes="100vw"
                 className="object-cover object-[62%_22%] sm:object-center"
               />
