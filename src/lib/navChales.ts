@@ -5,6 +5,7 @@ export const CHALES_NAV_SLUGS = [
   "chales-en-fil-de-lin",
   "chales-en-crepe",
   "chales-en-mousseline",
+  "chales-en-satin",
 ] as const
 
 export type ChalesNavSlug = (typeof CHALES_NAV_SLUGS)[number]
