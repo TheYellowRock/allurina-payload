@@ -29,7 +29,7 @@ export function BrandLogoLink({
         src={LOGO_SRC}
         alt="Allurina Scarf"
         width={1000}
-        height={500}
+        height={305}
         priority={variant === "header"}
         className={cn(
           "object-contain object-left",
