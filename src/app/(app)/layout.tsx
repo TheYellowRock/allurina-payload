@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { MobileCartScrollPadding } from "@/components/storefront/cart/mobile-cart-scroll-padding";
@@ -31,6 +32,8 @@ export const metadata: Metadata = {
     "Châles en fil de lin, crêpe et mousseline. Boutique en ligne inspirée de l’élégance modeste.",
 };
 
+const GTM_ID = (process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MLPCW62M").trim()
+
 export default async function AppLayout({
   children,
 }: Readonly<{
@@ -51,6 +54,7 @@ export default async function AppLayout({
         className="flex min-h-full flex-col font-sans"
         suppressHydrationWarning
       >
+        {GTM_ID ? <GoogleTagManager gtmId={GTM_ID} /> : null}
         <StorefrontProviders>
           <SiteHeader collections={collections} categories={categories} />
           <MobileCartScrollPadding>{children}</MobileCartScrollPadding>

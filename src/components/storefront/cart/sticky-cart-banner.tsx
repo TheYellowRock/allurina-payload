@@ -4,6 +4,7 @@ import { ShoppingBag } from "lucide-react"
 
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { Button } from "@/components/ui/button"
+import { gtmTrackViewCartFromBanner } from "@/lib/gtm"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 import { cn } from "@/lib/utils"
 
@@ -45,7 +46,13 @@ export function StickyCartBanner() {
           variant="outline"
           size="sm"
           className="shrink-0 rounded-none border-2 border-stone-900 bg-stone-900 px-4 text-xs font-medium uppercase tracking-[0.15em] text-white hover:bg-stone-800"
-          onClick={openCart}
+          onClick={() => {
+            gtmTrackViewCartFromBanner({
+              itemCount,
+              grandTotal: pricing.grandTotal,
+            })
+            openCart()
+          }}
         >
           Voir Panier
         </Button>

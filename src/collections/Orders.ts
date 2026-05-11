@@ -97,6 +97,9 @@ export const Orders: CollectionConfig = {
       options: [
         { label: 'En attente', value: 'pending' },
         { label: 'Confirmée', value: 'confirmed' },
+        { label: 'En préparation', value: 'packing' },
+        { label: 'Expédiée', value: 'shipped' },
+        { label: 'Livrée', value: 'delivered' },
         { label: 'Annulée', value: 'cancelled' },
       ],
     },

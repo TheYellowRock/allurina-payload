@@ -9,6 +9,7 @@ import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { Button } from "@/components/ui/button"
 import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
+import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
@@ -229,7 +230,16 @@ export function CartDrawer() {
               asChild
               className="mt-2 h-11 w-full rounded-none border-2 border-stone-900 bg-stone-900 text-xs font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800"
             >
-              <Link href={CHECKOUT_PATH} onClick={closeCart}>
+              <Link
+                href={CHECKOUT_PATH}
+                onClick={() => {
+                  gtmTrackBeginCheckout({
+                    grandTotal: pricing.grandTotal,
+                    items,
+                  })
+                  closeCart()
+                }}
+              >
                 Commander
               </Link>
             </Button>

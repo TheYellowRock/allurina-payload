@@ -11,6 +11,7 @@
     "migrate": "jiti scripts/payload-migrate.ts"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.6",
     "@payloadcms/db-postgres": "^3.84.1",
     "@payloadcms/next": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",
