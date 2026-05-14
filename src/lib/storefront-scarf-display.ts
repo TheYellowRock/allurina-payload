@@ -1,4 +1,5 @@
 import type { AvailabilityStatus } from "@/collections/AvailabilityTags"
+import { chalesTypeLabel } from "@/lib/navLabels"
 
 export function availabilityBadgeTone(
   status: AvailabilityStatus,
@@ -42,6 +43,16 @@ export function formatScarfPrice(value: number): string {
     maximumFractionDigits: 2,
   }).format(value)
   return `${n} Dh`
+}
+
+/** First linked category as a short label (e.g. `Fil De Lin`), or null if missing / not populated. */
+export function storefrontPrimaryCategoryLine(categories: unknown): string | null {
+  if (!Array.isArray(categories) || categories.length === 0) return null
+  const first = categories[0]
+  if (!first || typeof first !== "object") return null
+  const name = (first as { name?: string }).name
+  if (typeof name !== "string" || !name.trim()) return null
+  return chalesTypeLabel(name.trim())
 }
 
 /** Resolved URL for a populated Payload upload (same-origin). */

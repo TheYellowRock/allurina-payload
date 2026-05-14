@@ -8,7 +8,7 @@ import { AddToCartButton } from "@/components/storefront/cart/add-to-cart-button
 import { ScarfCardGallery } from "@/components/storefront/scarf-card-gallery"
 import { Card, CardTitle } from "@/components/ui/card"
 import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
-import { formatScarfPrice } from "@/lib/storefront-scarf-display"
+import { formatScarfPrice, storefrontPrimaryCategoryLine } from "@/lib/storefront-scarf-display"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 import { productPath } from "@/lib/routes"
 import { storefrontProductImages } from "@/lib/storefrontProductMedia"
@@ -42,7 +42,9 @@ export function ScarfCard({
   const productId = String(scarf.id)
 
   const salePrice = scarf.price
-  const showListStrike = salePrice < CATALOG_LIST_PRICE_DH
+  const showListStrike = salePrice < CATALOG_LIST_PRICE_DH - Number.EPSILON
+
+  const categoryLine = storefrontPrimaryCategoryLine(scarf.categories)
 
   return (
     <div className={cn("group/card relative min-w-0", className)}>
@@ -66,12 +68,17 @@ export function ScarfCard({
         <div className="flex shrink-0 flex-col gap-2 px-3.5 pb-2.5 pt-2 sm:px-3.5 sm:pb-3 sm:pt-2.5">
           <Link
             href={href}
-            className="flex min-w-0 flex-col gap-1 rounded-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-stone-900 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-2.5 sm:gap-y-0.5"
+            className="flex min-w-0 flex-col gap-1 rounded-sm outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-stone-900"
           >
-            <CardTitle className="min-w-0 text-pretty text-sm font-semibold leading-snug tracking-wide text-stone-900 transition-colors group-hover/card:text-stone-950 sm:text-[0.9375rem]">
+            <CardTitle className="line-clamp-1 min-w-0 text-sm font-semibold leading-snug tracking-wide text-stone-900 transition-colors group-hover/card:text-stone-950 sm:text-[0.9375rem]">
               {scarf.title}
             </CardTitle>
-            <span className="flex shrink-0 items-baseline gap-2 tabular-nums sm:justify-end">
+            {categoryLine ? (
+              <span className="line-clamp-1 text-xs font-light text-stone-500">
+                {categoryLine}
+              </span>
+            ) : null}
+            <span className="mt-0.5 flex flex-wrap items-baseline gap-2 tabular-nums">
               {showListStrike ? (
                 <span className="text-xs font-light text-red-500/90 line-through decoration-red-400 sm:text-sm">
                   {formatScarfPrice(CATALOG_LIST_PRICE_DH)}
