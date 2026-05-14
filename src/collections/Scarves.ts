@@ -2,6 +2,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 
 import { syncScarfMediaAlt } from './hooks/syncScarfMediaAlt'
+import { autoSlugFromTitle } from './hooks/autoSlugFromTitle'
 
 export const Scarves: CollectionConfig = {
   slug: 'scarves',
@@ -11,6 +12,7 @@ export const Scarves: CollectionConfig = {
     group: 'Catalog',
   },
   hooks: {
+    beforeValidate: [autoSlugFromTitle],
     afterChange: [syncScarfMediaAlt],
   },
   fields: [
@@ -25,6 +27,11 @@ export const Scarves: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
+      admin: {
+        readOnly: true,
+        description:
+          'Généré automatiquement à partir du titre (minuscules, tirets, accents supprimés). Modifier le titre met à jour l’URL.',
+      },
     },
     {
       name: 'description',

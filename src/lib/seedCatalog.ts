@@ -3,6 +3,8 @@ import path from "path"
 import { getFileByPath } from "payload"
 import type { Payload } from "payload"
 
+import { slugifyTitle } from "@/lib/slugifyTitle"
+
 type Id = number | string
 
 async function findIdBySlug(
@@ -134,26 +136,44 @@ async function upsertScarf(
   payload: Payload,
   data: Record<string, unknown>,
 ): Promise<void> {
-  const slug = String(data.slug)
-  const found = await payload.find({
+  const title = typeof data.title === "string" ? data.title.trim() : ""
+  const keySlug = slugifyTitle(title) || "piece"
+
+  const bySlug = await payload.find({
     collection: "scarves",
-    where: { slug: { equals: slug } },
+    where: { slug: { equals: keySlug } },
     limit: 1,
     depth: 0,
+    overrideAccess: true,
   })
-  if (found.docs[0]) {
+
+  let existing = bySlug.docs[0]
+  if (!existing && title) {
+    const byTitle = await payload.find({
+      collection: "scarves",
+      where: { title: { equals: title } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    existing = byTitle.docs[0]
+  }
+
+  const { slug: _drop, ...rest } = data
+  const payloadData = rest
+  if (existing) {
     await payload.update({
       collection: "scarves",
-      id: found.docs[0].id,
-      data: data as never,
+      id: existing.id,
+      data: payloadData as never,
     })
-    console.log(`[seed] update scarf ${slug}`)
+    console.log(`[seed] update scarf ${keySlug}`)
   } else {
     await payload.create({
       collection: "scarves",
-      data: data as never,
+      data: payloadData as never,
     })
-    console.log(`[seed] create scarf ${slug}`)
+    console.log(`[seed] create scarf ${keySlug}`)
   }
 }
 
@@ -290,7 +310,6 @@ export async function seedAllurinaCatalog(
   }
 
   type ScarfSeed = {
-    slug: string
     title: string
     price: number
     stockQuantity: number
@@ -303,7 +322,6 @@ export async function seedAllurinaCatalog(
 
   const scarves: ScarfSeed[] = [
     {
-      slug: "chale-crepe-marine-uni",
       title: "Châle en crêpe marine uni",
       price: 42,
       stockQuantity: 22,
@@ -314,7 +332,6 @@ export async function seedAllurinaCatalog(
       idx: 0,
     },
     {
-      slug: "chale-crepe-sable-rose",
       title: "Châle en crêpe sable rosé",
       price: 39,
       stockQuantity: 3,
@@ -325,7 +342,6 @@ export async function seedAllurinaCatalog(
       idx: 1,
     },
     {
-      slug: "chale-crepe-rayures-fines",
       title: "Châle en crêpe à fines rayures",
       price: 44,
       stockQuantity: 18,
@@ -336,7 +352,6 @@ export async function seedAllurinaCatalog(
       idx: 2,
     },
     {
-      slug: "chale-lin-naturel-ecru",
       title: "Châle en lin naturel écru",
       price: 55,
       stockQuantity: 12,
@@ -347,7 +362,6 @@ export async function seedAllurinaCatalog(
       idx: 3,
     },
     {
-      slug: "chale-lin-bleu-horizon-precommande",
       title: "Châle en lin bleu horizon",
       price: 58,
       stockQuantity: 0,
@@ -358,7 +372,6 @@ export async function seedAllurinaCatalog(
       idx: 4,
     },
     {
-      slug: "chale-lin-raye-ivoire",
       title: "Châle en lin rayé ivoire",
       price: 52,
       stockQuantity: 7,
@@ -369,7 +382,6 @@ export async function seedAllurinaCatalog(
       idx: 5,
     },
     {
-      slug: "chale-mousseline-caramel-uni",
       title: "Voile mousseline caramel uni",
       price: 32,
       stockQuantity: 30,
@@ -380,7 +392,6 @@ export async function seedAllurinaCatalog(
       idx: 6,
     },
     {
-      slug: "chale-mousseline-fleuri-rose",
       title: "Mousseline fleurie rose",
       price: 36,
       stockQuantity: 4,
@@ -391,7 +402,6 @@ export async function seedAllurinaCatalog(
       idx: 7,
     },
     {
-      slug: "chale-mousseline-indigo-uni",
       title: "Mousseline indigo légère",
       price: 34,
       stockQuantity: 45,
@@ -402,7 +412,6 @@ export async function seedAllurinaCatalog(
       idx: 8,
     },
     {
-      slug: "chale-motifs-cachemire-bleu",
       title: "Châle à motifs cachemire bleu",
       price: 48,
       stockQuantity: 20,
@@ -413,7 +422,6 @@ export async function seedAllurinaCatalog(
       idx: 9,
     },
     {
-      slug: "chale-motifs-paisley-terracotta",
       title: "Grand carré paisley terracotta",
       price: 46,
       stockQuantity: 2,
@@ -424,7 +432,6 @@ export async function seedAllurinaCatalog(
       idx: 10,
     },
     {
-      slug: "chale-motifs-baroque-or-bleu",
       title: "Carré baroque or et bleu",
       price: 51,
       stockQuantity: 0,
@@ -435,7 +442,6 @@ export async function seedAllurinaCatalog(
       idx: 11,
     },
     {
-      slug: "chale-uni-bordeaux",
       title: "Châle uni bordeaux intense",
       price: 38,
       stockQuantity: 50,
@@ -446,7 +452,6 @@ export async function seedAllurinaCatalog(
       idx: 12,
     },
     {
-      slug: "chale-uni-olive",
       title: "Châle uni olive profond",
       price: 38,
       stockQuantity: 8,
@@ -457,7 +462,6 @@ export async function seedAllurinaCatalog(
       idx: 13,
     },
     {
-      slug: "chale-uni-ivoire-precommande",
       title: "Châle uni ivoire classique",
       price: 40,
       stockQuantity: 0,
@@ -468,7 +472,6 @@ export async function seedAllurinaCatalog(
       idx: 14,
     },
     {
-      slug: "chale-satin-champagne-uni",
       title: "Châle en satin champagne uni",
       price: 41,
       stockQuantity: 16,
@@ -479,7 +482,6 @@ export async function seedAllurinaCatalog(
       idx: 15,
     },
     {
-      slug: "chale-satin-nuit-fonce",
       title: "Châle en satin bleu nuit",
       price: 43,
       stockQuantity: 11,
@@ -490,7 +492,6 @@ export async function seedAllurinaCatalog(
       idx: 16,
     },
     {
-      slug: "chale-satin-motif-cachemire",
       title: "Carré satin motif cachemire",
       price: 45,
       stockQuantity: 5,
@@ -520,7 +521,6 @@ export async function seedAllurinaCatalog(
 
     await upsertScarf(payload, {
       title: s.title,
-      slug: s.slug,
       price: s.price,
       stockQuantity: s.stockQuantity,
       lowStockThreshold: s.lowStockThreshold,

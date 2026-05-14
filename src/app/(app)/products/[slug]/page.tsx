@@ -6,7 +6,6 @@ import { ProductDescription } from "./product-description"
 import { ProductGallery } from "./product-gallery"
 import { ProductPurchasePanel } from "@/components/storefront/cart/product-purchase-panel"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
 import { getStorefrontScarfBySlug } from "@/lib/getStorefrontScarfBySlug"
 import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import {
@@ -14,6 +13,7 @@ import {
   formatScarfPrice,
 } from "@/lib/storefront-scarf-display"
 import { storefrontProductImages } from "@/lib/storefrontProductMedia"
+import { cn } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
 
