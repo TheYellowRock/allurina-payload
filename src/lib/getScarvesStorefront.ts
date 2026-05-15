@@ -119,3 +119,90 @@ export const getScarvesByCategorySlug = cache(
     }
   },
 )
+
+/** Scarves linked to a Payload merchandising collection slug (`collections` on scarves). */
+export const getScarvesByCollectionSlug = cache(
+  async (collectionSlug: string): Promise<{ scarves: StorefrontScarf[] }> => {
+    const payload = await getPayloadClient()
+
+    const coll = await payload.find({
+      collection: "collections",
+      where: { slug: { equals: collectionSlug } },
+      limit: 1,
+      depth: 0,
+    })
+
+    const collectionId = coll.docs[0]?.id
+    if (collectionId === undefined || collectionId === null) {
+      return { scarves: [] }
+    }
+
+    const res = await payload.find({
+      collection: "scarves",
+      where: {
+        collections: {
+          contains: collectionId,
+        },
+      },
+      depth: 2,
+      limit: 400,
+      sort: "-updatedAt",
+    })
+
+    return {
+      scarves: res.docs.map((doc) => mapDocToStorefrontScarf(doc as Record<string, unknown>)),
+    }
+  },
+)
+
+/**
+ * Scarves that have a catalog `tags` relationship matching `tagSlug`, or — if missing —
+ * the tag document with id `fallbackId` (e.g. fixed id in an existing database).
+ */
+export const getScarvesByCatalogTagSlug = cache(
+  async (
+    tagSlug: string,
+    fallbackId?: string | number,
+  ): Promise<{ scarves: StorefrontScarf[] }> => {
+    const payload = await getPayloadClient()
+
+    const bySlug = await payload.find({
+      collection: "tags",
+      where: { slug: { equals: tagSlug } },
+      limit: 1,
+      depth: 0,
+    })
+
+    let tagId: string | number | undefined = bySlug.docs[0]?.id
+
+    if ((tagId === undefined || tagId === null) && fallbackId !== undefined && fallbackId !== null) {
+      const byId = await payload.find({
+        collection: "tags",
+        where: { id: { equals: fallbackId } },
+        limit: 1,
+        depth: 0,
+      })
+      tagId = byId.docs[0]?.id
+    }
+
+    if (tagId === undefined || tagId === null) {
+      return { scarves: [] }
+    }
+
+    const res = await payload.find({
+      collection: "scarves",
+      where: {
+        tags: {
+          contains: tagId,
+        },
+      },
+      depth: 2,
+      limit: 400,
+      sort: "-updatedAt",
+    })
+
+    return {
+      scarves: res.docs.map((doc) => mapDocToStorefrontScarf(doc as Record<string, unknown>)),
+    }
+  },
+)

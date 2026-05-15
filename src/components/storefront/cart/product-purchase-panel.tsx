@@ -15,8 +15,11 @@ export type ProductPurchasePayload = {
 
 export function ProductPurchasePanel({
   product,
+  purchaseDisabled = false,
 }: {
   product: ProductPurchasePayload
+  /** When true (e.g. rupture de stock), quantity and add-to-cart are blocked. */
+  purchaseDisabled?: boolean
 }) {
   const [qty, setQty] = useState(1)
   const qtyId = useId()
@@ -39,6 +42,7 @@ export function ProductPurchasePanel({
           min={1}
           max={99}
           value={qty}
+          disabled={purchaseDisabled}
           onChange={(e) => setQty(clampQty(Number(e.target.value)))}
           className={cn(
             "mt-2 block h-11 w-20 border border-stone-300 bg-white px-3 text-base font-light tabular-nums",
@@ -48,6 +52,7 @@ export function ProductPurchasePanel({
       </label>
 
       <AddToCartButton
+        disabled={purchaseDisabled}
         item={{
           productId: product.productId,
           slug: product.slug,
@@ -58,10 +63,13 @@ export function ProductPurchasePanel({
         }}
         size="lg"
         variant="default"
-        className="h-12 w-full rounded-none border-2 border-stone-900 bg-stone-900 text-sm font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800"
+        className={cn(
+          "h-12 w-full rounded-none border-2 border-stone-900 bg-stone-900 text-sm font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800",
+          purchaseDisabled && "border-stone-400 bg-stone-400 text-stone-100 hover:bg-stone-400",
+        )}
         openDrawer
       >
-        Ajouter au panier
+        {purchaseDisabled ? "Rupture de stock" : "Ajouter au panier"}
       </AddToCartButton>
 
       <p className="text-center text-xs font-light text-stone-500">

@@ -103,6 +103,7 @@ export default async function ProductPage({ params }: Props) {
             )}
 
             <ProductPurchasePanel
+              purchaseDisabled={scarf.availability.status === "out_of_stock"}
               product={{
                 productId: String(scarf.id),
                 slug: scarf.slug,

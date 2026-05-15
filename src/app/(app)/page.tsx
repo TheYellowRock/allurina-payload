@@ -3,11 +3,26 @@ import Link from "next/link"
 import { HeroBanner } from "@/components/storefront/hero-banner"
 import { LaunchPromoBanner } from "@/components/storefront/launch-promo-banner"
 import { HomeCategoryPreviewGrid } from "@/components/storefront/home-category-preview-grid"
-import { ScarfCard } from "@/components/storefront/scarf-card"
+import { HomeCollectionRail } from "@/components/storefront/home-collection-rail"
 import { Button } from "@/components/ui/button"
+import {
+  HOME_OUTLET_COLLECTION_SLUG,
+  HOME_SUMMER_COLLECTION_SLUG,
+  HOME_TOP_SALES_TAG_FALLBACK_ID,
+  HOME_TOP_SALES_TAG_SLUG,
+} from "@/lib/homeLandingRails"
 import { getStorefrontCategories } from "@/lib/getStorefrontCategories"
-import { getScarvesWithAvailability } from "@/lib/getScarvesStorefront"
-import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH, chalesCategoryPath } from "@/lib/routes"
+import {
+  getScarvesByCatalogTagSlug,
+  getScarvesByCollectionSlug,
+  getScarvesWithAvailability,
+} from "@/lib/getScarvesStorefront"
+import {
+  NOUVEAUTES_PATH,
+  TOUTES_LES_PIECES_PATH,
+  chalesCategoryPath,
+  collectionPath,
+} from "@/lib/routes"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 
 export const dynamic = "force-dynamic"
@@ -24,12 +39,19 @@ function scarfInCategory(scarf: StorefrontScarf, categorySlug: string): boolean 
 }
 
 export default async function Home() {
-  const [{ scarves }, categories] = await Promise.all([
+  const [
+    { scarves },
+    categories,
+    summerRail,
+    outletRail,
+    topSalesRail,
+  ] = await Promise.all([
     getScarvesWithAvailability(),
     getStorefrontCategories(),
+    getScarvesByCollectionSlug(HOME_SUMMER_COLLECTION_SLUG),
+    getScarvesByCollectionSlug(HOME_OUTLET_COLLECTION_SLUG),
+    getScarvesByCatalogTagSlug(HOME_TOP_SALES_TAG_SLUG, HOME_TOP_SALES_TAG_FALLBACK_ID),
   ])
-
-  const featured = scarves.slice(0, 8)
 
   const chalesPreviewTitle: Record<string, string> = {
     "chales-en-crepe": "Crêpe",
@@ -83,40 +105,33 @@ export default async function Home() {
         <HeroBanner />
         <LaunchPromoBanner />
 
-        {/* New arrivals */}
-        <section id="nouveautes" className="scroll-mt-28 border-t border-stone-200/80 py-16 md:py-20">
-          <div className="mx-auto max-w-6xl px-4 md:px-6">
-            <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.25em] text-stone-500 uppercase">
-                  Sélection
-                </p>
-                <h2
-                  className={`mt-2 text-3xl font-semibold text-stone-900 md:text-4xl`}
-                >
-                  Nouveautés
-                </h2>
-              </div>
-              <Button variant="outline" size="sm" className="border-stone-300" asChild>
-                <Link href={TOUTES_LES_PIECES_PATH}>Toutes les pièces</Link>
-              </Button>
-            </div>
+        <HomeCollectionRail
+          id="selection-summer"
+          title="Summer !"
+          scarves={summerRail.scarves}
+          headerActionHref={collectionPath(HOME_SUMMER_COLLECTION_SLUG)}
+          headerActionLabel="Voir la collection"
+          exploreHref={collectionPath(HOME_SUMMER_COLLECTION_SLUG)}
+        />
 
-            {featured.length === 0 ? (
-              <div className="border border-dashed border-stone-300 bg-white/60 px-6 py-16 text-center text-sm text-stone-500">
-                Aucun produit pour le moment. Ajoutez des châles dans l&apos;admin Payload.
-              </div>
-            ) : (
-              <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-                {featured.map((scarf, i) => (
-                  <li key={String(scarf.id)} className="min-w-0">
-                    <ScarfCard scarf={scarf} cardIndex={i} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
+        <HomeCollectionRail
+          id="selection-outlet"
+          title="Outlet"
+          scarves={outletRail.scarves}
+          headerActionHref={collectionPath(HOME_OUTLET_COLLECTION_SLUG)}
+          headerActionLabel="Voir la collection"
+          exploreHref={collectionPath(HOME_OUTLET_COLLECTION_SLUG)}
+          className="bg-white"
+        />
+
+        <HomeCollectionRail
+          id="top-sales"
+          title="Top sales"
+          scarves={topSalesRail.scarves}
+          headerActionHref={TOUTES_LES_PIECES_PATH}
+          headerActionLabel="Toutes les pièces"
+          exploreHref={TOUTES_LES_PIECES_PATH}
+        />
 
         {/* Quatre matières — grille 2×2, puis Les essentiels */}
         <section className="border-b border-stone-200/80">

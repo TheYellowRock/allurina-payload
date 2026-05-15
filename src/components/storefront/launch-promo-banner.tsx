@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button"
 import { TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
+const tierTitleClass =
+  "mt-6 max-w-[min(100%,18rem)] text-balance text-sm font-semibold uppercase leading-[1.25] tracking-[0.18em] text-stone-900 sm:max-w-none sm:text-base md:text-lg md:tracking-[0.2em] lg:text-xl lg:tracking-[0.22em]"
+
+/** Unified copy rhythm: same catalogue reference, then the tier-specific detail. */
+const tierBodyClass = "mt-3 text-sm font-normal leading-relaxed text-stone-600"
+
 export function LaunchPromoBanner({ className }: { className?: string }) {
   return (
     <section
@@ -44,8 +50,8 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
               <div className="flex size-11 items-center justify-center border border-stone-200 bg-[#faf9f7] text-stone-500">
                 <Percent className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className="mt-6 text-[15px] font-medium tracking-[0.14em] text-stone-700 uppercase md:text-base">
-                À l&apos;unité
+              <p className={tierTitleClass}>
+                Pour 1 seul chale
               </p>
               <div className="mt-4 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                 <span className="font-light tabular-nums text-[1.625rem] leading-none text-stone-800 line-through decoration-stone-700 decoration-1 md:text-[1.875rem]">
@@ -56,11 +62,11 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
                   <span className="text-base font-normal text-red-600/90 md:text-lg">DH</span>
                 </span>
                 <span className="text-[11px] font-normal leading-none tracking-tight text-stone-500 md:text-xs">
-                  par pièce
+                  par chale
                 </span>
               </div>
-              <p className="mt-3 text-sm font-normal leading-relaxed text-stone-600">
-                ≈ 19&nbsp;% de remise sur le prix catalogue (80&nbsp;DH).
+              <p className={tierBodyClass}>
+                Prix catalogue 80&nbsp;DH barré — 65&nbsp;DH / chale, soit environ 19&nbsp;% d&apos;économie.
               </p>
             </li>
 
@@ -68,8 +74,8 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
               <div className="flex size-11 items-center justify-center border border-stone-200 bg-white text-stone-500">
                 <Package className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className="mt-6 text-[15px] font-medium tracking-[0.14em] text-stone-700 uppercase md:text-base">
-                Package de 3 pièces
+              <p className={tierTitleClass}>
+                Package de 3 chales
               </p>
               <div className="mt-4 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                 <span className="font-light tabular-nums text-[1.625rem] leading-none text-stone-800 line-through decoration-stone-700 decoration-1 md:text-[1.875rem]">
@@ -80,11 +86,11 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
                   <span className="text-base font-normal text-red-600/90 md:text-lg">DH</span>
                 </span>
                 <span className="text-[11px] font-normal leading-none tracking-tight text-stone-500 md:text-xs">
-                  par pièce · lot de 3
+                  par chale · lot de 3
                 </span>
               </div>
-              <p className="mt-3 text-sm font-normal leading-relaxed text-stone-600">
-                180&nbsp;DH le lot — catalogue à 80&nbsp;DH barré par pièce.
+              <p className={tierBodyClass}>
+                Prix catalogue 80&nbsp;DH barré — 60&nbsp;DH / chale, lot de 3 (180&nbsp;DH).
               </p>
             </li>
 
@@ -92,8 +98,8 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
               <div className="flex size-11 items-center justify-center border border-stone-200 bg-[#faf9f7] text-stone-500">
                 <Truck className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className="mt-6 text-[15px] font-medium tracking-[0.14em] text-stone-700 uppercase md:text-base">
-                À partir de 5 pièces
+              <p className={tierTitleClass}>
+                Box de 5 chales
               </p>
               <div className="mt-4 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
                 <span className="font-light tabular-nums text-[1.625rem] leading-none text-stone-800 line-through decoration-stone-700 decoration-1 md:text-[1.875rem]">
@@ -104,14 +110,14 @@ export function LaunchPromoBanner({ className }: { className?: string }) {
                   <span className="text-base font-normal text-red-600/90 md:text-lg">DH</span>
                 </span>
                 <span className="text-[11px] font-normal leading-none tracking-tight text-stone-500 md:text-xs">
-                  par pièce
+                  par chale
                 </span>
               </div>
               <p className="mt-3 text-2xl font-light leading-tight tracking-tight text-red-600 md:text-[1.75rem]">
                 + Livraison gratuite
               </p>
-              <p className="mt-2.5 text-sm font-normal leading-relaxed text-stone-600">
-                Frais de port offerts dès cinq articles. 60&nbsp;DH / pièce au lieu de 80&nbsp;DH.
+              <p className={tierBodyClass}>
+                Prix catalogue 80&nbsp;DH barré — 60&nbsp;DH / chale, box de 5.
               </p>
             </li>
           </ul>

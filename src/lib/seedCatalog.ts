@@ -242,6 +242,11 @@ export async function seedAllurinaCatalog(
       description: "Dernières pièces et bonnes affaires.",
     },
     {
+      name: "Summer !",
+      slug: "summer",
+      description: "Sélection estivale et pièces légères du moment.",
+    },
+    {
       name: "Essentiels",
       slug: "essentiels",
       description: "Pièces intemporelles du quotidien.",
@@ -280,6 +285,11 @@ export async function seedAllurinaCatalog(
     slug: "solid",
     description: "Châles unis ou quasi-unis.",
   })
+  const tagTop = await ensureTag(payload, {
+    name: "Top",
+    slug: "top",
+    description: "Mise en avant — meilleures ventes & coups de cœur boutique.",
+  })
 
   const avInStock = await ensureAvailabilityTag(payload, {
     name: "Disponible",
@@ -292,7 +302,7 @@ export async function seedAllurinaCatalog(
     status: "low_stock",
   })
   const avOut = await ensureAvailabilityTag(payload, {
-    name: "Rupture",
+    name: "Rupture de stock",
     slug: "rupture",
     status: "out_of_stock",
   })
@@ -508,9 +518,19 @@ export async function seedAllurinaCatalog(
     const catId = catIds[s.categorySlug]
     if (!catId) throw new Error(`Missing category ${s.categorySlug}`)
 
-    const collSlug = collectionRotation[s.idx % collectionRotation.length]
-    const collId = collIds[collSlug]
-    if (!collId) throw new Error(`Missing collection ${collSlug}`)
+    const collSlugList =
+      s.idx < 8 ? (["summer"] as const) : s.idx < 16 ? (["outlet"] as const) : null
+
+    const collIdsResolved = collSlugList
+      ? collSlugList.map((slug) => {
+          const id = collIds[slug]
+          if (!id) throw new Error(`Missing collection ${slug}`)
+          return id
+        })
+      : [collIds[collectionRotation[s.idx % collectionRotation.length]]]
+
+    const tagIdsResolved =
+      s.idx < 16 ? [...new Set([...s.tagIds, tagTop])] : s.tagIds
 
     const featuredImage = pickImageId(mediaIds, s.idx)
     const extraA = pickImageId(mediaIds, s.idx + 1)
@@ -525,8 +545,8 @@ export async function seedAllurinaCatalog(
       stockQuantity: s.stockQuantity,
       lowStockThreshold: s.lowStockThreshold,
       categories: [catId],
-      collections: [collId],
-      tags: s.tagIds,
+      collections: collIdsResolved,
+      tags: tagIdsResolved,
       availabilityTags: s.availabilityTagIds,
       ...(featuredImage ? { featuredImage } : {}),
       ...(galleryImages.length > 0 ? { galleryImages } : {}),

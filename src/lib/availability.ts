@@ -62,7 +62,7 @@ export function resolveStorefrontAvailability(input: {
   }
 
   if (input.stockQuantity <= 0) {
-    return { status: 'out_of_stock', label: 'Out of stock', source: 'stock' }
+    return { status: 'out_of_stock', label: 'Rupture de stock', source: 'stock' }
   }
 
   const threshold = Math.max(0, input.lowStockThreshold)

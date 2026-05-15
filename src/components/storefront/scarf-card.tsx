@@ -6,9 +6,14 @@ import { useEffect, useState } from "react"
 
 import { AddToCartButton } from "@/components/storefront/cart/add-to-cart-button"
 import { ScarfCardGallery } from "@/components/storefront/scarf-card-gallery"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardTitle } from "@/components/ui/card"
 import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
-import { formatScarfPrice, storefrontPrimaryCategoryLine } from "@/lib/storefront-scarf-display"
+import {
+  availabilityBadgeClassName,
+  formatScarfPrice,
+  storefrontPrimaryCategoryLine,
+} from "@/lib/storefront-scarf-display"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 import { productPath } from "@/lib/routes"
 import { storefrontProductImages } from "@/lib/storefrontProductMedia"
@@ -45,6 +50,7 @@ export function ScarfCard({
   const showListStrike = salePrice < CATALOG_LIST_PRICE_DH - Number.EPSILON
 
   const categoryLine = storefrontPrimaryCategoryLine(scarf.categories)
+  const isOutOfStock = scarf.availability.status === "out_of_stock"
 
   return (
     <div className={cn("group/card relative min-w-0", className)}>
@@ -54,6 +60,15 @@ export function ScarfCard({
         )}
       >
         <div className="relative w-full shrink-0 overflow-hidden bg-stone-100 aspect-4/5 sm:aspect-3/4 lg:aspect-3/5">
+          <Badge
+            variant="outline"
+            className={cn(
+              "pointer-events-none absolute right-2 top-2 z-30 max-w-[min(100%-1rem,12rem)] truncate rounded-none border px-2 py-1 text-[9px] font-semibold leading-tight tracking-tight shadow-md sm:right-3 sm:top-3 sm:max-w-52 sm:text-[10px]",
+              availabilityBadgeClassName(scarf.availability.status),
+            )}
+          >
+            {scarf.availability.label}
+          </Badge>
           <div className="absolute inset-0 min-h-0 min-w-0 overflow-hidden">
             <ScarfCardGallery
               images={productImages}
@@ -98,6 +113,7 @@ export function ScarfCard({
           </Link>
 
           <AddToCartButton
+            disabled={isOutOfStock}
             item={{
               productId,
               slug: scarf.slug,
@@ -108,11 +124,24 @@ export function ScarfCard({
             }}
             size="sm"
             variant="outline"
-            className="relative z-20 h-9 w-full min-w-0 justify-center gap-2 rounded-none border-2 border-stone-900 bg-transparent px-4 text-xs font-medium uppercase tracking-[0.2em] text-stone-900 shadow-none transition-colors hover:bg-stone-900 hover:text-white active:bg-stone-950 active:text-white [&_svg]:text-stone-900 hover:[&_svg]:text-white active:[&_svg]:text-white"
-            aria-label={`Ajouter ${scarf.title} au panier`}
+            className={cn(
+              "relative z-20 h-9 w-full min-w-0 justify-center gap-2 rounded-none border-2 border-stone-900 bg-transparent px-4 text-xs font-medium uppercase tracking-[0.2em] text-stone-900 shadow-none transition-colors hover:bg-stone-900 hover:text-white active:bg-stone-950 active:text-white [&_svg]:text-stone-900 hover:[&_svg]:text-white active:[&_svg]:text-white",
+              isOutOfStock && "border-stone-400 text-stone-400 [&_svg]:text-stone-400",
+            )}
+            aria-label={
+              isOutOfStock
+                ? `${scarf.title} — rupture de stock`
+                : `Ajouter ${scarf.title} au panier`
+            }
           >
-            <ShoppingBag className="size-3.5" strokeWidth={1.75} />
-            Ajouter
+            {isOutOfStock ? (
+              "Rupture de stock"
+            ) : (
+              <>
+                <ShoppingBag className="size-3.5" strokeWidth={1.75} />
+                Ajouter
+              </>
+            )}
           </AddToCartButton>
         </div>
       </Card>
