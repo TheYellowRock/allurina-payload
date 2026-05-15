@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { sendOrderConfirmation, sendOwnerNotification } from '@/lib/email'
+
 export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
@@ -15,6 +17,14 @@ export const Orders: CollectionConfig = {
     ],
     group: 'Commerce',
     description: 'Commandes boutique (paiement à la livraison).',
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation }) => {
+        if (operation !== 'create') return
+        await Promise.all([sendOrderConfirmation(doc), sendOwnerNotification(doc)])
+      },
+    ],
   },
   access: {
     create: () => false,
