@@ -54,16 +54,8 @@ export const Scarves: CollectionConfig = {
       defaultValue: 0,
       min: 0,
       admin: {
-        description: 'Units on hand. Used with availability tags to compute what shoppers see.',
-      },
-    },
-    {
-      name: 'lowStockThreshold',
-      type: 'number',
-      defaultValue: 5,
-      min: 0,
-      admin: {
-        description: 'When stock is above 0 but at or below this number, the storefront shows low stock (unless CMS tags override).',
+        description:
+          'Stock physique. La vitrine combine ce chiffre avec les badges « Disponibilité » (rupture, stock limité, etc.).',
       },
     },
     {

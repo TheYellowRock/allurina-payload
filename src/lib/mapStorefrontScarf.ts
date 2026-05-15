@@ -8,11 +8,9 @@ function num(value: unknown, fallback: number): number {
 /** Map a Payload `scarves` document (depth ≥ 1 for relations) to `StorefrontScarf`. */
 export function mapDocToStorefrontScarf(doc: Record<string, unknown>): StorefrontScarf {
   const stockQuantity = num(doc.stockQuantity, 0)
-  const lowStockThreshold = num(doc.lowStockThreshold, 5)
 
   const availability = resolveStorefrontAvailability({
     stockQuantity,
-    lowStockThreshold,
     availabilityTags: doc.availabilityTags,
   })
 
@@ -22,7 +20,6 @@ export function mapDocToStorefrontScarf(doc: Record<string, unknown>): Storefron
     slug: String(doc.slug ?? ""),
     price: num(doc.price, 0),
     stockQuantity,
-    lowStockThreshold,
     description: doc.description,
     featuredImage: doc.featuredImage,
     galleryImages: doc.galleryImages ?? [],

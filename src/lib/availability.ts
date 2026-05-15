@@ -39,12 +39,11 @@ function normalizeAvailabilityTags(raw: unknown): PopulatedAvailabilityTag[] {
 }
 
 /**
- * Merges CMS availability tags with live stock so the storefront never shows
- * "In stock" when quantity is zero (unless pre-order / coming soon tags apply).
+ * Storefront availability from CMS « availability-tags » only, plus a hard guard:
+ * quantity 0 is always treated as rupture (even if tags are stale).
  */
 export function resolveStorefrontAvailability(input: {
   stockQuantity: number
-  lowStockThreshold: number
   availabilityTags: unknown
 }): StorefrontAvailability {
   const tags = normalizeAvailabilityTags(input.availabilityTags)
@@ -62,16 +61,12 @@ export function resolveStorefrontAvailability(input: {
   }
 
   if (input.stockQuantity <= 0) {
-    return { status: 'out_of_stock', label: 'Rupture de stock', source: 'stock' }
+    return { status: 'out_of_stock', label: 'Rupture', source: 'stock' }
   }
 
-  const threshold = Math.max(0, input.lowStockThreshold)
-  if (input.stockQuantity <= threshold) {
-    const cmsLow = tags.find((t) => t.status === 'low_stock')
-    if (cmsLow) {
-      return { status: 'low_stock', label: cmsLow.name, source: 'cms' }
-    }
-    return { status: 'low_stock', label: 'Low stock', source: 'stock' }
+  const cmsLow = tags.find((t) => t.status === 'low_stock')
+  if (cmsLow) {
+    return { status: 'low_stock', label: cmsLow.name, source: 'cms' }
   }
 
   const cmsIn = tags.find((t) => t.status === 'in_stock')
@@ -79,5 +74,5 @@ export function resolveStorefrontAvailability(input: {
     return { status: 'in_stock', label: cmsIn.name, source: 'cms' }
   }
 
-  return { status: 'in_stock', label: 'In stock', source: 'stock' }
+  return { status: 'in_stock', label: 'Disponible', source: 'stock' }
 }

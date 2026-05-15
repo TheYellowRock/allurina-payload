@@ -71,7 +71,7 @@ export default async function ProductPage({ params }: Props) {
               <Badge
                 variant="outline"
                 className={cn(
-                  "rounded-none border px-2.5 py-0.5 text-[10px] font-light uppercase tracking-widest",
+                  "rounded-none px-2.5 py-0.5 text-[10px]",
                   availabilityBadgeClassName(scarf.availability.status),
                 )}
               >

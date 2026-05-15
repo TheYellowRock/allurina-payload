@@ -7,7 +7,6 @@ export type StorefrontScarf = {
   slug: string
   price: number
   stockQuantity: number
-  lowStockThreshold: number
   /** Lexical JSON — use on product page only when needed */
   description?: unknown
   featuredImage: unknown

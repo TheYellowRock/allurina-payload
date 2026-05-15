@@ -9,6 +9,7 @@ import {
   CheckoutOrderSummary,
   rowInput,
 } from "@/components/storefront/checkout/checkout-order-summary"
+import { CheckoutUpsellGrid } from "@/components/storefront/checkout/checkout-upsell-grid"
 import { Button } from "@/components/ui/button"
 import { checkoutConfirmationPath, NOUVEAUTES_PATH } from "@/lib/routes"
 
@@ -299,8 +300,12 @@ export function CheckoutPageView() {
           </div>
         </form>
 
-        <div className="lg:col-span-5 lg:pt-1">
+        <div className="space-y-8 lg:col-span-5 lg:pt-1">
           <CheckoutOrderSummary items={items} pricing={pricing} />
+          <CheckoutUpsellGrid
+            excludeProductIds={items.map((line) => line.productId)}
+            excludeSlugs={items.map((line) => line.slug)}
+          />
         </div>
       </div>
     </div>

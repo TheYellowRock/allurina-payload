@@ -18,7 +18,7 @@ export function ProductPurchasePanel({
   purchaseDisabled = false,
 }: {
   product: ProductPurchasePayload
-  /** When true (e.g. rupture de stock), quantity and add-to-cart are blocked. */
+  /** When true (e.g. rupture), quantity and add-to-cart are blocked. */
   purchaseDisabled?: boolean
 }) {
   const [qty, setQty] = useState(1)
@@ -65,11 +65,12 @@ export function ProductPurchasePanel({
         variant="default"
         className={cn(
           "h-12 w-full rounded-none border-2 border-stone-900 bg-stone-900 text-sm font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800",
-          purchaseDisabled && "border-stone-400 bg-stone-400 text-stone-100 hover:bg-stone-400",
+          purchaseDisabled &&
+            "border-stone-300 bg-stone-100 text-stone-400 hover:border-stone-300 hover:bg-stone-100 hover:text-stone-400 disabled:opacity-100!",
         )}
         openDrawer
       >
-        {purchaseDisabled ? "Rupture de stock" : "Ajouter au panier"}
+        Ajouter au panier
       </AddToCartButton>
 
       <p className="text-center text-xs font-light text-stone-500">

@@ -17,21 +17,23 @@ export function availabilityBadgeTone(
   }
 }
 
-/** Boutique-style badge colors (use with `Badge variant="outline"` + `className`). */
+/** Brand availability chips: solid fills + white uppercase labels (use with `Badge variant="outline"` + `className`). */
+const availabilityTagText = "font-semibold uppercase tracking-[0.14em] text-white shadow-none"
+
 export function availabilityBadgeClassName(status: AvailabilityStatus): string {
   switch (status) {
     case "in_stock":
-      return "border-emerald-800/70 bg-emerald-950 text-white"
+      return `border border-black/10 bg-[#53d86a] ${availabilityTagText}`
     case "low_stock":
-      return "border-amber-500/60 bg-amber-100 text-amber-950"
+      return `border border-black/10 bg-[#fe9526] ${availabilityTagText}`
     case "out_of_stock":
-      return "border-red-700/60 bg-red-700 text-white"
+      return `border border-black/10 bg-[#fd3d39] ${availabilityTagText}`
     case "pre_order":
-      return "border-sky-700/60 bg-sky-950 text-sky-50"
+      return `border border-black/10 bg-sky-600 ${availabilityTagText}`
     case "coming_soon":
-      return "border-violet-500/60 bg-violet-100 text-violet-950"
+      return `border border-black/10 bg-violet-600 ${availabilityTagText}`
     default:
-      return "border-stone-600/50 bg-stone-900 text-white"
+      return `border border-black/10 bg-stone-700 ${availabilityTagText}`
   }
 }
 

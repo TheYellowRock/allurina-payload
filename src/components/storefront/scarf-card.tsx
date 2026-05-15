@@ -63,7 +63,7 @@ export function ScarfCard({
           <Badge
             variant="outline"
             className={cn(
-              "pointer-events-none absolute right-2 top-2 z-30 max-w-[min(100%-1rem,12rem)] truncate rounded-none border px-2 py-1 text-[9px] font-semibold leading-tight tracking-tight shadow-md sm:right-3 sm:top-3 sm:max-w-52 sm:text-[10px]",
+              "pointer-events-none absolute right-2 top-2 z-30 max-w-[min(100%-1rem,12rem)] truncate rounded-none px-2 py-1 text-[9px] leading-tight sm:right-3 sm:top-3 sm:max-w-52 sm:text-[10px]",
               availabilityBadgeClassName(scarf.availability.status),
             )}
           >
@@ -126,22 +126,17 @@ export function ScarfCard({
             variant="outline"
             className={cn(
               "relative z-20 h-9 w-full min-w-0 justify-center gap-2 rounded-none border-2 border-stone-900 bg-transparent px-4 text-xs font-medium uppercase tracking-[0.2em] text-stone-900 shadow-none transition-colors hover:bg-stone-900 hover:text-white active:bg-stone-950 active:text-white [&_svg]:text-stone-900 hover:[&_svg]:text-white active:[&_svg]:text-white",
-              isOutOfStock && "border-stone-400 text-stone-400 [&_svg]:text-stone-400",
+              isOutOfStock &&
+                "border-stone-300 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-400 active:border-stone-300 active:bg-stone-50 active:text-stone-400 [&_svg]:text-stone-400 hover:[&_svg]:text-stone-400 active:[&_svg]:text-stone-400 disabled:opacity-100!",
             )}
             aria-label={
               isOutOfStock
-                ? `${scarf.title} — rupture de stock`
+                ? `${scarf.title} — ${scarf.availability.label}`
                 : `Ajouter ${scarf.title} au panier`
             }
           >
-            {isOutOfStock ? (
-              "Rupture de stock"
-            ) : (
-              <>
-                <ShoppingBag className="size-3.5" strokeWidth={1.75} />
-                Ajouter
-              </>
-            )}
+            <ShoppingBag className="size-3.5" strokeWidth={1.75} />
+            Ajouter
           </AddToCartButton>
         </div>
       </Card>
