@@ -314,7 +314,7 @@ export function OrdersManagerDashboard({
                                     </>
                                   ) : null}
                                   <br />
-                                  {order.postalCode} {order.city}
+                                  {[order.postalCode, order.city].filter(Boolean).join(" ")}
                                   <br />
                                   {order.country}
                                 </dd>

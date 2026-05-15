@@ -16,6 +16,7 @@ import {
 import type { CSSProperties } from "react"
 
 import type { OrderEmailProps } from "@/lib/order-email-types"
+import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
 
 const waHref = "https://wa.me/212628504758"
 
@@ -32,6 +33,12 @@ function formatDh(n: number): string {
 
 export default function OrderConfirmationEmail(props: OrderEmailProps) {
   const preview = `Votre commande ${props.orderReference} est bien enregistrée.`
+
+  const pieceCount = props.lines.reduce((acc, line) => acc + line.quantity, 0)
+  const catalogPresaleDh = CATALOG_LIST_PRICE_DH * pieceCount
+  const articlesPaidDh = props.grandTotalDh - props.deliveryFeeDh
+  const reductionVsCatalogDh = Math.max(0, catalogPresaleDh - articlesPaidDh)
+  const pieceLabel = pieceCount <= 1 ? "pièce" : "pièces"
 
   return (
     <Html lang="fr">
@@ -96,22 +103,36 @@ export default function OrderConfirmationEmail(props: OrderEmailProps) {
             ))}
             <Hr style={hr} />
             <Text style={totalRow}>
-              Sous-total articles <span style={pullRight}>{formatDh(props.subtotalDh)}</span>
+              Tarif catalogue ({formatDh(CATALOG_LIST_PRICE_DH)} × {pieceCount} {pieceLabel})
+              <span style={pullRight}>{formatDh(catalogPresaleDh)}</span>
             </Text>
-            <Text style={totalRow}>
-              Remise volume <span style={pullRight}>- {formatDh(props.volumeDiscountDh)}</span>
-            </Text>
-            <Text style={totalRow}>
-              Livraison <span style={pullRight}>{formatDh(props.deliveryFeeDh)}</span>
-            </Text>
+            {reductionVsCatalogDh > 0 ? (
+              <Text style={totalRow}>
+                Réduction
+                <span style={pullRightRed}>- {formatDh(reductionVsCatalogDh)}</span>
+              </Text>
+            ) : null}
+            {props.deliveryFeeDh > 0 ? (
+              <Text style={totalRow}>
+                Livraison <span style={pullRight}>{formatDh(props.deliveryFeeDh)}</span>
+              </Text>
+            ) : null}
             <Hr style={hr} />
             <Text style={grand}>
-              Total <span style={pullRight}>{formatDh(props.grandTotalDh)}</span>
+              Total à régler à la livraison{" "}
+              <span style={pullRight}>{formatDh(props.grandTotalDh)}</span>
             </Text>
+            {props.deliveryFeeDh <= 0 && pieceCount > 0 ? (
+              <Text style={deliveryFreeLine}>+ Livraison offerte</Text>
+            ) : null}
           </Section>
 
           <Section style={box}>
             <Text style={boxTitle}>Livraison</Text>
+            <Text style={deliveryEtaBox}>
+              Expédition / remise estimée : <strong style={deliveryEtaStrong}>24 à 72 h</strong> après
+              confirmation.
+            </Text>
             <Text style={address}>
               {props.customerName}
               <br />
@@ -123,7 +144,8 @@ export default function OrderConfirmationEmail(props: OrderEmailProps) {
                   <br />
                 </>
               ) : null}
-              {props.postalCode} {props.city}
+              {props.postalCode ? `${props.postalCode} ` : ""}
+              {props.city}
               <br />
               {props.country}
             </Text>
@@ -307,10 +329,35 @@ const totalRow: CSSProperties = {
   margin: "6px 0",
 }
 
+const deliveryEtaBox: CSSProperties = {
+  fontSize: "13px",
+  lineHeight: 1.55,
+  color: fgMuted,
+  margin: "0 0 14px 0",
+}
+
+const deliveryEtaStrong: CSSProperties = {
+  color: fg,
+  fontWeight: 600,
+}
+
 const pullRight: CSSProperties = {
   float: "right" as const,
   fontWeight: 500,
   color: fg,
+}
+
+const pullRightRed: CSSProperties = {
+  float: "right" as const,
+  fontWeight: 500,
+  color: "#b91c1c",
+}
+
+const deliveryFreeLine: CSSProperties = {
+  fontSize: "13px",
+  color: "#15803d",
+  fontWeight: 500,
+  margin: "10px 0 0 0",
 }
 
 const grand: CSSProperties = {

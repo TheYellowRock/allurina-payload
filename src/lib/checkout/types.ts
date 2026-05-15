@@ -7,6 +7,7 @@ export type CheckoutCustomerPayload = {
   addressLine1: string
   addressLine2?: string
   city: string
+  /** May be empty when the customer skips postal code. */
   postalCode: string
   country: string
   notes?: string

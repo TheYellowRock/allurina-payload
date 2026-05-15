@@ -33,6 +33,20 @@ export type CartPricingBreakdown = {
   grandTotal: number
 }
 
+/**
+ * Amount (Dh) shown on the “Remise volume” line in checkout — matches
+ * {@link CartPricingBreakdownView}: catalogue 80 Dh × pièces minus prix panier when that
+ * exceeds the raw `volumeDiscountDh`, else the per-piece volume rebate total.
+ */
+export function volumeRemiseDisplayedDh(breakdown: CartPricingBreakdown): number {
+  if (breakdown.volumeDiscountDh <= 0) return 0
+  const catalogueVersusSaleDh = Math.max(
+    0,
+    breakdown.merchandisePresaleTotal - breakdown.merchandiseSaleTotal,
+  )
+  return catalogueVersusSaleDh > 0 ? catalogueVersusSaleDh : breakdown.volumeDiscountDh
+}
+
 export function computeCartPricing(items: CartLineItem[]): CartPricingBreakdown {
   const itemCount = cartItemCount(items)
   const merchandisePresaleTotal = items.reduce(

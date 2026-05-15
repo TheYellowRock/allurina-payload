@@ -78,7 +78,6 @@ export const Orders: CollectionConfig = {
     {
       name: 'postalCode',
       type: 'text',
-      required: true,
       label: 'Code postal',
     },
     {

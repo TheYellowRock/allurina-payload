@@ -25,7 +25,10 @@ export type OrderEmailProps = {
   status: string
   lines: OrderEmailLine[]
   subtotalDh: number
+  /** Stored on the order (raw volume rebate); may differ from the cart UI line. */
   volumeDiscountDh: number
+  /** Same “Remise volume” amount as checkout / {@link volumeRemiseDisplayedDh}. */
+  volumeRemiseLineDh: number
   deliveryFeeDh: number
   grandTotalDh: number
 }

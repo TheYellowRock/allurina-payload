@@ -225,10 +225,11 @@ export function CheckoutPageView() {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-light text-stone-600">Code postal</span>
+                  <span className="text-xs font-light text-stone-600">
+                    Code postal (optionnel)
+                  </span>
                   <input
                     name="postalCode"
-                    required
                     autoComplete="postal-code"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}

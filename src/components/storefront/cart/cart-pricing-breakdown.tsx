@@ -1,6 +1,7 @@
 import {
   DELIVERY_FEE_DH,
   type CartPricingBreakdown,
+  volumeRemiseDisplayedDh,
 } from "@/lib/cart/pricing"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
@@ -24,10 +25,7 @@ export function CartPricingBreakdownView({
     grandTotal,
   } = pricing
 
-  const catalogueVersusSaleDh = Math.max(
-    0,
-    merchandisePresaleTotal - merchandiseSaleTotal,
-  )
+  const volumeRemiseLineDh = volumeRemiseDisplayedDh(pricing)
 
   return (
     <div className={`space-y-2 text-sm font-light ${className}`}>
@@ -46,15 +44,7 @@ export function CartPricingBreakdownView({
       {volumeDiscountDh > 0 ? (
         <div className="flex items-baseline justify-between gap-4">
           <span className="text-stone-600">Remise volume</span>
-          <span className={red}>
-            {formatScarfPrice(
-              -(
-                catalogueVersusSaleDh > 0
-                  ? catalogueVersusSaleDh
-                  : volumeDiscountDh
-              ),
-            )}
-          </span>
+          <span className={red}>{formatScarfPrice(-volumeRemiseLineDh)}</span>
         </div>
       ) : null}
 

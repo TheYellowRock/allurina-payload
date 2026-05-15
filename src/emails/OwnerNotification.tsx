@@ -36,7 +36,7 @@ export default function OwnerNotificationEmail(props: OrderEmailProps) {
     "SHIP TO",
     props.addressLine1,
     ...(props.addressLine2 ? [props.addressLine2] : []),
-    `${props.postalCode} ${props.city}`,
+    [props.postalCode, props.city].filter(Boolean).join(" "),
     props.country,
     "",
     ...(props.notes ? ["NOTES", props.notes, ""] : []),
@@ -45,7 +45,8 @@ export default function OwnerNotificationEmail(props: OrderEmailProps) {
     "",
     "TOTALS",
     `subtotal=${formatDh(props.subtotalDh)}`,
-    `volumeDiscount=${formatDh(props.volumeDiscountDh)}`,
+    `volumeRemise(affichage panier)=${formatDh(props.volumeRemiseLineDh)}`,
+    `volumeDiscount(stocké)=${formatDh(props.volumeDiscountDh)}`,
     `delivery=${formatDh(props.deliveryFeeDh)}`,
     `GRAND_TOTAL=${formatDh(props.grandTotalDh)}`,
   ].join("\n")

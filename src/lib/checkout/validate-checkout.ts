@@ -79,8 +79,8 @@ export function validateCheckoutBody(
   if (city.length < 2) {
     return { ok: false, error: "Ville manquante." }
   }
-  if (postalCode.length < 3) {
-    return { ok: false, error: "Code postal invalide." }
+  if (postalCode.length > 0 && postalCode.length < 3) {
+    return { ok: false, error: "Code postal invalide (laissez vide ou au moins 3 caractères)." }
   }
 
   const customer: CheckoutCustomerPayload = {
