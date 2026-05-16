@@ -1,6 +1,7 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 
+import { populateScarfFeaturedImage } from './hooks/populateScarfFeaturedImage'
 import { syncScarfMediaAlt } from './hooks/syncScarfMediaAlt'
 import { autoSlugFromTitle } from './hooks/autoSlugFromTitle'
 
@@ -8,11 +9,12 @@ export const Scarves: CollectionConfig = {
   slug: 'scarves',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', 'price', 'stockQuantity', 'updatedAt'],
+    defaultColumns: ['featuredImage', 'title', 'slug', 'price', 'stockQuantity', 'updatedAt'],
     group: 'Catalog',
   },
   hooks: {
     beforeValidate: [autoSlugFromTitle],
+    afterRead: [populateScarfFeaturedImage],
     afterChange: [syncScarfMediaAlt],
   },
   fields: [
@@ -60,10 +62,16 @@ export const Scarves: CollectionConfig = {
     },
     {
       name: 'featuredImage',
+      label: 'Aperçu',
       type: 'upload',
       relationTo: 'media',
+      maxDepth: 2,
+      displayPreview: true,
       admin: {
         description: 'Photo principale pour la vitrine.',
+        components: {
+          Cell: '@/components/payload/ScarfFeaturedImageCell#ScarfFeaturedImageCell',
+        },
       },
     },
     {

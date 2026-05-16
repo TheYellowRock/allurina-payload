@@ -32,5 +32,20 @@ export const Media: CollectionConfig = {
       },
     },
   ],
-  upload: true,
+  upload: {
+    displayPreview: true,
+    imageSizes: [
+      {
+        name: 'adminThumb',
+        width: 80,
+        height: 80,
+        position: 'centre',
+        admin: {
+          disableListColumn: true,
+          disableListFilter: true,
+          disableGroupBy: true,
+        },
+      },
+    ],
+  },
 }
