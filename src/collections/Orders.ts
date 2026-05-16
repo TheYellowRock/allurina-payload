@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
+import { adjustInventoryForNewOrder } from '@/lib/inventory/adjustInventoryForNewOrder'
 import { sendOrderConfirmation, sendOwnerNotification } from '@/lib/email'
 
 export const Orders: CollectionConfig = {
@@ -20,9 +21,15 @@ export const Orders: CollectionConfig = {
   },
   hooks: {
     afterChange: [
-      async ({ doc, operation }) => {
+      async ({ doc, operation, req }) => {
         if (operation !== 'create') return
-        await Promise.all([sendOrderConfirmation(doc), sendOwnerNotification(doc)])
+        await Promise.all([
+          sendOrderConfirmation(doc),
+          sendOwnerNotification(doc),
+          adjustInventoryForNewOrder(req.payload, doc as Record<string, unknown>).catch((err) => {
+            console.error('[inventory] adjustInventoryForNewOrder', err)
+          }),
+        ])
       },
     ],
   },

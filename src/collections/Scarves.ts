@@ -55,7 +55,7 @@ export const Scarves: CollectionConfig = {
       min: 0,
       admin: {
         description:
-          'Stock physique. La vitrine combine ce chiffre avec les badges « Disponibilité » (rupture, stock limité, etc.).',
+          'Stock physique (décrémenté automatiquement à chaque commande). La vitrine combine ce chiffre avec les badges « Disponibilité » (rupture, stock limité, etc.).',
       },
     },
     {
