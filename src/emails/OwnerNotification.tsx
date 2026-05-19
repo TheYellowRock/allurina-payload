@@ -45,8 +45,6 @@ export default function OwnerNotificationEmail(props: OrderEmailProps) {
     "",
     "TOTALS",
     `subtotal=${formatDh(props.subtotalDh)}`,
-    `volumeRemise(affichage panier)=${formatDh(props.volumeRemiseLineDh)}`,
-    `volumeDiscount(stocké)=${formatDh(props.volumeDiscountDh)}`,
     `delivery=${formatDh(props.deliveryFeeDh)}`,
     `GRAND_TOTAL=${formatDh(props.grandTotalDh)}`,
   ].join("\n")

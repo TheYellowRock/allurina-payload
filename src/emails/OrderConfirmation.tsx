@@ -16,7 +16,6 @@ import {
 import type { CSSProperties } from "react"
 
 import type { OrderEmailProps } from "@/lib/order-email-types"
-import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
 
 const waHref = "https://wa.me/212628504758"
 
@@ -35,10 +34,6 @@ export default function OrderConfirmationEmail(props: OrderEmailProps) {
   const preview = `Votre commande ${props.orderReference} est bien enregistrée.`
 
   const pieceCount = props.lines.reduce((acc, line) => acc + line.quantity, 0)
-  const catalogPresaleDh = CATALOG_LIST_PRICE_DH * pieceCount
-  const articlesPaidDh = props.grandTotalDh - props.deliveryFeeDh
-  const reductionVsCatalogDh = Math.max(0, catalogPresaleDh - articlesPaidDh)
-  const pieceLabel = pieceCount <= 1 ? "pièce" : "pièces"
 
   return (
     <Html lang="fr">
@@ -103,15 +98,9 @@ export default function OrderConfirmationEmail(props: OrderEmailProps) {
             ))}
             <Hr style={hr} />
             <Text style={totalRow}>
-              Tarif catalogue ({formatDh(CATALOG_LIST_PRICE_DH)} × {pieceCount} {pieceLabel})
-              <span style={pullRight}>{formatDh(catalogPresaleDh)}</span>
+              Sous-total articles
+              <span style={pullRight}>{formatDh(props.subtotalDh)}</span>
             </Text>
-            {reductionVsCatalogDh > 0 ? (
-              <Text style={totalRow}>
-                Réduction
-                <span style={pullRightRed}>- {formatDh(reductionVsCatalogDh)}</span>
-              </Text>
-            ) : null}
             {props.deliveryFeeDh > 0 ? (
               <Text style={totalRow}>
                 Livraison <span style={pullRight}>{formatDh(props.deliveryFeeDh)}</span>
@@ -345,12 +334,6 @@ const pullRight: CSSProperties = {
   float: "right" as const,
   fontWeight: 500,
   color: fg,
-}
-
-const pullRightRed: CSSProperties = {
-  float: "right" as const,
-  fontWeight: 500,
-  color: "#b91c1c",
 }
 
 const deliveryFreeLine: CSSProperties = {

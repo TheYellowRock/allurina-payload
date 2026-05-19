@@ -1,7 +1,7 @@
 import Link from "next/link"
 
+import { DeliveryPromoSection } from "@/components/storefront/delivery-promo-section"
 import { HeroBanner } from "@/components/storefront/hero-banner"
-import { LaunchPromoBanner } from "@/components/storefront/launch-promo-banner"
 import { HomeCategoryPreviewGrid } from "@/components/storefront/home-category-preview-grid"
 import { HomeCollectionRail } from "@/components/storefront/home-collection-rail"
 import { Button } from "@/components/ui/button"
@@ -103,7 +103,7 @@ export default async function Home() {
     <div className="flex min-h-full flex-1 flex-col bg-[#faf9f7] text-stone-900">
       <main>
         <HeroBanner />
-        <LaunchPromoBanner />
+        <DeliveryPromoSection />
 
         <HomeCollectionRail
           id="selection-summer"

@@ -46,7 +46,7 @@ export function DesktopNav({
               <li>
                 <NavigationMenuLink asChild>
                   <Link href={TOUTES_LES_PIECES_PATH} className={cn(NAV.link, NAV.linkInactive)}>
-                    Toutes les articles
+                    Tous les articles
                   </Link>
                 </NavigationMenuLink>
               </li>

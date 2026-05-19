@@ -8,7 +8,6 @@ import { AddToCartButton } from "@/components/storefront/cart/add-to-cart-button
 import { ScarfCardGallery } from "@/components/storefront/scarf-card-gallery"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardTitle } from "@/components/ui/card"
-import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
 import {
   availabilityBadgeClassName,
   formatScarfPrice,
@@ -45,9 +44,6 @@ export function ScarfCard({
 
   const href = productPath(scarf.slug)
   const productId = String(scarf.id)
-
-  const salePrice = scarf.price
-  const showListStrike = salePrice < CATALOG_LIST_PRICE_DH - Number.EPSILON
 
   const categoryLine = storefrontPrimaryCategoryLine(scarf.categories)
   const isOutOfStock = scarf.availability.status === "out_of_stock"
@@ -93,21 +89,9 @@ export function ScarfCard({
                 {categoryLine}
               </span>
             ) : null}
-            <span className="mt-0.5 flex flex-wrap items-baseline gap-2 tabular-nums">
-              {showListStrike ? (
-                <span className="text-xs font-light text-red-500/90 line-through decoration-red-400 sm:text-sm">
-                  {formatScarfPrice(CATALOG_LIST_PRICE_DH)}
-                </span>
-              ) : null}
-              <span
-                className={cn(
-                  "text-base leading-none tracking-wide sm:text-[1.0625rem]",
-                  showListStrike
-                    ? "font-semibold text-red-600"
-                    : "font-medium text-foreground",
-                )}
-              >
-                {formatScarfPrice(salePrice)}
+            <span className="mt-0.5 tabular-nums">
+              <span className="text-base font-medium leading-none tracking-wide text-foreground sm:text-[1.0625rem]">
+                {formatScarfPrice(scarf.price)}
               </span>
             </span>
           </Link>

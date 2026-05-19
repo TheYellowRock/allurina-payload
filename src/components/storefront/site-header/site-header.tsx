@@ -42,7 +42,7 @@ export function SiteHeader({
         )}
       >
         <p className="mx-auto max-w-2xl px-3 leading-relaxed">
-          Toutes les pièces à 65 DH — Livraison gratuite dès 5 pièces au Maroc
+          Livraison gratuite dès 5 pièces au Maroc
         </p>
       </div>
 

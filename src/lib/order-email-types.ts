@@ -25,9 +25,9 @@ export type OrderEmailProps = {
   status: string
   lines: OrderEmailLine[]
   subtotalDh: number
-  /** Stored on the order (raw volume rebate); may differ from the cart UI line. */
+  /** Legacy field on stored orders (volume promo); new orders use 0. */
   volumeDiscountDh: number
-  /** Same “Remise volume” amount as checkout / {@link volumeRemiseDisplayedDh}. */
+  /** Unused for new orders (kept for template typing). */
   volumeRemiseLineDh: number
   deliveryFeeDh: number
   grandTotalDh: number

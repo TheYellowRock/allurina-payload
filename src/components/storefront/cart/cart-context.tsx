@@ -73,7 +73,7 @@ export type CartContextValue = {
   open: boolean
   hydrated: boolean
   itemCount: number
-  /** Sum of catalogue line totals (before volume remise). */
+  /** Sum of cart line totals (unit price × quantity from Payload). */
   subtotal: number
   pricing: CartPricingBreakdown
   openCart: () => void

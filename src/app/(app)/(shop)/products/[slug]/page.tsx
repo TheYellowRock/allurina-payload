@@ -6,7 +6,6 @@ import { ProductDescription } from "./product-description"
 import { ProductGallery } from "./product-gallery"
 import { ProductPurchasePanel } from "@/components/storefront/cart/product-purchase-panel"
 import { Badge } from "@/components/ui/badge"
-import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
 import { getStorefrontScarfBySlug } from "@/lib/getStorefrontScarfBySlug"
 import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import {
@@ -43,8 +42,6 @@ export default async function ProductPage({ params }: Props) {
   )
 
   const categoryLine = storefrontPrimaryCategoryLine(scarf.categories)
-  const showPresaleStrike =
-    scarf.price < CATALOG_LIST_PRICE_DH - Number.EPSILON
 
   return (
     <div className="min-h-full flex-1 bg-white text-stone-900">
@@ -87,20 +84,9 @@ export default async function ProductPage({ params }: Props) {
               <p className="mt-2 text-sm font-light text-stone-500 md:text-base">{categoryLine}</p>
             ) : null}
 
-            {showPresaleStrike ? (
-              <p className="mt-5 flex flex-wrap items-baseline gap-3 tabular-nums">
-                <span className="text-xl font-light text-red-500/90 line-through decoration-red-400 md:text-2xl">
-                  {formatScarfPrice(CATALOG_LIST_PRICE_DH)}
-                </span>
-                <span className="text-2xl font-semibold tracking-wide text-red-600 md:text-3xl">
-                  {formatScarfPrice(scarf.price)}
-                </span>
-              </p>
-            ) : (
-              <p className="mt-5 text-2xl font-light tabular-nums tracking-wide text-stone-900 md:text-3xl">
-                {formatScarfPrice(scarf.price)}
-              </p>
-            )}
+            <p className="mt-5 text-2xl font-light tabular-nums tracking-wide text-stone-900 md:text-3xl">
+              {formatScarfPrice(scarf.price)}
+            </p>
 
             <ProductPurchasePanel
               purchaseDisabled={scarf.availability.status === "out_of_stock"}

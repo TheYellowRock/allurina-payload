@@ -1,62 +1,25 @@
 import type { CartLineItem } from "@/lib/cart/types"
 import { cartItemCount, cartSubtotal } from "@/lib/cart/merge-lines"
 
-/** Catalogue reference price per pièce (affiche barré vs prix soldé). */
-export const CATALOG_LIST_PRICE_DH = 80
-
 /** Standard delivery fee (Dh) — waived from `FREE_DELIVERY_MIN_ITEMS` pièces. */
 export const DELIVERY_FEE_DH = 35
-
-/** Per-item rebate (Dh) when cart has at least `VOLUME_MIN_ITEMS` pieces. */
-export const VOLUME_UNIT_OFF_DH = 5
-
-export const VOLUME_MIN_ITEMS = 3
 
 export const FREE_DELIVERY_MIN_ITEMS = 5
 
 export type CartPricingBreakdown = {
   itemCount: number
-  /** Sous-total au tarif catalogue de référence (80 Dh × quantités). */
-  merchandisePresaleTotal: number
-  /** Sous-total aux prix soldés / panier (somme des lignes). */
+  /** Sum of cart lines (Payload unit price × qty). */
   merchandiseSaleTotal: number
-  volumeDiscountDh: number
-  merchandiseAfterVolume: number
   deliveryDh: number
-  /** Saving vs standard delivery when shipping is free. */
+  /** When shipping is free (5+ pieces): equals `DELIVERY_FEE_DH` — shown as delivery saving in the cart. */
   deliverySavingDh: number
-  /**
-   * Total de référence barré : tarif catalogue (80 Dh × pièces) + livraison indicative 35 Dh.
-   * Inclut toujours les 35 Dh lorsque le panier n’est pas vide, même si la livraison réelle est offerte (5+ pièces).
-   */
-  presaleGrandTotal: number
   grandTotal: number
 }
 
-/**
- * Amount (Dh) shown on the “Remise volume” line in checkout — matches
- * {@link CartPricingBreakdownView}: catalogue 80 Dh × pièces minus prix panier when that
- * exceeds the raw `volumeDiscountDh`, else the per-piece volume rebate total.
- */
-export function volumeRemiseDisplayedDh(breakdown: CartPricingBreakdown): number {
-  if (breakdown.volumeDiscountDh <= 0) return 0
-  const catalogueVersusSaleDh = Math.max(
-    0,
-    breakdown.merchandisePresaleTotal - breakdown.merchandiseSaleTotal,
-  )
-  return catalogueVersusSaleDh > 0 ? catalogueVersusSaleDh : breakdown.volumeDiscountDh
-}
-
+/** Cart totals: line subtotals + delivery (35 Dh unless 5+ pièces → livraison offerte). No volume rebate. */
 export function computeCartPricing(items: CartLineItem[]): CartPricingBreakdown {
   const itemCount = cartItemCount(items)
-  const merchandisePresaleTotal = items.reduce(
-    (sum, line) => sum + CATALOG_LIST_PRICE_DH * line.quantity,
-    0,
-  )
   const merchandiseSaleTotal = cartSubtotal(items)
-  const volumeDiscountDh =
-    itemCount >= VOLUME_MIN_ITEMS ? VOLUME_UNIT_OFF_DH * itemCount : 0
-  const merchandiseAfterVolume = merchandiseSaleTotal - volumeDiscountDh
   const deliveryDh =
     itemCount === 0
       ? 0
@@ -65,19 +28,13 @@ export function computeCartPricing(items: CartLineItem[]): CartPricingBreakdown 
         : DELIVERY_FEE_DH
   const deliverySavingDh =
     itemCount >= FREE_DELIVERY_MIN_ITEMS ? DELIVERY_FEE_DH : 0
-  const presaleGrandTotal =
-    itemCount === 0 ? 0 : merchandisePresaleTotal + DELIVERY_FEE_DH
-  const grandTotal = merchandiseAfterVolume + deliveryDh
+  const grandTotal = merchandiseSaleTotal + deliveryDh
 
   return {
     itemCount,
-    merchandisePresaleTotal,
     merchandiseSaleTotal,
-    volumeDiscountDh,
-    merchandiseAfterVolume,
     deliveryDh,
     deliverySavingDh,
-    presaleGrandTotal,
     grandTotal,
   }
 }

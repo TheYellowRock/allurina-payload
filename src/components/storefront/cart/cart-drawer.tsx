@@ -8,7 +8,7 @@ import { createPortal } from "react-dom"
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { Button } from "@/components/ui/button"
-import { CATALOG_LIST_PRICE_DH } from "@/lib/cart/pricing"
+import { FREE_DELIVERY_MIN_ITEMS } from "@/lib/cart/pricing"
 import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
@@ -118,10 +118,7 @@ export function CartDrawer() {
           ) : (
             <ul className="divide-y divide-stone-100">
               {items.map((line) => {
-                const linePresale = CATALOG_LIST_PRICE_DH * line.quantity
                 const lineSale = line.price * line.quantity
-                const showPromo =
-                  line.price < CATALOG_LIST_PRICE_DH - Number.EPSILON
 
                 return (
                 <li key={line.productId} className="flex gap-3 px-4 py-4">
@@ -151,21 +148,8 @@ export function CartDrawer() {
                     >
                       {line.title}
                     </Link>
-                    <p className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm font-light tabular-nums">
-                      {showPromo ? (
-                        <>
-                          <span className="text-xs text-red-500/90 line-through decoration-red-400">
-                            {formatScarfPrice(linePresale)}
-                          </span>
-                          <span className="font-medium text-red-600">
-                            {formatScarfPrice(lineSale)}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-stone-700">
-                          {formatScarfPrice(lineSale)}
-                        </span>
-                      )}
+                    <p className="mt-1 text-sm font-medium tabular-nums text-stone-900">
+                      {formatScarfPrice(lineSale)}
                     </p>
                     <div className="mt-3 flex items-center gap-2">
                       <div className="inline-flex items-center border border-stone-200">
@@ -214,8 +198,7 @@ export function CartDrawer() {
           <footer className="border-t border-stone-200 bg-stone-50/80 px-4 py-5">
             <CartPricingBreakdownView pricing={pricing} />
             <p className="mt-3 text-center text-[11px] font-light leading-relaxed text-stone-500">
-              Remises appliquées automatiquement à partir de 3 pièces ; livraison offerte dès 5
-              pièces.
+              Livraison offerte dès {FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.
             </p>
             <Button
               variant="outline"

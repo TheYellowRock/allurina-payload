@@ -1,6 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 
+import {
+  buildClientInsights,
+  computeCrmOverview,
+  serializeClientDoc,
+  statusCountsLastDays,
+} from "@/lib/orders-manager/crm-stats"
 import { getStaffUser } from "@/lib/orders-manager/getStaffUser"
 import { serializeOrderDoc } from "@/lib/orders-manager/serialize-order"
 
@@ -32,17 +38,34 @@ export default async function OrdersManagerPage() {
     )
   }
 
-  const res = await payload.find({
-    collection: "orders",
-    limit: 200,
-    depth: 0,
-    sort: "-createdAt",
-    overrideAccess: true,
-  })
+  const [ordersRes, clientsRes] = await Promise.all([
+    payload.find({
+      collection: "orders",
+      limit: 500,
+      depth: 0,
+      sort: "-createdAt",
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: "clients",
+      limit: 500,
+      depth: 0,
+      sort: "-updatedAt",
+      overrideAccess: true,
+    }),
+  ])
 
-  const orders = res.docs
+  const orders = ordersRes.docs
     .map((d) => serializeOrderDoc(d as unknown as Record<string, unknown>))
     .filter((o): o is NonNullable<typeof o> => o != null)
+
+  const clientDocs = clientsRes.docs
+    .map((d) => serializeClientDoc(d as unknown as Record<string, unknown>))
+    .filter((c): c is NonNullable<typeof c> => c != null)
+
+  const overview = computeCrmOverview(orders)
+  const statusLast30 = statusCountsLastDays(orders, 30)
+  const clientInsights = buildClientInsights(orders, clientDocs)
 
   const staffEmail =
     typeof user === "object" && user && "email" in user
@@ -53,6 +76,9 @@ export default async function OrdersManagerPage() {
     <OrdersManagerDashboard
       initialOrders={orders}
       staffEmail={staffEmail || undefined}
+      overview={overview}
+      statusLast30={statusLast30}
+      clientInsights={clientInsights}
     />
   )
 }

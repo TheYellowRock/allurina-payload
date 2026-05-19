@@ -131,7 +131,8 @@ export const Orders: CollectionConfig = {
       required: true,
       min: 0,
       admin: {
-        description: 'Total catalogue des articles avant remise volume (Dh).',
+        description:
+          'Somme des lignes panier (prix catalogue Payload × quantités), avant livraison (Dh).',
       },
     },
     {
@@ -140,7 +141,10 @@ export const Orders: CollectionConfig = {
       required: true,
       defaultValue: 0,
       min: 0,
-      admin: { description: 'Remise volume 3+ pièces (Dh).' },
+      admin: {
+        description:
+          'Ancienne remise volume (obsolète). Les nouvelles commandes enregistrent 0 — seule la livraison offerte (5+ pièces) s’applique.',
+      },
     },
     {
       name: 'deliveryFee',
@@ -158,7 +162,7 @@ export const Orders: CollectionConfig = {
       min: 0,
       admin: {
         description:
-          'Total dû : articles remisés + livraison (Dh). Défaut 0 pour anciennes lignes — vérifier en admin si besoin.',
+          'Total dû : sous-total articles + livraison (Dh). Frais de port 0 si livraison offerte.',
       },
     },
   ],

@@ -3,8 +3,6 @@ import { Resend } from "resend"
 
 import OrderConfirmation from "@/emails/OrderConfirmation"
 import OwnerNotification from "@/emails/OwnerNotification"
-import type { CartLineItem } from "@/lib/cart/types"
-import { computeCartPricing, volumeRemiseDisplayedDh } from "@/lib/cart/pricing"
 import type { OrderEmailLine, OrderEmailProps } from "@/lib/order-email-types"
 
 /** Payload `orders` document shape used for transactional email mapping. */
@@ -122,17 +120,6 @@ export function formatOrder(order: unknown): OrderEmailProps {
   const lines = parseItemsJson(o.items, publicBase)
   const logoUrl = publicBase ? `${publicBase}/allurina-scarf-logo.png` : null
 
-  const cartForPricing: CartLineItem[] = lines.map((l, i) => ({
-    productId: `_order-line-${i}`,
-    slug: "-",
-    title: l.title,
-    price: l.unitPriceDh,
-    quantity: l.quantity,
-    imageSrc: l.imageSrc,
-  }))
-  const pricing = computeCartPricing(cartForPricing)
-  const volumeRemiseLineDh = volumeRemiseDisplayedDh(pricing)
-
   return {
     logoUrl,
     orderReference: readStr(o.orderReference),
@@ -150,7 +137,7 @@ export function formatOrder(order: unknown): OrderEmailProps {
     lines: lines.length > 0 ? lines : [],
     subtotalDh: readNum(o.subtotal),
     volumeDiscountDh: readNum(o.volumeDiscount),
-    volumeRemiseLineDh,
+    volumeRemiseLineDh: 0,
     deliveryFeeDh: readNum(o.deliveryFee),
     grandTotalDh: readNum(o.grandTotal),
   }

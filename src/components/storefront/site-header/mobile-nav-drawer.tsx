@@ -80,7 +80,7 @@ export function MobileNavDrawer({
                 className={cn(NAV.drawerLink, "text-stone-700")}
                 onClick={onClose}
               >
-                Toutes les articles
+                Tous les articles
               </Link>
               {collections.map((c) => (
                 <Link
