@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next"
-import Script from "next/script"
 import { Suspense } from "react"
 import { GoogleTagManager } from "@next/third-parties/google"
 import { Geist, Geist_Mono } from "next/font/google"
@@ -32,7 +31,6 @@ export const metadata: Metadata = {
 }
 
 const GTM_ID = (process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MLPCW62M").trim()
-const PIXEL_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID?.trim()
 
 /** Shell shared by storefront `(shop)` and staff `/orders_manager` (no shop chrome here). */
 export default function AppLayout({
@@ -40,38 +38,48 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Evaluated inside the function so it’s read fresh on every server render
+  // and failures are observable in server logs rather than silently rendering null.
+  const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID?.trim()
+
+  if (!pixelId) {
+    console.error(
+      "[Meta Pixel] NEXT_PUBLIC_FACEBOOK_PIXEL_ID is not set — pixel will not load",
+    )
+  }
+
   return (
     <html
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        {pixelId ? (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                console.log(‘[Meta Pixel] Pixel ID:’, ‘${pixelId}’);
+                !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){
+                n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version=’2.0’;
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window,document,’script’,
+                ‘https://connect.facebook.net/en_US/fbevents.js’);
+                fbq(‘init’,’${pixelId}’);
+                fbq(‘track’,’PageView’);
+              `,
+            }}
+          />
+        ) : null}
+      </head>
       <body className="flex min-h-full flex-col font-sans" suppressHydrationWarning>
         {GTM_ID ? <GoogleTagManager gtmId={GTM_ID} /> : null}
-        {PIXEL_ID ? (
-          <>
-            <Script
-              id="fb-pixel"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  console.log('[Meta Pixel] Pixel ID:', '${PIXEL_ID}');
-                  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){
-                  n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                  n.queue=[];t=b.createElement(e);t.async=!0;
-                  t.src=v;s=b.getElementsByTagName(e)[0];
-                  s.parentNode.insertBefore(t,s)}(window,document,'script',
-                  'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init','${PIXEL_ID}');
-                  fbq('track','PageView');
-                `,
-              }}
-            />
-            <Suspense fallback={null}>
-              <PixelPageView />
-            </Suspense>
-          </>
+        {pixelId ? (
+          <Suspense fallback={null}>
+            <PixelPageView />
+          </Suspense>
         ) : null}
         <StorefrontProviders>{children}</StorefrontProviders>
       </body>
