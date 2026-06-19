@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { DeliveryPromoSection } from "@/components/storefront/delivery-promo-section"
+import { FreeDeliveryMiniBanner } from "@/components/storefront/free-delivery-mini-banner"
 import { HeroBanner } from "@/components/storefront/hero-banner"
 import { HomeCategoryPreviewGrid } from "@/components/storefront/home-category-preview-grid"
 import { HomeCollectionRail } from "@/components/storefront/home-collection-rail"
@@ -113,6 +114,8 @@ export default async function Home() {
           headerActionLabel="Voir la collection"
           exploreHref={collectionPath(HOME_SUMMER_COLLECTION_SLUG)}
         />
+
+        <FreeDeliveryMiniBanner />
 
         <HomeCollectionRail
           id="selection-outlet"

@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next"
+import Script from "next/script"
+import { Suspense } from "react"
 import { GoogleTagManager } from "@next/third-parties/google"
 import { Geist, Geist_Mono } from "next/font/google"
 
+import { PixelPageView } from "@/components/PixelPageView"
 import { StorefrontProviders } from "@/components/storefront/storefront-providers"
 
 import "../globals.css"
@@ -29,6 +32,7 @@ export const metadata: Metadata = {
 }
 
 const GTM_ID = (process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MLPCW62M").trim()
+const PIXEL_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID?.trim()
 
 /** Shell shared by storefront `(shop)` and staff `/orders_manager` (no shop chrome here). */
 export default function AppLayout({
@@ -44,6 +48,23 @@ export default function AppLayout({
     >
       <body className="flex min-h-full flex-col font-sans" suppressHydrationWarning>
         {GTM_ID ? <GoogleTagManager gtmId={GTM_ID} /> : null}
+        {PIXEL_ID ? (
+          <>
+            <Script id="fb-pixel" strategy="afterInteractive">{`
+              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){
+              n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window,document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init','${PIXEL_ID}');fbq('track','PageView');
+            `}</Script>
+            <Suspense>
+              <PixelPageView />
+            </Suspense>
+          </>
+        ) : null}
         <StorefrontProviders>{children}</StorefrontProviders>
       </body>
     </html>

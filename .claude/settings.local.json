@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\medam\\\\DevBooth\\\\Allurina\\\\Payload-Next-Shop\\\\allurina-shop\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(xargs -I {} wc -l {})"
+    ]
+  }
+}

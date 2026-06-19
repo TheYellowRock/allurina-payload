@@ -4,6 +4,7 @@ import {
   CollectionPageIntro,
   CollectionProductGrid,
 } from "@/components/storefront/catalog-section"
+import { FreeDeliveryMiniBanner } from "@/components/storefront/free-delivery-mini-banner"
 import { getAllScarvesWithAvailability } from "@/lib/getScarvesStorefront"
 import { NOUVEAUTES_PATH } from "@/lib/routes"
 
@@ -27,6 +28,8 @@ export default async function ToutesLesPiecesPage() {
           { label: "Toutes les pièces" },
         ]}
       />
+
+      <FreeDeliveryMiniBanner />
 
       {scarves.length === 0 ? (
         <div className="mx-auto max-w-6xl px-4 py-16 text-center md:px-6">

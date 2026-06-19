@@ -12,6 +12,7 @@ import {
 import { CheckoutUpsellGrid } from "@/components/storefront/checkout/checkout-upsell-grid"
 import { Button } from "@/components/ui/button"
 import { checkoutConfirmationPath, NOUVEAUTES_PATH } from "@/lib/routes"
+import { fbEvent } from "@/lib/pixel"
 
 export function CheckoutPageView() {
   const router = useRouter()
@@ -67,6 +68,32 @@ export function CheckoutPageView() {
           setError("Réponse serveur inattendue.")
           return
         }
+        const purchaseEventId = crypto.randomUUID()
+        fbEvent(
+          "Purchase",
+          {
+            content_ids: items.map((item) => item.productId),
+            content_type: "product",
+            value: pricing.grandTotal,
+            currency: "MAD",
+          },
+          purchaseEventId,
+        )
+        void fetch("/api/pixel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventName: "Purchase",
+            eventData: {
+              eventId: purchaseEventId,
+              products: items.map((item) => ({
+                sku: item.productId,
+                quantity: item.quantity,
+              })),
+              value: pricing.grandTotal,
+            },
+          }),
+        })
         clearCart()
         router.push(checkoutConfirmationPath(data.orderReference))
       } catch {

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import type { CartAddPayload } from "@/lib/cart/types"
 import { gtmTrackAddToCart } from "@/lib/gtm"
+import { fbEvent } from "@/lib/pixel"
 import { cn } from "@/lib/utils"
 
 type ButtonProps = ComponentProps<typeof Button>
@@ -46,6 +47,29 @@ export function AddToCartButton({
           title: item.title,
           price: item.price,
           quantity: item.quantity,
+        })
+        const addToCartEventId = crypto.randomUUID()
+        fbEvent(
+          "AddToCart",
+          {
+            content_ids: [item.productId],
+            content_type: "product",
+            value: item.price * item.quantity,
+            currency: "MAD",
+          },
+          addToCartEventId,
+        )
+        void fetch("/api/pixel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventName: "AddToCart",
+            eventData: {
+              eventId: addToCartEventId,
+              products: [{ sku: item.productId, quantity: item.quantity }],
+              value: item.price * item.quantity,
+            },
+          }),
         })
         if (isMobile) {
           toast.success("Ajouté au panier !")

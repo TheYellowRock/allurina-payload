@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { ProductDescription } from "./product-description"
 import { ProductGallery } from "./product-gallery"
 import { ProductPurchasePanel } from "@/components/storefront/cart/product-purchase-panel"
+import { ProductViewTracker } from "@/components/storefront/product-view-tracker"
 import { Badge } from "@/components/ui/badge"
 import { getStorefrontScarfBySlug } from "@/lib/getStorefrontScarfBySlug"
 import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
@@ -45,6 +46,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="min-h-full flex-1 bg-white text-stone-900">
+      <ProductViewTracker productId={String(scarf.id)} price={scarf.price} />
       <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-12">
         <nav className="text-sm font-light text-stone-600">
           <Link href="/" className="hover:text-stone-900">
