@@ -6,7 +6,7 @@ import { PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
 import { cn } from "@/lib/utils"
 
 const DEFAULT_COPY =
-  "Ajoutez 5 châles à votre panier : le moins cher d'entre eux vous est offert."
+  "Ajoutez 5 châles à votre panier : le moins cher d'entre eux vous est offert, livraison gratuite incluse."
 
 type FreeItemMiniBannerProps = {
   className?: string

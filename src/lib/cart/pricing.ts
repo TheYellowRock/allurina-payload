@@ -2,7 +2,7 @@ import type { CartLineItem } from "@/lib/cart/types"
 import { cartCheapestUnitPrice, cartItemCount, cartSubtotal } from "@/lib/cart/merge-lines"
 import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
 
-/** Standard delivery fee (Dh). Waived at volume only while the `free_delivery` promo is active. */
+/** Standard delivery fee (Dh) — waived at volume regardless of which promo is active. */
 export const DELIVERY_FEE_DH = 35
 
 export const FREE_DELIVERY_MIN_ITEMS = 5
@@ -17,22 +17,21 @@ export type CartPricingBreakdown = {
   /** "4+1" promo discount — 0 unless `ACTIVE_PROMO === "four_plus_one"` and cart qualifies. */
   promoDiscountDh: number
   deliveryDh: number
-  /** Free-delivery promo saving — 0 unless `ACTIVE_PROMO === "free_delivery"` and cart qualifies. */
+  /** Free-delivery saving — applies at volume under either promo. */
   deliverySavingDh: number
   grandTotal: number
 }
 
 /**
- * Cart totals under whichever promo is active (`promo-config.ts`). The two schemes never
- * apply together: `free_delivery` waives shipping at volume; `four_plus_one` waives the
- * cheapest unit's price at volume instead and shipping stays standard.
+ * Cart totals under whichever promo is active (`promo-config.ts`). Free delivery at volume
+ * applies under both schemes; `four_plus_one` additionally waives the cheapest unit's price
+ * once the cart reaches `PROMO_FREE_ITEM_MIN_ITEMS` — the two benefits stack.
  */
 export function computeCartPricing(items: CartLineItem[]): CartPricingBreakdown {
   const itemCount = cartItemCount(items)
   const merchandiseSaleTotal = cartSubtotal(items)
 
-  const freeDeliveryActive =
-    ACTIVE_PROMO === "free_delivery" && itemCount >= FREE_DELIVERY_MIN_ITEMS
+  const freeDeliveryActive = itemCount >= FREE_DELIVERY_MIN_ITEMS
   const promoDiscountDh =
     ACTIVE_PROMO === "four_plus_one" && itemCount >= PROMO_FREE_ITEM_MIN_ITEMS
       ? cartCheapestUnitPrice(items)

@@ -14,10 +14,10 @@ import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
-/** Archived copy: `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.` (`free_delivery` promo). */
+/** Archived copy: `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.` (`free_delivery` promo alone). */
 const CART_FOOTER_PROMO_NOTE =
   ACTIVE_PROMO === "four_plus_one"
-    ? `4 + 1 gratuit dès ${PROMO_FREE_ITEM_MIN_ITEMS} pièces au Maroc.`
+    ? `4 + 1 gratuit + livraison offerte dès ${PROMO_FREE_ITEM_MIN_ITEMS} pièces au Maroc.`
     : `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.`
 
 function useLockBody(open: boolean) {

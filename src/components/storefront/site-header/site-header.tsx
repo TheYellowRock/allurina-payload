@@ -16,10 +16,10 @@ import type { StorefrontCategory } from "@/lib/getStorefrontCategories"
 import type { StorefrontCollection } from "@/lib/getStorefrontCollections"
 import { cn } from "@/lib/utils"
 
-/** Archived copy: "Livraison gratuite dès 5 pièces au Maroc" (`free_delivery` promo). */
+/** Archived copy: "Livraison gratuite dès 5 pièces au Maroc" (`free_delivery` promo alone). */
 const ANNOUNCEMENT_COPY =
   ACTIVE_PROMO === "four_plus_one"
-    ? "4 + 1 gratuit dès 5 pièces au Maroc"
+    ? "4 + 1 gratuit + livraison offerte dès 5 pièces au Maroc"
     : "Livraison gratuite dès 5 pièces au Maroc"
 
 export function SiteHeader({

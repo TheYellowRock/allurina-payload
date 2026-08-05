@@ -3,7 +3,7 @@ import { Gift, ShoppingBag, Truck } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { deliveryPromo } from "@/components/storefront/delivery-promo-styles"
-import { PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
+import { FREE_DELIVERY_MIN_ITEMS, PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
 import { TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
@@ -43,7 +43,7 @@ export function FourPlusOnePromoSection({ className }: { className?: string }) {
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-pretty text-sm leading-relaxed text-[#555555] md:text-[15px]">
             Dès cinq châles dans votre panier, le moins cher d&apos;entre eux vous est offert
-            automatiquement.
+            automatiquement — livraison gratuite incluse.
           </p>
         </div>
 
@@ -86,13 +86,18 @@ export function FourPlusOnePromoSection({ className }: { className?: string }) {
               <div className={deliveryPromo.iconBox}>
                 <Truck className="size-5 stroke-[1.5]" aria-hidden />
               </div>
-              <p className={tierTitleClass}>Envoi soigné</p>
-              <p className="mt-4 text-[11px] font-normal uppercase tracking-[0.14em] text-[#666666]">
-                Emballage & suivi
+              <p className={tierTitleClass}>{`Dès ${FREE_DELIVERY_MIN_ITEMS} pièces`}</p>
+              <p
+                className={cn(
+                  deliveryPromo.accent,
+                  "mt-4 text-2xl font-normal leading-tight tracking-tight md:text-[1.75rem]",
+                )}
+              >
+                + Livraison gratuite
               </p>
-              <p className={tierBodyClass}>
-                Colis protégés pour vos châles ; délais selon votre ville, avec les partenaires que
-                nous sélectionnons pour vous.
+              <p className={cn(tierBodyClass, "mt-4")}>
+                Cumulable avec la pièce offerte : frais de port supprimés sur l&apos;ensemble du
+                territoire marocain.
               </p>
             </li>
           </ul>
@@ -108,8 +113,8 @@ export function FourPlusOnePromoSection({ className }: { className?: string }) {
             <Link href={TOUTES_LES_PIECES_PATH}>Voir le catalogue</Link>
           </Button>
           <p className="max-w-md text-center text-xs leading-relaxed text-[#666666] sm:text-left">
-            Offre 4+1 — sous réserve de disponibilité. Le tarif s&apos;applique automatiquement au
-            panier dès cinq pièces.
+            Offre 4+1 et livraison gratuite — sous réserve de disponibilité. Les avantages
+            s&apos;appliquent automatiquement au panier dès cinq pièces.
           </p>
         </div>
       </div>
