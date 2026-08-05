@@ -11,9 +11,16 @@ import { navSans } from "@/components/storefront/site-header/nav-font"
 import { MobileNavDrawer } from "@/components/storefront/site-header/mobile-nav-drawer"
 import { useLockScrollAndEscape } from "@/components/storefront/site-header/use-nav-lock"
 import { orderChalesNavCategories } from "@/lib/navChales"
+import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
 import type { StorefrontCategory } from "@/lib/getStorefrontCategories"
 import type { StorefrontCollection } from "@/lib/getStorefrontCollections"
 import { cn } from "@/lib/utils"
+
+/** Archived copy: "Livraison gratuite dès 5 pièces au Maroc" (`free_delivery` promo). */
+const ANNOUNCEMENT_COPY =
+  ACTIVE_PROMO === "four_plus_one"
+    ? "4 + 1 gratuit dès 5 pièces au Maroc"
+    : "Livraison gratuite dès 5 pièces au Maroc"
 
 export function SiteHeader({
   collections,
@@ -41,9 +48,7 @@ export function SiteHeader({
           "bg-stone-900 py-2.5 text-center text-[11px] font-medium tracking-[0.14em] text-stone-100 uppercase sm:tracking-[0.18em]",
         )}
       >
-        <p className="mx-auto max-w-2xl px-3 leading-relaxed">
-          Livraison gratuite dès 5 pièces au Maroc
-        </p>
+        <p className="mx-auto max-w-2xl px-3 leading-relaxed">{ANNOUNCEMENT_COPY}</p>
       </div>
 
       <header

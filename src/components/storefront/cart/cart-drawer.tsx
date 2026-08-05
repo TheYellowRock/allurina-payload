@@ -8,10 +8,17 @@ import { createPortal } from "react-dom"
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { Button } from "@/components/ui/button"
-import { FREE_DELIVERY_MIN_ITEMS } from "@/lib/cart/pricing"
+import { FREE_DELIVERY_MIN_ITEMS, PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
+import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
 import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
+
+/** Archived copy: `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.` (`free_delivery` promo). */
+const CART_FOOTER_PROMO_NOTE =
+  ACTIVE_PROMO === "four_plus_one"
+    ? `4 + 1 gratuit dès ${PROMO_FREE_ITEM_MIN_ITEMS} pièces au Maroc.`
+    : `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.`
 
 function useLockBody(open: boolean) {
   useEffect(() => {
@@ -198,7 +205,7 @@ export function CartDrawer() {
           <footer className="border-t border-stone-200 bg-stone-50/80 px-4 py-5">
             <CartPricingBreakdownView pricing={pricing} />
             <p className="mt-3 text-center text-[11px] font-light leading-relaxed text-stone-500">
-              Livraison offerte dès {FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.
+              {CART_FOOTER_PROMO_NOTE}
             </p>
             <Button
               variant="outline"

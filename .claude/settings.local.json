@@ -6,7 +6,8 @@
       "Bash(Format-Table -AutoSize)",
       "Bash(xargs -I {} wc -l {})",
       "Bash(git -C \"C:\\\\Users\\\\medam\\\\DevBooth\\\\Allurina\\\\Payload-Next-Shop\\\\allurina-shop\" log --all --oneline -- \"src/app/\\(app\\)/\\(shop\\)/page.tsx\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)"
     ]
   }
 }
