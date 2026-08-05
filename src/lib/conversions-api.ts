@@ -41,10 +41,10 @@ export async function sendServerEvent(
         },
       },
     ],
-    ...(TEST_EVENT_CODE && process.env.NODE_ENV !== "production"
-      ? { test_event_code: TEST_EVENT_CODE }
-      : {}),
+    ...(TEST_EVENT_CODE ? { test_event_code: TEST_EVENT_CODE } : {}),
   }
+
+  console.log("[conversions-api] outgoing payload", JSON.stringify(payload))
 
   const res = await fetch(
     `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
