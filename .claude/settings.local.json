@@ -4,7 +4,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\medam\\\\DevBooth\\\\Allurina\\\\Payload-Next-Shop\\\\allurina-shop\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(Format-Table -AutoSize)",
-      "Bash(xargs -I {} wc -l {})"
+      "Bash(xargs -I {} wc -l {})",
+      "Bash(git -C \"C:\\\\Users\\\\medam\\\\DevBooth\\\\Allurina\\\\Payload-Next-Shop\\\\allurina-shop\" log --all --oneline -- \"src/app/\\(app\\)/\\(shop\\)/page.tsx\")",
+      "Bash(npx tsc *)"
     ]
   }
 }

@@ -549,7 +549,7 @@ export function OrdersManagerDashboard({
                                 </li>
                                 {order.volumeDiscount > 0 ? (
                                   <li className="flex justify-between gap-4 text-emerald-800">
-                                    <span>Remise volume</span>
+                                    <span>Promo 4+1</span>
                                     <span>−{formatDh(order.volumeDiscount)}</span>
                                   </li>
                                 ) : null}

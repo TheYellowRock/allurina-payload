@@ -25,9 +25,9 @@ export type OrderEmailProps = {
   status: string
   lines: OrderEmailLine[]
   subtotalDh: number
-  /** Legacy field on stored orders (volume promo); new orders use 0. */
+  /** "4+1" promo — cheapest unit's price, waived once cart reaches 5 pièces. */
   volumeDiscountDh: number
-  /** Unused for new orders (kept for template typing). */
+  /** Unused (kept for template typing). */
   volumeRemiseLineDh: number
   deliveryFeeDh: number
   grandTotalDh: number

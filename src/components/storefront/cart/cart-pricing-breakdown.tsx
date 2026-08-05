@@ -1,4 +1,4 @@
-import { FREE_DELIVERY_MIN_ITEMS, type CartPricingBreakdown } from "@/lib/cart/pricing"
+import { PROMO_FREE_ITEM_MIN_ITEMS, FREE_DELIVERY_MIN_ITEMS, type CartPricingBreakdown } from "@/lib/cart/pricing"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
 export function CartPricingBreakdownView({
@@ -8,7 +8,8 @@ export function CartPricingBreakdownView({
   pricing: CartPricingBreakdown
   className?: string
 }) {
-  const { itemCount, merchandiseSaleTotal, deliveryDh, deliverySavingDh, grandTotal } = pricing
+  const { itemCount, merchandiseSaleTotal, promoDiscountDh, deliveryDh, deliverySavingDh, grandTotal } =
+    pricing
 
   const livraisonLabel =
     deliverySavingDh > 0
@@ -25,6 +26,15 @@ export function CartPricingBreakdownView({
           {formatScarfPrice(merchandiseSaleTotal)}
         </span>
       </div>
+
+      {promoDiscountDh > 0 ? (
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-[#c00000]">
+          <span>{`Promo 4+1 (dès ${PROMO_FREE_ITEM_MIN_ITEMS} pièces)`}</span>
+          <span className="text-right font-medium tabular-nums">
+            −{formatScarfPrice(promoDiscountDh)}
+          </span>
+        </div>
+      ) : null}
 
       <div className="flex items-baseline justify-between gap-4 text-stone-700">
         <span>Livraison</span>

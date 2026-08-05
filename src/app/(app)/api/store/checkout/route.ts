@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         status: "pending",
         items,
         subtotal: pricing.merchandiseSaleTotal,
-        volumeDiscount: 0,
+        volumeDiscount: pricing.promoDiscountDh,
         deliveryFee: pricing.deliveryDh,
         grandTotal: pricing.grandTotal,
       },

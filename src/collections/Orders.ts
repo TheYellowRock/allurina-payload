@@ -143,7 +143,7 @@ export const Orders: CollectionConfig = {
       min: 0,
       admin: {
         description:
-          'Ancienne remise volume (obsolète). Les nouvelles commandes enregistrent 0 — seule la livraison offerte (5+ pièces) s’applique.',
+          'Remise promo "4+1" — prix de la pièce la moins chère du panier, offerte dès 5 pièces.',
       },
     },
     {

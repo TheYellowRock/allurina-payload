@@ -13,7 +13,11 @@ type FreeDeliveryMiniBannerProps = {
   children?: ReactNode
 }
 
-/** Compact band (200px) — matches delivery promo card typography & colors. */
+/**
+ * Compact band (200px) — archived promo variant: free delivery from 5 pièces. Not rendered
+ * while `ACTIVE_PROMO` (`promo-config.ts`) is `"four_plus_one"`; kept for the planned toggle.
+ * Active sibling: `FreeItemMiniBanner`.
+ */
 export function FreeDeliveryMiniBanner({
   className,
   children,

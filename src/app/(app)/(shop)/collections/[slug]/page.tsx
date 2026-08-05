@@ -6,7 +6,7 @@ import {
   CollectionPageIntro,
   CollectionProductGrid,
 } from "@/components/storefront/catalog-section"
-import { FreeDeliveryMiniBanner } from "@/components/storefront/free-delivery-mini-banner"
+import { PromoMiniBanner } from "@/components/storefront/promo-mini-banner"
 import { getStorefrontCollectionBySlug } from "@/lib/getStorefrontCollectionBySlug"
 import { getScarvesWithAvailability } from "@/lib/getScarvesStorefront"
 import { TOUTES_LES_PIECES_PATH } from "@/lib/routes"
@@ -58,7 +58,7 @@ export default async function CollectionPage({ params }: Props) {
         ]}
       />
 
-      <FreeDeliveryMiniBanner />
+      <PromoMiniBanner />
 
       {inCollection.length === 0 ? (
         <div className="mx-auto max-w-6xl px-4 py-16 text-center md:px-6">
