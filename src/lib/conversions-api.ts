@@ -15,7 +15,12 @@ export async function sendServerEvent(
   const PIXEL_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID
   const ACCESS_TOKEN = process.env.FACEBOOK_ACCESS_TOKEN
 
-  if (!PIXEL_ID || !ACCESS_TOKEN) return
+  if (!PIXEL_ID || !ACCESS_TOKEN) {
+    console.warn("[conversions-api] Missing PIXEL_ID or ACCESS_TOKEN — CAPI event not sent")
+    return
+  }
+
+  const TEST_EVENT_CODE = process.env.FACEBOOK_TEST_EVENT_CODE
 
   const payload = {
     data: [
@@ -36,14 +41,22 @@ export async function sendServerEvent(
         },
       },
     ],
+    ...(TEST_EVENT_CODE && process.env.NODE_ENV !== "production"
+      ? { test_event_code: TEST_EVENT_CODE }
+      : {}),
   }
 
-  await fetch(
-    `https://graph.facebook.com/v19.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
+  const res = await fetch(
+    `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     },
   )
+
+  const body = await res.json()
+  if (!res.ok || body?.error) {
+    console.error("[conversions-api] Meta CAPI rejected event", eventName, body)
+  }
 }
