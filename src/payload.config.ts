@@ -15,7 +15,6 @@ import { Orders } from './collections/Orders'
 import { Scarves } from './collections/Scarves'
 import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
-import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -73,9 +72,10 @@ export default buildConfig({
       connectionTimeoutMillis: 10_000,
       statement_timeout: 15_000,
     },
-    // Applied automatically on production boot (no separate deploy-time migrate step on
-    // Vercel); `npm run migrate` still applies the same migrations in dev.
-    prodMigrations: migrations,
+    // No prodMigrations / auto-migration-on-boot: running migrations during a Vercel
+    // build or cold boot hits Payload's interactive "data loss will occur, proceed?"
+    // prompt with no stdin attached and hangs, taking the build down with it. Migrations
+    // are applied out-of-band via `npm run migrate` against a specific DATABASE_URL.
   }),
   plugins: [
     s3Storage({

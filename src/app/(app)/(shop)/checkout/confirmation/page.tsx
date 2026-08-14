@@ -5,6 +5,8 @@ import { NOUVEAUTES_PATH } from "@/lib/routes"
 
 type Props = { searchParams: Promise<{ ref?: string }> }
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Commande confirmée — AllurinaScarf",
 }

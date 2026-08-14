@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 
 import { CheckoutPageView } from "@/components/storefront/checkout/checkout-page-view"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Commande — AllurinaScarf",
   description: "Finalisez votre commande — paiement à la livraison.",
