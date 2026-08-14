@@ -1,4 +1,6 @@
-export type CapiProduct = { sku: string; quantity: number }
+import { hashUserData } from "@/lib/meta-hash"
+
+export type CapiProduct = { id: string; quantity: number; item_price: number }
 
 export type CapiEventData = {
   value?: number
@@ -6,6 +8,15 @@ export type CapiEventData = {
   ip?: string
   userAgent?: string
   eventId?: string
+  email?: string
+  phone?: string
+  firstName?: string
+  lastName?: string
+  city?: string
+  externalId?: string
+  /** Sent unhashed — Meta requires `_fbp`/`_fbc` raw, unlike the rest of `user_data`. */
+  fbp?: string
+  fbc?: string
 }
 
 export async function sendServerEvent(
@@ -21,6 +32,15 @@ export async function sendServerEvent(
   }
 
   const TEST_EVENT_CODE = process.env.FACEBOOK_TEST_EVENT_CODE
+
+  const hashed = hashUserData({
+    email: eventData.email,
+    phone: eventData.phone,
+    firstName: eventData.firstName,
+    lastName: eventData.lastName,
+    city: eventData.city,
+    externalId: eventData.externalId,
+  })
 
   const payload = {
     data: [
@@ -38,13 +58,16 @@ export async function sendServerEvent(
         user_data: {
           client_ip_address: eventData.ip,
           client_user_agent: eventData.userAgent,
+          fbp: eventData.fbp,
+          fbc: eventData.fbc,
+          ...hashed,
         },
       },
     ],
-    ...(TEST_EVENT_CODE ? { test_event_code: TEST_EVENT_CODE } : {}),
+    ...(TEST_EVENT_CODE && process.env.NODE_ENV !== "production"
+      ? { test_event_code: TEST_EVENT_CODE }
+      : {}),
   }
-
-  console.log("[conversions-api] outgoing payload", JSON.stringify(payload))
 
   const res = await fetch(
     `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`,

@@ -1,6 +1,7 @@
 "use client"
 
 import type { ComponentProps } from "react"
+import { useRef } from "react"
 import { ShoppingBag } from "lucide-react"
 import { toast } from "sonner"
 
@@ -8,9 +9,13 @@ import { useCart } from "@/components/storefront/cart/cart-context"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-is-mobile"
 import type { CartAddPayload } from "@/lib/cart/types"
+import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { gtmTrackAddToCart } from "@/lib/gtm"
 import { fbEvent } from "@/lib/pixel"
 import { cn } from "@/lib/utils"
+
+/** Lock window for the double-tap guard below — long enough to absorb a fast double-click/tap. */
+const DOUBLE_TAP_GUARD_MS = 600
 
 type ButtonProps = ComponentProps<typeof Button>
 
@@ -31,6 +36,11 @@ export function AddToCartButton({
   const { addItem, openCart } = useCart()
   const isMobile = useIsMobile()
 
+  // Ref, not state: click handlers run to completion before the next click is dispatched,
+  // so only a value checked/set synchronously at the top of the handler — before any
+  // re-render — can stop a fast double-tap/double-click from firing the handler twice.
+  const isLockedRef = useRef(false)
+
   return (
     <Button
       type="button"
@@ -41,6 +51,12 @@ export function AddToCartButton({
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
+        if (isLockedRef.current) return
+        isLockedRef.current = true
+        setTimeout(() => {
+          isLockedRef.current = false
+        }, DOUBLE_TAP_GUARD_MS)
+
         onClick?.(e)
         addItem(item)
         gtmTrackAddToCart({
@@ -66,8 +82,10 @@ export function AddToCartButton({
             eventName: "AddToCart",
             eventData: {
               eventId: addToCartEventId,
-              products: [{ sku: item.productId, quantity: item.quantity }],
+              products: [{ id: item.productId, quantity: item.quantity, item_price: item.price }],
               value: item.price * item.quantity,
+              fbp: readFbp() ?? undefined,
+              fbc: readFbc() ?? undefined,
             },
           }),
         })

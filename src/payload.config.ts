@@ -15,6 +15,7 @@ import { Orders } from './collections/Orders'
 import { Scarves } from './collections/Scarves'
 import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -63,7 +64,18 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
+      // Explicit, conservative limits — DATABASE_URL points at Supabase's Supavisor
+      // transaction-mode pooler (port 6543), which itself caps concurrent connections
+      // per project; a serverless function holding a client past a timeout is exactly
+      // what turns a single stuck query into pool exhaustion for everyone else.
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      statement_timeout: 15_000,
     },
+    // Applied automatically on production boot (no separate deploy-time migrate step on
+    // Vercel); `npm run migrate` still applies the same migrations in dev.
+    prodMigrations: migrations,
   }),
   plugins: [
     s3Storage({

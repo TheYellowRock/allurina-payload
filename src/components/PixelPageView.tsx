@@ -17,11 +17,12 @@ export function PixelPageView() {
       isMounted.current = true
       return
     }
-    pageview()
+    const eventId = crypto.randomUUID()
+    pageview(eventId)
     void fetch("/api/pixel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventName: "PageView", eventData: {} }),
+      body: JSON.stringify({ eventName: "PageView", eventData: { eventId } }),
     })
   }, [pathname, searchParams])
 

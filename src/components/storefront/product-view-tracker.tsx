@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 
+import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { fbEvent } from "@/lib/pixel"
 
 export function ProductViewTracker({
@@ -30,8 +31,10 @@ export function ProductViewTracker({
         eventName: "ViewContent",
         eventData: {
           eventId,
-          products: [{ sku: productId, quantity: 1 }],
+          products: [{ id: productId, quantity: 1, item_price: price }],
           value: price,
+          fbp: readFbp() ?? undefined,
+          fbc: readFbc() ?? undefined,
         },
       }),
     })

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { useCart } from "@/components/storefront/cart/cart-context"
 import {
@@ -10,15 +10,57 @@ import {
   rowInput,
 } from "@/components/storefront/checkout/checkout-order-summary"
 import { CheckoutUpsellGrid } from "@/components/storefront/checkout/checkout-upsell-grid"
+import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
 import { Button } from "@/components/ui/button"
+import { applyCartValidation, applyStockConflict, type CartIssue } from "@/lib/cart/reconcile"
+import { getClientIdByEmail } from "@/lib/clients/getClientIdByEmail"
 import { checkoutConfirmationPath, NOUVEAUTES_PATH } from "@/lib/routes"
+import { validateCart } from "@/lib/checkout/validateCart"
+import type { CheckoutStockFailure } from "@/lib/checkout/types"
+import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { fbEvent } from "@/lib/pixel"
+
+/** Meta only has a single "full name" field from this form — split on the first space. */
+function splitFullName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(/\s+/)
+  return { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") }
+}
 
 export function CheckoutPageView() {
   const router = useRouter()
-  const { items, pricing, hydrated, clearCart } = useCart()
+  const { items, pricing, hydrated, clearCart, setItems } = useCart()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [validationIssues, setValidationIssues] = useState<CartIssue[]>([])
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
+  const submittingRef = useRef(false)
+
+  const itemsRef = useRef(items)
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  // Cart-page-equivalent revalidation: this app's cart is a drawer, not a route, so
+  // "on cart mount" happens in CartDrawer; here we cover checkout page mount.
+  useEffect(() => {
+    const current = itemsRef.current
+    if (!hydrated || current.length === 0) return
+    let cancelled = false
+    validateCart(current.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })))
+      .then((result) => {
+        if (cancelled || result.ok) return
+        const { items: nextItems, issues } = applyCartValidation(current, result.items)
+        setItems(nextItems)
+        setValidationIssues(issues)
+      })
+      .catch(() => {
+        // Best-effort — the authoritative check runs again on submit.
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated])
 
   const [customerName, setCustomerName] = useState("")
   const [email, setEmail] = useState("")
@@ -38,14 +80,30 @@ export function CheckoutPageView() {
         setError("Votre panier est vide.")
         return
       }
+      if (submittingRef.current) return
+      submittingRef.current = true
       setPending(true)
       try {
+        // Authoritative re-check right before submitting — the cart may have gone stale
+        // between mount and this click. Any drift blocks this submit; the user must
+        // review the correction and click again.
+        const validation = await validateCart(
+          items.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })),
+        )
+        if (!validation.ok) {
+          const { items: nextItems, issues } = applyCartValidation(items, validation.items)
+          setItems(nextItems)
+          setValidationIssues(issues)
+          return
+        }
+
         const res = await fetch("/api/store/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             paymentMethod: "cod",
-            items,
+            items: items.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+            idempotencyKey,
             customer: {
               customerName,
               email,
@@ -59,7 +117,17 @@ export function CheckoutPageView() {
             },
           }),
         })
-        const data = (await res.json()) as { error?: string; orderReference?: string }
+        const data = (await res.json()) as {
+          error?: string
+          orderReference?: string
+          failedItems?: CheckoutStockFailure[]
+        }
+        if (res.status === 409 && Array.isArray(data.failedItems)) {
+          const { items: nextItems, issues } = applyStockConflict(items, data.failedItems)
+          setItems(nextItems)
+          setValidationIssues(issues)
+          return
+        }
         if (!res.ok) {
           setError(data.error ?? "Une erreur est survenue.")
           return
@@ -79,6 +147,8 @@ export function CheckoutPageView() {
           },
           purchaseEventId,
         )
+        const { firstName, lastName } = splitFullName(customerName)
+        const externalId = await getClientIdByEmail(email).catch(() => null)
         void fetch("/api/pixel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -87,23 +157,35 @@ export function CheckoutPageView() {
             eventData: {
               eventId: purchaseEventId,
               products: items.map((item) => ({
-                sku: item.productId,
+                id: item.productId,
                 quantity: item.quantity,
+                item_price: item.price,
               })),
               value: pricing.grandTotal,
+              email,
+              phone,
+              firstName,
+              lastName,
+              city,
+              externalId: externalId ?? undefined,
+              fbp: readFbp() ?? undefined,
+              fbc: readFbc() ?? undefined,
             },
           }),
         })
         clearCart()
+        setIdempotencyKey(crypto.randomUUID())
         router.push(checkoutConfirmationPath(data.orderReference))
       } catch {
         setError("Réseau indisponible. Réessayez.")
       } finally {
+        submittingRef.current = false
         setPending(false)
       }
     },
     [
       items,
+      idempotencyKey,
       customerName,
       email,
       phone,
@@ -115,6 +197,7 @@ export function CheckoutPageView() {
       notes,
       clearCart,
       router,
+      setItems,
     ],
   )
 
@@ -161,6 +244,15 @@ export function CheckoutPageView() {
       <p className="mt-2 max-w-xl text-sm font-light text-stone-600">
         Renseignez vos coordonnées. Paiement à la livraison — aucun prélèvement en ligne.
       </p>
+
+      {validationIssues.length > 0 ? (
+        <div className="mt-6">
+          <CartValidationBanner
+            issues={validationIssues}
+            onDismiss={() => setValidationIssues([])}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
         <form

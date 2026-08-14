@@ -1,24 +1,19 @@
 import type { CartLineItem } from "@/lib/cart/types"
 
-import type { CheckoutCustomerPayload, CheckoutRequestPayload } from "./types"
+import type { CheckoutCustomerPayload, CheckoutLineInput, CheckoutRequestPayload } from "./types"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-function isCartLine(x: unknown): x is CartLineItem {
+/** Only shape/type-checked here — price/title/slug/imageSrc are never trusted from the client. */
+function isCheckoutLineInput(x: unknown): x is CheckoutLineInput {
   if (!x || typeof x !== "object") return false
   const o = x as Record<string, unknown>
   return (
     typeof o.productId === "string" &&
     o.productId.length > 0 &&
-    typeof o.slug === "string" &&
-    typeof o.title === "string" &&
-    typeof o.price === "number" &&
-    Number.isFinite(o.price) &&
-    o.price >= 0 &&
     typeof o.quantity === "number" &&
     Number.isInteger(o.quantity) &&
-    o.quantity >= 1 &&
-    (o.imageSrc === null || typeof o.imageSrc === "string")
+    o.quantity >= 1
   )
 }
 
@@ -43,9 +38,14 @@ export function validateCheckoutBody(
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
     return { ok: false, error: "Le panier est vide." }
   }
-  const items = rawItems.filter(isCartLine)
+  const items = rawItems.filter(isCheckoutLineInput)
   if (items.length !== rawItems.length) {
     return { ok: false, error: "Lignes panier invalides." }
+  }
+
+  const idempotencyKey = trim(b.idempotencyKey, 100)
+  if (idempotencyKey.length < 8) {
+    return { ok: false, error: "Requête invalide (clé d’idempotence manquante)." }
   }
 
   const c = b.customer
@@ -101,6 +101,7 @@ export function validateCheckoutBody(
       customer,
       items,
       paymentMethod: "cod",
+      idempotencyKey,
     },
   }
 }

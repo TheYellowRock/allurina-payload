@@ -2,14 +2,17 @@
 
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react"
 import Link from "next/link"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
+import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
 import { Button } from "@/components/ui/button"
+import { applyCartValidation, type CartIssue } from "@/lib/cart/reconcile"
 import { FREE_DELIVERY_MIN_ITEMS, PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
 import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
+import { validateCart } from "@/lib/checkout/validateCart"
 import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
@@ -40,6 +43,7 @@ export function CartDrawer() {
     hydrated,
     setQuantity,
     removeItem,
+    setItems,
   } = useCart()
 
   const [mounted, setMounted] = useState(false)
@@ -50,6 +54,40 @@ export function CartDrawer() {
   }, [])
 
   useLockBody(open && mounted)
+
+  const itemsRef = useRef(items)
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  const [validationIssues, setValidationIssues] = useState<CartIssue[]>([])
+
+  useEffect(() => {
+    if (!open || !hydrated) return
+    const current = itemsRef.current
+    if (current.length === 0) {
+      setValidationIssues([])
+      return
+    }
+    let cancelled = false
+    validateCart(current.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })))
+      .then((result) => {
+        if (cancelled) return
+        if (result.ok) {
+          setValidationIssues([])
+          return
+        }
+        const { items: nextItems, issues } = applyCartValidation(current, result.items)
+        setItems(nextItems)
+        setValidationIssues(issues)
+      })
+      .catch(() => {
+        // Best-effort — leave the cart as-is if the check itself fails.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, hydrated, setItems])
 
   const onEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -104,6 +142,8 @@ export function CartDrawer() {
             <X className="size-5" strokeWidth={1.75} />
           </button>
         </header>
+
+        <CartValidationBanner issues={validationIssues} onDismiss={() => setValidationIssues([])} />
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
           {!hydrated ? (

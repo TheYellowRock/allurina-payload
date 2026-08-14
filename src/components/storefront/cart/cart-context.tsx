@@ -35,6 +35,7 @@ type CartAction =
   | { type: "SET_QTY"; productId: string; quantity: number }
   | { type: "REMOVE"; productId: string }
   | { type: "CLEAR" }
+  | { type: "SET_ITEMS"; items: CartLineItem[] }
 
 const initialState: CartState = {
   items: [],
@@ -63,6 +64,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, items: removeLine(state.items, action.productId) }
     case "CLEAR":
       return { ...state, items: [] }
+    case "SET_ITEMS":
+      return { ...state, items: action.items }
     default:
       return state
   }
@@ -83,6 +86,8 @@ export type CartContextValue = {
   setQuantity: (productId: string, quantity: number) => void
   removeItem: (productId: string) => void
   clearCart: () => void
+  /** Wholesale replace — used to fold in `validateCart`/409 reconciliation results. */
+  setItems: (items: CartLineItem[]) => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -118,6 +123,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "SET_QTY", productId, quantity }),
       removeItem: (productId) => dispatch({ type: "REMOVE", productId }),
       clearCart: () => dispatch({ type: "CLEAR" }),
+      setItems: (items) => dispatch({ type: "SET_ITEMS", items }),
     }
   }, [state.items, state.open, state.hydrated])
 

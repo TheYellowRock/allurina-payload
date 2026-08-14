@@ -6,9 +6,9 @@ declare global {
   }
 }
 
-export const pageview = () => {
+export const pageview = (eventId?: string) => {
   if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "PageView")
+    window.fbq("track", "PageView", undefined, eventId ? { eventID: eventId } : undefined)
   }
 }
 

@@ -1,8 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
-import { adjustInventoryForNewOrder } from '@/lib/inventory/adjustInventoryForNewOrder'
-import { sendOrderConfirmation, sendOwnerNotification } from '@/lib/email'
-
+// Stock is decremented atomically inside the checkout transaction (see
+// POST /api/store/checkout), before this row exists — not in a hook here. Confirmation
+// and owner emails are also sent from that route, after its transaction commits — not
+// from an `afterChange` hook — so a slow/stuck Resend call can never pin a transactional
+// pg client (see the pg "client already executing a query" audit).
 export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
@@ -19,20 +21,6 @@ export const Orders: CollectionConfig = {
     group: 'Commerce',
     description: 'Commandes boutique (paiement à la livraison).',
   },
-  hooks: {
-    afterChange: [
-      async ({ doc, operation, req }) => {
-        if (operation !== 'create') return
-        await Promise.all([
-          sendOrderConfirmation(doc),
-          sendOwnerNotification(doc),
-          adjustInventoryForNewOrder(req.payload, doc as Record<string, unknown>).catch((err) => {
-            console.error('[inventory] adjustInventoryForNewOrder', err)
-          }),
-        ])
-      },
-    ],
-  },
   access: {
     create: () => false,
     read: ({ req }) => Boolean(req.user),
@@ -47,6 +35,17 @@ export const Orders: CollectionConfig = {
       unique: true,
       index: true,
       admin: { readOnly: true },
+    },
+    {
+      name: 'idempotencyKey',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        readOnly: true,
+        description:
+          'Clé générée côté client à l’ouverture de la page de commande. Une resoumission avec la même clé renvoie la commande existante au lieu d’en créer une seconde.',
+      },
     },
     {
       name: 'customerName',
