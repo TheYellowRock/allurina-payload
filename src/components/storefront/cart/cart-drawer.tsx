@@ -9,7 +9,7 @@ import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
 import { Button } from "@/components/ui/button"
-import { applyCartValidation, type CartIssue } from "@/lib/cart/reconcile"
+import { applyCartValidation } from "@/lib/cart/reconcile"
 import { FREE_DELIVERY_MIN_ITEMS, PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
 import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
 import { validateCart } from "@/lib/checkout/validateCart"
@@ -44,6 +44,8 @@ export function CartDrawer() {
     setQuantity,
     removeItem,
     setItems,
+    validationIssues,
+    setValidationIssues,
   } = useCart()
 
   const [mounted, setMounted] = useState(false)
@@ -60,23 +62,19 @@ export function CartDrawer() {
     itemsRef.current = items
   }, [items])
 
-  const [validationIssues, setValidationIssues] = useState<CartIssue[]>([])
-
+  // Revalidates once per drawer-open, not on every items mutation: `setItems`/
+  // `setValidationIssues` are stable (see cart-context.tsx), so this effect's own calls
+  // to them can no longer re-trigger it. Only sets issues when it finds new ones — never
+  // auto-clears on a clean result, so a message the user hasn't dismissed survives
+  // reopening the drawer, not just the update that produced it.
   useEffect(() => {
     if (!open || !hydrated) return
     const current = itemsRef.current
-    if (current.length === 0) {
-      setValidationIssues([])
-      return
-    }
+    if (current.length === 0) return
     let cancelled = false
     validateCart(current.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })))
       .then((result) => {
-        if (cancelled) return
-        if (result.ok) {
-          setValidationIssues([])
-          return
-        }
+        if (cancelled || result.ok) return
         const { items: nextItems, issues } = applyCartValidation(current, result.items)
         setItems(nextItems)
         setValidationIssues(issues)
@@ -87,7 +85,7 @@ export function CartDrawer() {
     return () => {
       cancelled = true
     }
-  }, [open, hydrated, setItems])
+  }, [open, hydrated, setItems, setValidationIssues])
 
   const onEscape = useCallback(
     (e: KeyboardEvent) => {

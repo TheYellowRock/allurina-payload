@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -12,6 +13,7 @@ import {
 import { readCartFromStorage, writeCartToStorage } from "@/lib/cart/persist"
 import type { CartAddPayload, CartLineItem } from "@/lib/cart/types"
 import { computeCartPricing, type CartPricingBreakdown } from "@/lib/cart/pricing"
+import type { CartIssue } from "@/lib/cart/reconcile"
 import {
   addOrMergeLine,
   cartItemCount,
@@ -24,6 +26,8 @@ type CartState = {
   items: CartLineItem[]
   open: boolean
   hydrated: boolean
+  /** Set by cart/checkout revalidation; persists until the user dismisses it. */
+  validationIssues: CartIssue[]
 }
 
 type CartAction =
@@ -36,11 +40,13 @@ type CartAction =
   | { type: "REMOVE"; productId: string }
   | { type: "CLEAR" }
   | { type: "SET_ITEMS"; items: CartLineItem[] }
+  | { type: "SET_VALIDATION_ISSUES"; issues: CartIssue[] }
 
 const initialState: CartState = {
   items: [],
   open: false,
   hydrated: false,
+  validationIssues: [],
 }
 
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -66,6 +72,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, items: [] }
     case "SET_ITEMS":
       return { ...state, items: action.items }
+    case "SET_VALIDATION_ISSUES":
+      return { ...state, validationIssues: action.issues }
     default:
       return state
   }
@@ -79,6 +87,8 @@ export type CartContextValue = {
   /** Sum of cart line totals (unit price × quantity from Payload). */
   subtotal: number
   pricing: CartPricingBreakdown
+  /** Cart/checkout revalidation findings (removed / price changed / stock reduced). */
+  validationIssues: CartIssue[]
   openCart: () => void
   closeCart: () => void
   toggleCart: () => void
@@ -88,6 +98,8 @@ export type CartContextValue = {
   clearCart: () => void
   /** Wholesale replace — used to fold in `validateCart`/409 reconciliation results. */
   setItems: (items: CartLineItem[]) => void
+  /** Replaces the current findings; pass `[]` to dismiss. */
+  setValidationIssues: (issues: CartIssue[]) => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -104,6 +116,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     writeCartToStorage(state.items)
   }, [state.items, state.hydrated])
 
+  // `dispatch` from useReducer is referentially stable, so every action creator below is
+  // too — none of them close over `state`. That stability matters: consumers (e.g. the
+  // cart/checkout revalidation effects) put `setItems`/`setValidationIssues` in their own
+  // effect dependency arrays, and a callback that changed identity on every cart mutation
+  // would re-trigger those effects the instant they called it — which is exactly what
+  // used to wipe the validation banner right after it set it.
+  const openCart = useCallback(() => dispatch({ type: "OPEN" }), [])
+  const closeCart = useCallback(() => dispatch({ type: "CLOSE" }), [])
+  const toggleCart = useCallback(() => dispatch({ type: "TOGGLE" }), [])
+  const addItem = useCallback((payload: CartAddPayload) => dispatch({ type: "ADD", payload }), [])
+  const setQuantity = useCallback(
+    (productId: string, quantity: number) => dispatch({ type: "SET_QTY", productId, quantity }),
+    [],
+  )
+  const removeItem = useCallback(
+    (productId: string) => dispatch({ type: "REMOVE", productId }),
+    [],
+  )
+  const clearCart = useCallback(() => dispatch({ type: "CLEAR" }), [])
+  const setItems = useCallback((items: CartLineItem[]) => dispatch({ type: "SET_ITEMS", items }), [])
+  const setValidationIssues = useCallback(
+    (issues: CartIssue[]) => dispatch({ type: "SET_VALIDATION_ISSUES", issues }),
+    [],
+  )
+
   const value = useMemo<CartContextValue>(() => {
     const itemCount = cartItemCount(state.items)
     const subtotal = cartSubtotal(state.items)
@@ -115,17 +152,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       pricing,
-      openCart: () => dispatch({ type: "OPEN" }),
-      closeCart: () => dispatch({ type: "CLOSE" }),
-      toggleCart: () => dispatch({ type: "TOGGLE" }),
-      addItem: (payload) => dispatch({ type: "ADD", payload }),
-      setQuantity: (productId, quantity) =>
-        dispatch({ type: "SET_QTY", productId, quantity }),
-      removeItem: (productId) => dispatch({ type: "REMOVE", productId }),
-      clearCart: () => dispatch({ type: "CLEAR" }),
-      setItems: (items) => dispatch({ type: "SET_ITEMS", items }),
+      validationIssues: state.validationIssues,
+      openCart,
+      closeCart,
+      toggleCart,
+      addItem,
+      setQuantity,
+      removeItem,
+      clearCart,
+      setItems,
+      setValidationIssues,
     }
-  }, [state.items, state.open, state.hydrated])
+  }, [
+    state.items,
+    state.open,
+    state.hydrated,
+    state.validationIssues,
+    openCart,
+    closeCart,
+    toggleCart,
+    addItem,
+    setQuantity,
+    removeItem,
+    clearCart,
+    setItems,
+    setValidationIssues,
+  ])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

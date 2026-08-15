@@ -12,7 +12,7 @@ import {
 import { CheckoutUpsellGrid } from "@/components/storefront/checkout/checkout-upsell-grid"
 import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
 import { Button } from "@/components/ui/button"
-import { applyCartValidation, applyStockConflict, type CartIssue } from "@/lib/cart/reconcile"
+import { applyCartValidation, applyStockConflict } from "@/lib/cart/reconcile"
 import { getClientIdByEmail } from "@/lib/clients/getClientIdByEmail"
 import { checkoutConfirmationPath, NOUVEAUTES_PATH } from "@/lib/routes"
 import { validateCart } from "@/lib/checkout/validateCart"
@@ -28,10 +28,10 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
 
 export function CheckoutPageView() {
   const router = useRouter()
-  const { items, pricing, hydrated, clearCart, setItems } = useCart()
+  const { items, pricing, hydrated, clearCart, setItems, validationIssues, setValidationIssues } =
+    useCart()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [validationIssues, setValidationIssues] = useState<CartIssue[]>([])
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
   const submittingRef = useRef(false)
 
@@ -42,6 +42,8 @@ export function CheckoutPageView() {
 
   // Cart-page-equivalent revalidation: this app's cart is a drawer, not a route, so
   // "on cart mount" happens in CartDrawer; here we cover checkout page mount.
+  // `setItems`/`setValidationIssues` are stable (see cart-context.tsx), so including them
+  // below doesn't cause this effect to re-run when it calls them itself.
   useEffect(() => {
     const current = itemsRef.current
     if (!hydrated || current.length === 0) return
@@ -59,8 +61,7 @@ export function CheckoutPageView() {
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated])
+  }, [hydrated, setItems, setValidationIssues])
 
   const [customerName, setCustomerName] = useState("")
   const [email, setEmail] = useState("")
@@ -198,6 +199,7 @@ export function CheckoutPageView() {
       clearCart,
       router,
       setItems,
+      setValidationIssues,
     ],
   )
 

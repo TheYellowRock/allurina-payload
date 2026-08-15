@@ -9,6 +9,15 @@ export type CartIssue = {
   detail: string
 }
 
+function removedDetail(title: string): string {
+  return `${title} n’est plus disponible et a été retiré de votre panier.`
+}
+
+function stockReducedDetail(title: string, remaining: number): string {
+  const phrase = remaining === 1 ? "il ne reste qu’1 article" : `il ne reste que ${remaining} articles`
+  return `${title} — ${phrase}.`
+}
+
 /** Applies a `validateCart` result to a cart: drop missing/out-of-stock lines, fix prices, clamp quantities. */
 export function applyCartValidation(
   items: CartLineItem[],
@@ -25,7 +34,7 @@ export function applyCartValidation(
         productId: line.productId,
         title: line.title,
         reason: "removed",
-        detail: `${line.title} n’est plus disponible et a été retiré du panier.`,
+        detail: removedDetail(line.title),
       })
       continue
     }
@@ -46,7 +55,7 @@ export function applyCartValidation(
         productId: line.productId,
         title: line.title,
         reason: "stock_reduced",
-        detail: `Seulement ${check.currentStock} unité(s) de ${line.title} disponible(s) — quantité ajustée.`,
+        detail: stockReducedDetail(line.title, check.currentStock),
       })
     }
     nextItems.push(next)
@@ -75,7 +84,7 @@ export function applyStockConflict(
         productId: line.productId,
         title: line.title,
         reason: "removed",
-        detail: `${line.title} n’est plus disponible et a été retiré du panier.`,
+        detail: removedDetail(line.title),
       })
       continue
     }
@@ -84,7 +93,7 @@ export function applyStockConflict(
       productId: line.productId,
       title: line.title,
       reason: "stock_reduced",
-      detail: `Seulement ${failure.availableStock} unité(s) de ${line.title} disponible(s) — quantité ajustée.`,
+      detail: stockReducedDetail(line.title, failure.availableStock),
     })
   }
 
