@@ -7,7 +7,8 @@
       "Bash(xargs -I {} wc -l {})",
       "Bash(git -C \"C:\\\\Users\\\\medam\\\\DevBooth\\\\Allurina\\\\Payload-Next-Shop\\\\allurina-shop\" log --all --oneline -- \"src/app/\\(app\\)/\\(shop\\)/page.tsx\")",
       "Bash(npx tsc *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(node scripts/_tmp-check-migrations.mjs)"
     ]
   }
 }
