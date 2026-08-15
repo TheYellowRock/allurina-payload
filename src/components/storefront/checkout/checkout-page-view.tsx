@@ -18,7 +18,8 @@ import { checkoutConfirmationPath, NOUVEAUTES_PATH } from "@/lib/routes"
 import { validateCart } from "@/lib/checkout/validateCart"
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { readFbc, readFbp } from "@/lib/fb-cookies"
-import { fbEvent } from "@/lib/pixel"
+import { buildAdvancedMatchingData } from "@/lib/meta-advanced-matching"
+import { fbEvent, initAdvancedMatching } from "@/lib/pixel"
 
 /** Meta only has a single "full name" field from this form — split on the first space. */
 function splitFullName(fullName: string): { firstName: string; lastName: string } {
@@ -137,6 +138,16 @@ export function CheckoutPageView() {
           setError("Réponse serveur inattendue.")
           return
         }
+        const { firstName, lastName } = splitFullName(customerName)
+
+        // Browser-side Advanced Matching: re-init with the customer data we only just
+        // collected, right before firing Purchase, so this conversion (and the Pixel's
+        // own cookie-matching for future events) benefits from it. Plain values only —
+        // the Pixel hashes them client-side; do not hash before this call.
+        initAdvancedMatching(
+          buildAdvancedMatchingData({ email, phone, firstName, lastName, city }),
+        )
+
         const purchaseEventId = crypto.randomUUID()
         fbEvent(
           "Purchase",
@@ -148,7 +159,6 @@ export function CheckoutPageView() {
           },
           purchaseEventId,
         )
-        const { firstName, lastName } = splitFullName(customerName)
         const externalId = await getClientIdByEmail(email).catch(() => null)
         void fetch("/api/pixel", {
           method: "POST",

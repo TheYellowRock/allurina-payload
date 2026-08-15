@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto"
 
+import { normalizeCity, normalizeEmail, normalizeName, normalizePhone } from "@/lib/meta-normalize"
+
 /**
  * Server-only. Meta's Conversions API requires PII as SHA-256 hex digests of normalized
  * values. Never import this into a "use client" file — hashing must happen server-side,
@@ -30,23 +32,6 @@ function sha256Hex(value: string): string {
   return createHash("sha256").update(value).digest("hex")
 }
 
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase()
-}
-
-/** Morocco-only: digits, country code, no `+`, no leading 0 (0612345678 -> 212612345678). */
-function normalizePhone(phone: string): string {
-  let digits = phone.replace(/\D/g, "")
-  if (digits.startsWith("00212")) digits = digits.slice(2)
-  if (digits.startsWith("212")) return digits
-  if (digits.startsWith("0")) return `212${digits.slice(1)}`
-  return `212${digits}`
-}
-
-function normalizeLower(value: string): string {
-  return value.trim().toLowerCase()
-}
-
 export function hashUserData(input: RawUserData): HashedUserData {
   const out: HashedUserData = {}
 
@@ -59,15 +44,15 @@ export function hashUserData(input: RawUserData): HashedUserData {
     if (normalized) out.ph = sha256Hex(normalized)
   }
   if (input.firstName) {
-    const normalized = normalizeLower(input.firstName)
+    const normalized = normalizeName(input.firstName)
     if (normalized) out.fn = sha256Hex(normalized)
   }
   if (input.lastName) {
-    const normalized = normalizeLower(input.lastName)
+    const normalized = normalizeName(input.lastName)
     if (normalized) out.ln = sha256Hex(normalized)
   }
   if (input.city) {
-    const normalized = normalizeLower(input.city)
+    const normalized = normalizeCity(input.city)
     if (normalized) out.ct = sha256Hex(normalized)
   }
   if (input.externalId) {
