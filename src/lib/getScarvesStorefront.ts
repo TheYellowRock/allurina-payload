@@ -1,5 +1,6 @@
 import { cache } from "react"
 import { getPayload } from "payload"
+import type { Where } from "payload"
 
 import config from "@payload-config"
 import { mapDocToStorefrontScarf } from "@/lib/mapStorefrontScarf"
@@ -15,6 +16,13 @@ export type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 export { availabilityBadgeTone, formatScarfPrice, storefrontMediaUrl }
 
 const NOUVEAUTES_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
+
+/** A product is out of stock when `stockQuantity <= 0` — hidden from every storefront listing query below. */
+const IN_STOCK: Where = { stockQuantity: { greater_than: 0 } }
+
+function withInStock(where?: Where): Where {
+  return where ? { and: [where, IN_STOCK] } : IN_STOCK
+}
 
 async function getPayloadClient() {
   const resolvedConfig = await config
@@ -32,6 +40,7 @@ export const getScarvesWithAvailability = cache(async (): Promise<{
 
   const res = await payload.find({
     collection: "scarves",
+    where: withInStock(),
     depth: 2,
     limit: 100,
     sort: "-updatedAt",
@@ -50,6 +59,7 @@ export const getAllScarvesWithAvailability = cache(async (): Promise<{
 
   const res = await payload.find({
     collection: "scarves",
+    where: withInStock(),
     depth: 2,
     limit: 400,
     sort: "-updatedAt",
@@ -69,6 +79,7 @@ export const getNouveautesScarves = cache(async (): Promise<{
 
   const res = await payload.find({
     collection: "scarves",
+    where: withInStock(),
     depth: 2,
     limit: 400,
     sort: "-createdAt",
@@ -104,11 +115,11 @@ export const getScarvesByCategorySlug = cache(
 
     const res = await payload.find({
       collection: "scarves",
-      where: {
+      where: withInStock({
         categories: {
           contains: categoryId,
         },
-      },
+      }),
       depth: 2,
       limit: 400,
       sort: "-updatedAt",
@@ -139,11 +150,11 @@ export const getScarvesByCollectionSlug = cache(
 
     const res = await payload.find({
       collection: "scarves",
-      where: {
+      where: withInStock({
         collections: {
           contains: collectionId,
         },
-      },
+      }),
       depth: 2,
       limit: 400,
       sort: "-updatedAt",
@@ -191,11 +202,11 @@ export const getScarvesByCatalogTagSlug = cache(
 
     const res = await payload.find({
       collection: "scarves",
-      where: {
+      where: withInStock({
         tags: {
           contains: tagId,
         },
-      },
+      }),
       depth: 2,
       limit: 400,
       sort: "-updatedAt",

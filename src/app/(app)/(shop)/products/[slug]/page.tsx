@@ -24,7 +24,7 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const scarf = await getStorefrontScarfBySlug(slug)
-  if (!scarf) return { title: "Produit — AllurinaScarf" }
+  if (!scarf || scarf.stockQuantity <= 0) return { title: "Produit — AllurinaScarf" }
   return {
     title: `${scarf.title} — AllurinaScarf`,
     description: `Châle ${scarf.title}. ${formatScarfPrice(scarf.price)}.`,
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
   const scarf = await getStorefrontScarfBySlug(slug)
-  if (!scarf) notFound()
+  if (!scarf || scarf.stockQuantity <= 0) notFound()
 
   const images = storefrontProductImages(
     scarf.featuredImage,
