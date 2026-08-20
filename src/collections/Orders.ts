@@ -142,7 +142,7 @@ export const Orders: CollectionConfig = {
       min: 0,
       admin: {
         description:
-          'Remise promo "4+1" — prix de la pièce la moins chère du panier, offerte dès 5 pièces.',
+          'Réduction lot (paliers de quantité — voir lib/promo-tiers.ts) : écart entre la somme des lignes panier et le prix du palier appliqué.',
       },
     },
     {

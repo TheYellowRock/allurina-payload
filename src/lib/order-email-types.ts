@@ -25,7 +25,7 @@ export type OrderEmailProps = {
   status: string
   lines: OrderEmailLine[]
   subtotalDh: number
-  /** "4+1" promo — cheapest unit's price, waived once cart reaches 5 pièces. */
+  /** Tier-bundle promo savings (`lib/promo-tiers.ts`) — list total minus the applied tier's bundle price. */
   volumeDiscountDh: number
   /** Unused (kept for template typing). */
   volumeRemiseLineDh: number

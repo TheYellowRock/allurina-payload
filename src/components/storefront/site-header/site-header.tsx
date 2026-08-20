@@ -11,16 +11,16 @@ import { navSans } from "@/components/storefront/site-header/nav-font"
 import { MobileNavDrawer } from "@/components/storefront/site-header/mobile-nav-drawer"
 import { useLockScrollAndEscape } from "@/components/storefront/site-header/use-nav-lock"
 import { orderChalesNavCategories } from "@/lib/navChales"
-import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
+import { PROMO_TIERS } from "@/lib/promo-tiers"
 import type { StorefrontCategory } from "@/lib/getStorefrontCategories"
 import type { StorefrontCollection } from "@/lib/getStorefrontCollections"
 import { cn } from "@/lib/utils"
 
-/** Archived copy: "Livraison gratuite dès 5 pièces au Maroc" (`free_delivery` promo alone). */
-const ANNOUNCEMENT_COPY =
-  ACTIVE_PROMO === "four_plus_one"
-    ? "4 + 1 gratuit + livraison offerte dès 5 pièces au Maroc"
-    : "Livraison gratuite dès 5 pièces au Maroc"
+/** Archived copy (old "4+1" promo): "4 + 1 gratuit + livraison offerte dès 5 pièces au Maroc". */
+const FIRST_TIER = PROMO_TIERS[0]
+const ANNOUNCEMENT_COPY = FIRST_TIER
+  ? `Dès ${FIRST_TIER.qty} châles : ${FIRST_TIER.bundlePrice} DH + livraison offerte`
+  : ""
 
 export function SiteHeader({
   collections,

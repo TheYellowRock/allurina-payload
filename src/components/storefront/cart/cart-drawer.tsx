@@ -5,23 +5,16 @@ import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
+import { CartPromoProgress } from "@/components/CartPromoProgress"
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
 import { Button } from "@/components/ui/button"
 import { applyCartValidation } from "@/lib/cart/reconcile"
-import { FREE_DELIVERY_MIN_ITEMS, PROMO_FREE_ITEM_MIN_ITEMS } from "@/lib/cart/pricing"
-import { ACTIVE_PROMO } from "@/lib/cart/promo-config"
 import { validateCart } from "@/lib/checkout/validateCart"
 import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
-
-/** Archived copy: `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.` (`free_delivery` promo alone). */
-const CART_FOOTER_PROMO_NOTE =
-  ACTIVE_PROMO === "four_plus_one"
-    ? `4 + 1 gratuit + livraison offerte dès ${PROMO_FREE_ITEM_MIN_ITEMS} pièces au Maroc.`
-    : `Livraison offerte dès ${FREE_DELIVERY_MIN_ITEMS} pièces au Maroc.`
 
 function useLockBody(open: boolean) {
   useEffect(() => {
@@ -241,10 +234,8 @@ export function CartDrawer() {
 
         {hydrated && items.length > 0 ? (
           <footer className="border-t border-stone-200 bg-stone-50/80 px-4 py-5">
+            <CartPromoProgress className="mb-4" />
             <CartPricingBreakdownView pricing={pricing} />
-            <p className="mt-3 text-center text-[11px] font-light leading-relaxed text-stone-500">
-              {CART_FOOTER_PROMO_NOTE}
-            </p>
             <Button
               variant="outline"
               className="mt-4 h-11 w-full rounded-none border-2 border-stone-900 bg-transparent text-xs font-light tracking-[0.2em] text-stone-900 uppercase hover:bg-stone-900 hover:text-white"

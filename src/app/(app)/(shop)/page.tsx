@@ -1,8 +1,10 @@
 import Link from "next/link"
 
+import { AllScarvesGrid } from "@/components/AllScarvesGrid"
+import { PromoBanner } from "@/components/PromoBanner"
 import { HeroBanner } from "@/components/storefront/hero-banner"
 import { PromoMiniBanner } from "@/components/storefront/promo-mini-banner"
-import { PromoSection } from "@/components/storefront/promo-section"
+// import { PromoSection } from "@/components/storefront/promo-section" // legacy promo banner — hidden 2026-08-20, keep for rollback
 import { HomeCategoryPreviewGrid } from "@/components/storefront/home-category-preview-grid"
 import { HomeCollectionRail } from "@/components/storefront/home-collection-rail"
 import { Button } from "@/components/ui/button"
@@ -104,7 +106,11 @@ export default async function Home() {
     <div className="flex min-h-full flex-1 flex-col bg-[#faf9f7] text-stone-900">
       <main>
         <HeroBanner />
-        <PromoSection />
+        {/* legacy promo banner — hidden 2026-08-20, keep for rollback */}
+        {/* <PromoSection /> */}
+        <PromoBanner />
+
+        <AllScarvesGrid />
 
         <HomeCollectionRail
           id="selection-summer"

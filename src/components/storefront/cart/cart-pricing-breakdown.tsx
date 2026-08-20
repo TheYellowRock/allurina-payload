@@ -1,4 +1,4 @@
-import { PROMO_FREE_ITEM_MIN_ITEMS, FREE_DELIVERY_MIN_ITEMS, type CartPricingBreakdown } from "@/lib/cart/pricing"
+import type { CartPricingBreakdown } from "@/lib/cart/pricing"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
 export function CartPricingBreakdownView({
@@ -8,30 +8,38 @@ export function CartPricingBreakdownView({
   pricing: CartPricingBreakdown
   className?: string
 }) {
-  const { itemCount, merchandiseSaleTotal, promoDiscountDh, deliveryDh, deliverySavingDh, grandTotal } =
-    pricing
+  const {
+    itemCount,
+    merchandiseListTotal,
+    merchandiseSaleTotal,
+    promoSavingsDh,
+    deliveryDh,
+    deliverySavingDh,
+    grandTotal,
+  } = pricing
 
   const livraisonLabel =
-    deliverySavingDh > 0
-      ? `Offerte (dès ${FREE_DELIVERY_MIN_ITEMS} pièces)`
-      : itemCount > 0
-        ? formatScarfPrice(deliveryDh)
-        : "—"
+    deliverySavingDh > 0 ? "GRATUITE" : itemCount > 0 ? formatScarfPrice(deliveryDh) : "—"
 
   return (
     <div className={`space-y-2 text-sm font-light ${className}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-stone-700">
         <span>Sous-total articles</span>
         <span className="text-right font-medium tabular-nums text-stone-900">
+          {promoSavingsDh > 0 ? (
+            <span className="mr-2 text-stone-400 line-through">
+              {formatScarfPrice(merchandiseListTotal)}
+            </span>
+          ) : null}
           {formatScarfPrice(merchandiseSaleTotal)}
         </span>
       </div>
 
-      {promoDiscountDh > 0 ? (
+      {promoSavingsDh > 0 ? (
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-[#c00000]">
-          <span>{`Promo 4+1 (dès ${PROMO_FREE_ITEM_MIN_ITEMS} pièces)`}</span>
+          <span>Réduction lot</span>
           <span className="text-right font-medium tabular-nums">
-            −{formatScarfPrice(promoDiscountDh)}
+            −{formatScarfPrice(promoSavingsDh)}
           </span>
         </div>
       ) : null}

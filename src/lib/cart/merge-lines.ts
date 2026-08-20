@@ -46,9 +46,3 @@ export function cartItemCount(items: CartLineItem[]): number {
 export function cartSubtotal(items: CartLineItem[]): number {
   return items.reduce((acc, i) => acc + i.price * i.quantity, 0)
 }
-
-/** Lowest per-unit price across cart lines — the unit made free by the "4+1" promo. */
-export function cartCheapestUnitPrice(items: CartLineItem[]): number {
-  if (items.length === 0) return 0
-  return Math.min(...items.map((i) => i.price))
-}
