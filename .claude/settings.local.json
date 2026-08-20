@@ -11,7 +11,27 @@
       "Bash(node scripts/_tmp-check-migrations.mjs)",
       "WebSearch",
       "WebFetch(domain:developers.facebook.com)",
-      "WebFetch(domain:ceaksan.com)"
+      "WebFetch(domain:ceaksan.com)",
+      "Bash(npx --no-install playwright --version)",
+      "Read(//tmp/**)",
+      "Bash(curl -sv http://localhost:3000)",
+      "Bash(curl -sf http://localhost:3002)",
+      "Bash(break)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/api/public/scarves?limit=12&page=1\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/api/scarves?limit=12&page=1\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/api/public/scarves?page=abc\")",
+      "Bash(curl -s \"http://localhost:3002/api/public/scarves?limit=999\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('doc count:', j.docs.length, '| hasNextPage:', j.hasNextPage\\)}\\)\")",
+      "Bash(curl -s \"http://localhost:3002/api/public/scarves?limit=0\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('doc count:', j.docs.length\\)}\\)\")",
+      "Bash(curl -s \"http://localhost:3002/api/public/scarves?page=-5&limit=3\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('page:', j.page\\)}\\)\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/api/public/scarves?limit=12.5\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/fr\" -o /tmp/home.html -D /tmp/home_headers.txt)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/\" -o /tmp/home.html -D /tmp/home_headers.txt)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f \"next-server\")",
+      "Bash(curl -s -o /dev/null -w \"port 3000 status: %{http_code}\\\\n\" http://localhost:3000 --max-time 3)"
     ]
   }
 }
