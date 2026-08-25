@@ -31,7 +31,11 @@
       "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" \"http://localhost:3002/\" -o /tmp/home.html -D /tmp/home_headers.txt)",
       "Bash(pkill -f \"next dev\")",
       "Bash(pkill -f \"next-server\")",
-      "Bash(curl -s -o /dev/null -w \"port 3000 status: %{http_code}\\\\n\" http://localhost:3000 --max-time 3)"
+      "Bash(curl -s -o /dev/null -w \"port 3000 status: %{http_code}\\\\n\" http://localhost:3000 --max-time 3)",
+      "Bash(curl -s \"http://localhost:3003/api/public/scarves?limit=1&page=1\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const s=j.docs[0];console.log\\(JSON.stringify\\(s,null,2\\)\\);console.log\\('typeof price:', typeof s.price\\);console.log\\('price value:', s.price\\)}\\)\")",
+      "Bash(curl *)",
+      "Bash(taskkill //PID 13996 //F)"
     ]
   }
 }

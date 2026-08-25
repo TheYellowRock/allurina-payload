@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 
+import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { pageview } from "@/lib/pixel"
 
 export function PixelPageView() {
@@ -22,7 +23,15 @@ export function PixelPageView() {
     void fetch("/api/pixel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventName: "PageView", eventData: { eventId } }),
+      body: JSON.stringify({
+        eventName: "PageView",
+        eventData: {
+          eventId,
+          eventSourceUrl: window.location.href,
+          fbp: readFbp() ?? undefined,
+          fbc: readFbc() ?? undefined,
+        },
+      }),
     })
   }, [pathname, searchParams])
 

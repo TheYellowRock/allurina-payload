@@ -12,6 +12,7 @@ import type { CartAddPayload } from "@/lib/cart/types"
 import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { gtmTrackAddToCart } from "@/lib/gtm"
 import { fbEvent } from "@/lib/pixel"
+import { resolvePromoPrice } from "@/lib/promo-tiers"
 import { cn } from "@/lib/utils"
 
 /** Lock window for the double-tap guard below — long enough to absorb a fast double-click/tap. */
@@ -65,12 +66,13 @@ export function AddToCartButton({
           quantity: item.quantity,
         })
         const addToCartEventId = crypto.randomUUID()
+        const { total: resolvedValue } = resolvePromoPrice(item.quantity, item.price)
         fbEvent(
           "AddToCart",
           {
             content_ids: [item.productId],
             content_type: "product",
-            value: item.price * item.quantity,
+            value: resolvedValue,
             currency: "MAD",
           },
           addToCartEventId,
@@ -83,7 +85,8 @@ export function AddToCartButton({
             eventData: {
               eventId: addToCartEventId,
               products: [{ id: item.productId, quantity: item.quantity, item_price: item.price }],
-              value: item.price * item.quantity,
+              value: resolvedValue,
+              eventSourceUrl: window.location.href,
               fbp: readFbp() ?? undefined,
               fbc: readFbc() ?? undefined,
             },

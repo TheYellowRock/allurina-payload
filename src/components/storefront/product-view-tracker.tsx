@@ -33,6 +33,7 @@ export function ProductViewTracker({
           eventId,
           products: [{ id: productId, quantity: 1, item_price: price }],
           value: price,
+          eventSourceUrl: window.location.href,
           fbp: readFbp() ?? undefined,
           fbc: readFbc() ?? undefined,
         },

@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 import { sendServerEvent } from "@/lib/conversions-api"
 import type { CapiEventData } from "@/lib/conversions-api"
 
-export async function POST(request: NextRequest) {
+export const dynamic = "force-dynamic"
+
+export async function POST(request: Request) {
   let body: { eventName?: string; eventData?: CapiEventData }
   try {
     body = await request.json()
@@ -16,14 +18,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing eventName" }, { status: 400 })
   }
 
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    undefined
-  const userAgent = request.headers.get("user-agent") ?? undefined
-
   try {
-    await sendServerEvent(eventName, { ...eventData, ip, userAgent })
+    await sendServerEvent(eventName, eventData)
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error("[pixel/capi]", err)

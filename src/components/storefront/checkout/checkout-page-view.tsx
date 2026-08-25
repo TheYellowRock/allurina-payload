@@ -173,7 +173,7 @@ export function CheckoutPageView() {
                 item_price: item.price,
               })),
               value: pricing.grandTotal,
-              email,
+              eventSourceUrl: window.location.href,
               phone,
               firstName,
               lastName,
