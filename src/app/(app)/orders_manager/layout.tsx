@@ -8,42 +8,14 @@ export default function OrdersManagerLayout({
 }>) {
   return (
     <div className="min-h-screen bg-[#f4f3f0]">
-      <header className="sticky top-0 z-40 border-b border-stone-300/90 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">
-            <span className="text-sm font-semibold tracking-tight text-stone-900">
-              Allurina · CRM
-            </span>
-            <nav
-              className="flex flex-wrap items-center gap-1 text-xs font-medium text-stone-600 md:text-[13px]"
-              aria-label="Sections CRM"
-            >
-              <a
-                href="#crm-overview"
-                className="rounded-sm px-2 py-1 transition-colors hover:bg-stone-100 hover:text-stone-900"
-              >
-                Synthèse
-              </a>
-              <span className="text-stone-300" aria-hidden>
-                ·
-              </span>
-              <a
-                href="#crm-commandes"
-                className="rounded-sm px-2 py-1 transition-colors hover:bg-stone-100 hover:text-stone-900"
-              >
-                Commandes
-              </a>
-              <span className="text-stone-300" aria-hidden>
-                ·
-              </span>
-              <a
-                href="#crm-clients"
-                className="rounded-sm px-2 py-1 transition-colors hover:bg-stone-100 hover:text-stone-900"
-              >
-                Clients
-              </a>
-            </nav>
-          </div>
+      {/* Fixed h-14 height: the sidebar and the Métriques tab's sticky cards row both
+          anchor to `top-14`, so this must stay in sync if the header height ever changes. */}
+      <header className="sticky top-0 z-40 h-14 border-b border-stone-300/90 bg-white/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
+          {/* pl-9 clears the fixed hamburger button (Sidebar) on <1024px; the sidebar owns that space above lg. */}
+          <span className="pl-9 text-sm font-semibold tracking-tight text-stone-900 lg:pl-0">
+            Allurina · CRM
+          </span>
           <div className="flex shrink-0 items-center gap-3 text-xs md:text-[13px]">
             <Link
               href="/"

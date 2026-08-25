@@ -1,24 +1,31 @@
+import { Package } from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
+import { getPayload } from "payload"
 
-import {
-  buildClientInsights,
-  computeCrmOverview,
-  serializeClientDoc,
-  statusCountsLastDays,
-} from "@/lib/orders-manager/crm-stats"
+import config from "@payload-config"
 import { getStaffUser } from "@/lib/orders-manager/getStaffUser"
-import { serializeOrderDoc } from "@/lib/orders-manager/serialize-order"
+import { urgentCutoffIso } from "@/lib/orders-manager/order-status"
+import { resolveOrdersManagerTab } from "@/lib/orders-manager/tabs"
 
-import { OrdersManagerDashboard } from "./orders-manager-dashboard"
+import { Sidebar } from "./sidebar"
+import { MetricsTab } from "./tabs/metrics-tab"
+import { OrdersTab } from "./tabs/orders-tab"
+import { ProductsTab } from "./tabs/products-tab"
 
 export const metadata: Metadata = {
   title: "Commandes — logistique | AllurinaScarf",
   robots: { index: false, follow: false },
 }
 
-export default async function OrdersManagerPage() {
-  const { user, payload } = await getStaffUser()
+type SearchParams = Record<string, string | string[] | undefined>
+
+export default async function OrdersManagerPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const { user } = await getStaffUser()
 
   if (!user) {
     return (
@@ -38,47 +45,56 @@ export default async function OrdersManagerPage() {
     )
   }
 
-  const [ordersRes, clientsRes] = await Promise.all([
-    payload.find({
-      collection: "orders",
-      limit: 500,
-      depth: 0,
-      sort: "-createdAt",
-      overrideAccess: true,
-    }),
-    payload.find({
-      collection: "clients",
-      limit: 500,
-      depth: 0,
-      sort: "-updatedAt",
-      overrideAccess: true,
-    }),
-  ])
-
-  const orders = ordersRes.docs
-    .map((d) => serializeOrderDoc(d as unknown as Record<string, unknown>))
-    .filter((o): o is NonNullable<typeof o> => o != null)
-
-  const clientDocs = clientsRes.docs
-    .map((d) => serializeClientDoc(d as unknown as Record<string, unknown>))
-    .filter((c): c is NonNullable<typeof c> => c != null)
-
-  const overview = computeCrmOverview(orders)
-  const statusLast30 = statusCountsLastDays(orders, 30)
-  const clientInsights = buildClientInsights(orders, clientDocs)
+  const sp = await searchParams
+  const tab = resolveOrdersManagerTab(sp.tab)
 
   const staffEmail =
     typeof user === "object" && user && "email" in user
       ? String((user as { email?: string }).email ?? "")
       : undefined
 
+  // Sidebar badge — count-only query, independent of which tab is active. Cheap: same
+  // shape as orders-tab.tsx's "urgent" query, but `limit: 1` since only `totalDocs` is read.
+  const resolvedConfig = await config
+  const payload = await getPayload({ config: resolvedConfig })
+  const urgentRes = await payload.find({
+    collection: "orders",
+    where: { status: { equals: "pending" }, createdAt: { less_than: urgentCutoffIso() } },
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+  })
+
   return (
-    <OrdersManagerDashboard
-      initialOrders={orders}
-      staffEmail={staffEmail || undefined}
-      overview={overview}
-      statusLast30={statusLast30}
-      clientInsights={clientInsights}
-    />
+    <div className="flex border-t border-stone-200/80">
+      <Sidebar active={tab} badges={{ urgentPending: urgentRes.totalDocs }} />
+      <main className="min-w-0 flex-1 pb-24">
+        <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 items-center justify-center bg-stone-900 text-white">
+                <Package className="size-5" strokeWidth={1.75} aria-hidden />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">
+                  Commandes & CRM
+                </h1>
+                {staffEmail ? (
+                  <p className="mt-2 text-xs text-stone-500">
+                    Session : <span className="font-medium text-stone-700">{staffEmail}</span>
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            {tab === "orders" ? <OrdersTab searchParams={sp} /> : null}
+            {tab === "metrics" ? <MetricsTab searchParams={sp} /> : null}
+            {tab === "products" ? <ProductsTab searchParams={sp} /> : null}
+          </div>
+        </div>
+      </main>
+    </div>
   )
 }

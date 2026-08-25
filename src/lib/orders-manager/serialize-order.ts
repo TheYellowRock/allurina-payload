@@ -22,6 +22,7 @@ export type OrdersManagerOrder = {
   deliveryFee: number
   grandTotal: number
   createdAt: string
+  updatedAt: string
 }
 
 function parseItems(raw: unknown): CartLineItem[] {
@@ -81,5 +82,9 @@ export function serializeOrderDoc(doc: Record<string, unknown>): OrdersManagerOr
       doc.createdAt instanceof Date
         ? doc.createdAt.toISOString()
         : String(doc.createdAt ?? ""),
+    updatedAt:
+      doc.updatedAt instanceof Date
+        ? doc.updatedAt.toISOString()
+        : String(doc.updatedAt ?? doc.createdAt ?? ""),
   }
 }

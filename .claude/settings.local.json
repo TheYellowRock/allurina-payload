@@ -35,7 +35,15 @@
       "Bash(curl -s \"http://localhost:3003/api/public/scarves?limit=1&page=1\")",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const s=j.docs[0];console.log\\(JSON.stringify\\(s,null,2\\)\\);console.log\\('typeof price:', typeof s.price\\);console.log\\('price value:', s.price\\)}\\)\")",
       "Bash(curl *)",
-      "Bash(taskkill //PID 13996 //F)"
+      "Bash(taskkill //PID 13996 //F)",
+      "Bash(node -e \"require.resolve\\('pg'\\)\")",
+      "Bash(DATABASE_URL=postgresql://postgres.voadlunanvzbxntyalhv:goG5n8AjG7O7Eeg4@aws-0-eu-west-1.pooler.supabase.com:6543/postgres node -e ' *)",
+      "Bash(npx jiti *)",
+      "Bash(rm \"C:\\\\Users\\\\medam\\\\DevBooth\\\\Allurina\\\\Payload-Next-Shop\\\\allurina-shop\\\\scripts\\\\tmp-import-check.ts\")",
+      "Bash(JITI_ALIAS='{\"@\":\"./src\"}' npx jiti scripts/tmp-verify-orders-manager.ts)",
+      "Bash(JITI_ALIAS='{\"@\":\"C:/Users/medam/DevBooth/Allurina/Payload-Next-Shop/allurina-shop/src\"}' npx jiti scripts/tmp-verify-orders-manager.ts)",
+      "Bash(node *)",
+      "Bash(JITI_ALIAS='{\"@\":\"C:/Users/medam/DevBooth/Allurina/Payload-Next-Shop/allurina-shop/src\"}' npx jiti scripts/tmp-verify-orders-manager-2.ts)"
     ]
   }
 }
