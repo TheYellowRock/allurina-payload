@@ -6,6 +6,18 @@ import { fileURLToPath } from "url";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      // Short alias — permanent: false (307) since the canonical URL structure isn't
+      // final yet; a 308 would get cached hard by browsers and be awkward to undo.
+      // Next forwards the query string automatically (e.g. /om?tab=metrics -> /orders_manager?tab=metrics).
+      {
+        source: "/om",
+        destination: "/orders_manager",
+        permanent: false,
+      },
+    ]
+  },
   turbopack: {
     resolveAlias: {
       "@": path.join(dirname, "src"),

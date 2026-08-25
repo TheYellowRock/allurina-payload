@@ -1,4 +1,12 @@
+import type { Metadata } from "next"
 import Link from "next/link"
+
+// Scoped to this tool only — referenced here, not at the app root, so the public
+// storefront's own metadata is untouched. See manifest.webmanifest/route.ts for why this
+// isn't the special `manifest.ts` file convention.
+export const metadata: Metadata = {
+  manifest: "/orders_manager/manifest.webmanifest",
+}
 
 /** Staff CRM shell — no boutique mega-menu; compact in-app navigation only. */
 export default function OrdersManagerLayout({

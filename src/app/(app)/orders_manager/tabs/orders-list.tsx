@@ -17,6 +17,7 @@ import {
   URGENT_PENDING_HOURS,
   type OrderStatus,
 } from "@/lib/orders-manager/order-status"
+import { buildLoginRedirectUrl } from "@/lib/orders-manager/safe-redirect"
 import type { OrdersManagerOrder } from "@/lib/orders-manager/serialize-order"
 import { ORDERS_TAB_PAGE_SIZE } from "@/lib/orders-manager/tabs"
 import { productPath } from "@/lib/routes"
@@ -402,6 +403,7 @@ export function OrdersList({
   const [rest, setRest] = useState(orders)
   const [savingId, setSavingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [sessionExpired, setSessionExpired] = useState(false)
   const [searchDraft, setSearchDraft] = useState(initialQ)
 
   const toggle = useCallback((id: string) => {
@@ -444,6 +446,10 @@ export function OrdersList({
         credentials: "include",
         body: JSON.stringify({ status }),
       })
+      if (res.status === 401 || res.status === 403) {
+        setSessionExpired(true)
+        return
+      }
       const data = (await res.json()) as { error?: string; status?: OrderStatus }
       if (!res.ok) {
         setError(data.error ?? "Échec de la mise à jour.")
@@ -465,7 +471,20 @@ export function OrdersList({
 
   return (
     <section className="space-y-6">
-      {error ? (
+      {sessionExpired ? (
+        <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
+          <p className="font-semibold">Session expirée</p>
+          <p className="mt-1">Reconnectez-vous pour continuer — vous reviendrez exactement ici.</p>
+          <Link
+            href={buildLoginRedirectUrl(
+              typeof window !== "undefined" ? window.location.pathname + window.location.search : "/orders_manager",
+            )}
+            className="mt-2 inline-block font-medium underline underline-offset-2"
+          >
+            Se reconnecter
+          </Link>
+        </div>
+      ) : error ? (
         <p className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900" role="alert">
           {error}
         </p>

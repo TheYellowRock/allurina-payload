@@ -1,12 +1,11 @@
 import { Package } from "lucide-react"
 import type { Metadata } from "next"
-import Link from "next/link"
 import { getPayload } from "payload"
 
 import config from "@payload-config"
-import { getStaffUser } from "@/lib/orders-manager/getStaffUser"
+import { requireStaffUser } from "@/lib/orders-manager/getStaffUser"
 import { urgentCutoffIso } from "@/lib/orders-manager/order-status"
-import { resolveOrdersManagerTab } from "@/lib/orders-manager/tabs"
+import { buildOrdersManagerPath, resolveOrdersManagerTab } from "@/lib/orders-manager/tabs"
 
 import { Sidebar } from "./sidebar"
 import { MetricsTab } from "./tabs/metrics-tab"
@@ -25,27 +24,12 @@ export default async function OrdersManagerPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const { user } = await getStaffUser()
-
-  if (!user) {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center">
-        <h1 className="text-2xl font-semibold text-stone-900">Préparation des commandes</h1>
-        <p className="mt-3 text-sm leading-relaxed text-stone-600">
-          Connectez-vous avec un compte Payload (bouton ci-dessous), puis ouvrez à nouveau cette page.
-          Les cookies de session admin s’appliquent au même site.
-        </p>
-        <Link
-          href="/admin/login"
-          className="mt-8 inline-flex h-11 items-center border-2 border-stone-900 bg-stone-900 px-6 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-stone-900"
-        >
-          Connexion admin
-        </Link>
-      </div>
-    )
-  }
-
   const sp = await searchParams
+  // Auth check happens after reading searchParams so an unauthenticated visit to, say,
+  // `/orders_manager?tab=metrics&range=last_30` redirects to login carrying that exact
+  // path — not just the bare route.
+  const { user } = await requireStaffUser(buildOrdersManagerPath(sp))
+
   const tab = resolveOrdersManagerTab(sp.tab)
 
   const staffEmail =
