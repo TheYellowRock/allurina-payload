@@ -1,13 +1,13 @@
 import type { CartLineItem } from "@/lib/cart/types"
 import { cartItemCount, cartSubtotal } from "@/lib/cart/merge-lines"
-import { resolvePromoPrice } from "@/lib/promo-tiers"
+import type { PromoDefinition } from "@/lib/promotions/types"
 
-/** Standard delivery fee (Dh) — waived when the tier-bundle promo grants free shipping. */
+/** Standard delivery fee (Dh) — waived when the active promo grants free shipping. */
 export const DELIVERY_FEE_DH = 35
 
 /**
- * Legacy "4+1" constants — `computeCartPricing` no longer uses these (superseded by
- * `resolvePromoPrice`/`PROMO_TIERS`), but the archived `FourPlusOnePromoSection` and
+ * Legacy "4+1" constants — `computeCartPricing` no longer uses these (superseded by the
+ * promotions registry), but the archived `FourPlusOnePromoSection` and
  * `FreeItemMiniBanner` components still import them for display purposes and were
  * intentionally left untouched in this pass.
  */
@@ -16,38 +16,37 @@ export const PROMO_FREE_ITEM_MIN_ITEMS = 5
 
 export type CartPricingBreakdown = {
   itemCount: number
-  /** Raw sum of line prices × qty, before tier-bundle pricing — shown crossed out when `promoSavingsDh > 0`. */
+  /** Raw sum of line prices × qty, before promo pricing — shown crossed out when `promoSavingsDh > 0`. */
   merchandiseListTotal: number
-  /** Tier-bundle-adjusted merchandise total — this is what's actually charged. */
+  /** Promo-adjusted merchandise total — this is what's actually charged. */
   merchandiseSaleTotal: number
-  /** `merchandiseListTotal - merchandiseSaleTotal`, i.e. what `resolvePromoPrice` reports as `savings`. */
+  /** `merchandiseListTotal - merchandiseSaleTotal`, i.e. what the promo's `resolve()` reports as `savings`. */
   promoSavingsDh: number
   deliveryDh: number
-  /** Equals `DELIVERY_FEE_DH` when the tier-bundle promo grants free shipping, else 0. */
+  /** Equals `DELIVERY_FEE_DH` when the active promo grants free shipping, else 0. */
   deliverySavingDh: number
   grandTotal: number
+  /** What the active promo says was applied — e.g. "Palier 5 châles". Null when nothing applied. */
+  appliedLabel: string | null
 }
 
 /**
- * Cart totals under the tier-bundle promo (`lib/promo-tiers.ts` — see `CartPromoProgress`
- * for the AliExpress-style progress bar). This supersedes the old "4+1" per-item discount:
- * `resolvePromoPrice` is now the single source of truth for both the merchandise total and
- * whether delivery is free. `unitPrice` is the cart's average per-unit price
- * (`merchandiseListTotal / itemCount`) — carts mixing different products at different
- * prices still get an exact `savings` figure this way, since `itemCount × avgUnitPrice`
- * always equals `merchandiseListTotal` by construction; the bundle `total` itself for
- * qty 2–5 comes straight from `PROMO_TIERS` regardless of `unitPrice`.
+ * Cart totals under whichever promo is active (`lib/promotions/active.ts` — see
+ * `CartPromoProgress` for the progress bar). `promo` must be the SAME resolved
+ * definition the caller's top bar/banner are using — callers get it from
+ * `useCart().promo` (client) or `getActivePromo()` (server), never re-derive it here, so
+ * pricing can never disagree with what the customer was shown.
  */
-export function computeCartPricing(items: CartLineItem[]): CartPricingBreakdown {
+export function computeCartPricing(items: CartLineItem[], promo: PromoDefinition): CartPricingBreakdown {
   const itemCount = cartItemCount(items)
   const merchandiseListTotal = cartSubtotal(items)
-  const avgUnitPrice = itemCount > 0 ? merchandiseListTotal / itemCount : 0
 
   const {
     total: merchandiseSaleTotal,
     freeShipping,
     savings: promoSavingsDh,
-  } = resolvePromoPrice(itemCount, avgUnitPrice)
+    appliedLabel,
+  } = promo.resolve(items)
 
   const deliveryDh = itemCount === 0 ? 0 : freeShipping ? 0 : DELIVERY_FEE_DH
   const deliverySavingDh = freeShipping ? DELIVERY_FEE_DH : 0
@@ -61,5 +60,6 @@ export function computeCartPricing(items: CartLineItem[]): CartPricingBreakdown 
     deliveryDh,
     deliverySavingDh,
     grandTotal,
+    appliedLabel,
   }
 }

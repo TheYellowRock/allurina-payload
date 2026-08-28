@@ -11,6 +11,7 @@ import { Sidebar } from "./sidebar"
 import { MetricsTab } from "./tabs/metrics-tab"
 import { OrdersTab } from "./tabs/orders-tab"
 import { ProductsTab } from "./tabs/products-tab"
+import { PromotionsTab } from "./tabs/promotions-tab"
 
 export const metadata: Metadata = {
   title: "Commandes — logistique | AllurinaScarf",
@@ -76,6 +77,7 @@ export default async function OrdersManagerPage({
             {tab === "orders" ? <OrdersTab searchParams={sp} /> : null}
             {tab === "metrics" ? <MetricsTab searchParams={sp} /> : null}
             {tab === "products" ? <ProductsTab searchParams={sp} /> : null}
+            {tab === "promotions" ? <PromotionsTab /> : null}
           </div>
         </div>
       </main>

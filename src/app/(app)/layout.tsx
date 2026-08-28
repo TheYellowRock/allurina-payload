@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { MetaPixelScript } from "@/components/MetaPixelScript"
 import { PixelPageView } from "@/components/PixelPageView"
 import { StorefrontProviders } from "@/components/storefront/storefront-providers"
+import { getActivePromo } from "@/lib/promotions/active"
 
 import "../globals.css"
 
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
 const GTM_ID = (process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MLPCW62M").trim()
 
 /** Shell shared by storefront `(shop)` and staff `/orders_manager` (no shop chrome here). */
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -46,6 +47,8 @@ export default function AppLayout({
       "[Meta Pixel] NEXT_PUBLIC_FACEBOOK_PIXEL_ID is not set — pixel will not load",
     )
   }
+
+  const activePromo = await getActivePromo()
 
   return (
     <html
@@ -61,7 +64,7 @@ export default function AppLayout({
             <PixelPageView />
           </Suspense>
         ) : null}
-        <StorefrontProviders>{children}</StorefrontProviders>
+        <StorefrontProviders activePromoId={activePromo.id}>{children}</StorefrontProviders>
       </body>
     </html>
   )

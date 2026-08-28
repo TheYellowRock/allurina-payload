@@ -1,71 +1,56 @@
 "use client"
 
-import { PROMO_TIERS } from "@/lib/promo-tiers"
+import type { PromoBannerContent } from "@/lib/promotions/types"
 import { cn } from "@/lib/utils"
 
 /**
- * Bold, high-contrast, mobile-first promo banner — replaces `PromoSection` on the
- * homepage (see the parent page for the swap). Reads `PROMO_TIERS` directly; no data
- * fetching, no cart/checkout wiring — purely marketing display.
+ * Numeral-led, mobile-first promo banner — replaces `PromoSection` on the homepage (see
+ * the parent page for the swap). Renders generically from the active promo's `banner`
+ * content (resolved server-side via `getActivePromo()`) — no promo copy is hardcoded
+ * here, so switching the active promo changes this automatically. No headline, no red
+ * slab — cards sit directly on the page background so the numeral (not a claim/slogan)
+ * is the largest thing on screen above the grid. Chips wrap onto 2/row on mobile so
+ * height stays bounded regardless of how many tiers a promo defines.
  */
-export function PromoBanner({ className }: { className?: string }) {
-  const bestTier = PROMO_TIERS[PROMO_TIERS.length - 1]
-
+export function PromoBanner({ banner, className }: { banner: PromoBannerContent; className?: string }) {
   return (
-    <section
-      className={cn("bg-[#e0102a] px-4 py-10 text-white sm:px-6 sm:py-14", className)}
-      aria-label="Offre promotionnelle"
-    >
-      <div className="mx-auto max-w-4xl text-center">
-        <h2 className="text-balance text-2xl font-black leading-tight tracking-tight sm:text-3xl md:text-4xl">
-          OFFRE CHOC — <span className="text-yellow-300">PLUS TU PRENDS, MOINS TU PAIES</span>
-        </h2>
-
-        {/* Mini cards, laid out horizontally: a scrollable strip on mobile, a 4-up row from sm+. */}
-        <ul className="mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 sm:grid sm:grid-cols-4 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
-          {PROMO_TIERS.map((tier) => {
-            const isBest = bestTier ? tier.qty === bestTier.qty : false
-            return (
-              <li
-                key={tier.qty}
-                className={cn(
-                  "flex min-w-[148px] shrink-0 snap-start flex-col items-center rounded-lg border-2 bg-white px-4 py-4 sm:min-w-0",
-                  isBest ? "border-yellow-300 ring-4 ring-yellow-300/60" : "border-white/40",
-                )}
-              >
-                {isBest ? (
-                  <span className="mb-1.5 rounded-full bg-yellow-300 px-2 py-0.5 text-[9px] font-black tracking-widest text-[#e0102a]">
-                    MEILLEURE OFFRE
-                  </span>
-                ) : null}
-
-                {/* Quantity — big, in the accent red. */}
-                <span className="text-5xl font-black leading-none text-[#e0102a] sm:text-6xl">
-                  {tier.qty}
+    <section className={cn("bg-[#faf9f7] px-4 py-6 sm:px-6 sm:py-8", className)} aria-label="Offre promotionnelle">
+      <div className="mx-auto max-w-4xl">
+        <ul className="flex flex-wrap justify-center gap-3 sm:gap-4">
+          {banner.chips.map((chip) => (
+            <li
+              key={`${chip.value}-${chip.label}`}
+              className={cn(
+                "relative flex min-w-[104px] flex-1 basis-[calc(50%-0.375rem)] flex-col items-center border bg-white px-3 py-4 text-center sm:basis-0 sm:px-4 sm:py-5",
+                chip.highlight ? "border-2 border-[#e0102a]" : "border-stone-200",
+              )}
+            >
+              {chip.highlight ? (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#e0102a] px-2 py-0.5 text-[9px] font-black tracking-widest text-white uppercase">
+                  Meilleure offre
                 </span>
-                <span className="mt-1 text-[11px] font-bold tracking-widest text-stone-500 uppercase">
-                  Châles
-                </span>
+              ) : null}
 
-                {/* Price — big, in a distinct color from the quantity. */}
-                <span className="mt-3 text-3xl font-black leading-none text-stone-900 sm:text-4xl">
-                  {tier.bundlePrice}
-                  <span className="ml-1 text-base font-bold text-stone-500">DH</span>
+              <span className="text-5xl font-black leading-none text-[#e0102a] sm:text-6xl">{chip.value}</span>
+              {chip.unit ? (
+                <span className="mt-1.5 text-[10px] font-bold tracking-widest text-stone-500 uppercase">
+                  {chip.unit}
                 </span>
-
-                {tier.freeShipping ? (
-                  <span className="mt-2.5 text-[10px] font-bold tracking-wide text-emerald-600 uppercase">
-                    Livraison offerte
-                  </span>
-                ) : null}
-              </li>
-            )
-          })}
+              ) : null}
+              <span className="mt-2 text-xs font-bold leading-tight text-stone-800 sm:text-sm">{chip.label}</span>
+            </li>
+          ))}
         </ul>
 
-        <p className="mt-6 text-xs font-medium uppercase tracking-[0.2em] text-white/80 sm:text-sm">
-          Offre limitée — stock disponible uniquement
-        </p>
+        {banner.footnote ? (
+          <p className="mt-4 text-center text-[10px] font-medium tracking-[0.14em] text-stone-400 uppercase">
+            {banner.footnote}
+          </p>
+        ) : null}
+
+        {banner.subline ? (
+          <p className="mt-2 text-center text-[11px] font-medium text-stone-500">{banner.subline}</p>
+        ) : null}
       </div>
     </section>
   )

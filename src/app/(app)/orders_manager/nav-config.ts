@@ -1,10 +1,10 @@
-import { LayoutGrid, Package, RotateCcw, ShoppingCart, Truck, Users } from "lucide-react"
+import { LayoutGrid, Package, RotateCcw, ShoppingCart, Tag, Truck, Users } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import type { OrdersManagerTab } from "@/lib/orders-manager/tabs"
 
 export type NavBadgeKey = "urgentPending"
-export type NavGroup = "Opérations" | "Analyse"
+export type NavGroup = "Opérations" | "Analyse" | "Configuration"
 
 export type NavItem = {
   id: string
@@ -16,7 +16,7 @@ export type NavItem = {
   badgeKey?: NavBadgeKey
 }
 
-export const NAV_GROUPS: NavGroup[] = ["Opérations", "Analyse"]
+export const NAV_GROUPS: NavGroup[] = ["Opérations", "Analyse", "Configuration"]
 
 /**
  * Data-driven sidebar contents — adding a future section is one entry here, not a JSX
@@ -30,4 +30,5 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "metrics", label: "Métriques", icon: LayoutGrid, group: "Analyse", tab: "metrics" },
   { id: "products", label: "Produits", icon: Package, group: "Analyse", tab: "products" },
   { id: "clients", label: "Clients", icon: Users, group: "Analyse" },
+  { id: "promotions", label: "Promotions", icon: Tag, group: "Configuration", tab: "promotions" },
 ]

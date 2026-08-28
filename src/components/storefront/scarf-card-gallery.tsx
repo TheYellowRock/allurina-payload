@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
@@ -12,6 +12,43 @@ type ImageEntry = { src: string; alt: string }
 const SWIPE_THRESHOLD_PX = 12
 
 const CARD_IMAGE_SIZES = "(max-width: 768px) 50vw, 33vw"
+
+/** Swaps to a placeholder on load failure so a broken image never leaves an indefinite blank/grey box. */
+function GalleryImage({
+  src,
+  alt,
+  priority,
+  className,
+}: {
+  src: string
+  alt: string
+  priority: boolean
+  className?: string
+}) {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <div className="flex size-full items-center justify-center bg-stone-100 text-stone-400">
+        <ImageOff className="size-6" strokeWidth={1.5} aria-hidden />
+      </div>
+    )
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      priority={priority}
+      sizes={CARD_IMAGE_SIZES}
+      className={className}
+      style={{ objectPosition: "center" }}
+      draggable={false}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 export function ScarfCardGallery({
   images,
@@ -98,15 +135,11 @@ export function ScarfCardGallery({
         aria-label={`Voir ${productTitle}`}
         onClick={() => router.push(productHref)}
       >
-        <Image
+        <GalleryImage
           src={only.src}
           alt={only.alt}
-          fill
           priority={Boolean(priorityFirstSlide)}
-          sizes={CARD_IMAGE_SIZES}
           className="object-cover"
-          style={{ objectPosition: "center" }}
-          draggable={false}
         />
       </button>
     )
@@ -150,15 +183,11 @@ export function ScarfCardGallery({
             key={img.src}
             className="relative h-full min-h-0 min-w-full shrink-0 snap-start snap-always"
           >
-            <Image
+            <GalleryImage
               src={img.src}
               alt={img.alt}
-              fill
               priority={Boolean(priorityFirstSlide && i === 0)}
-              sizes={CARD_IMAGE_SIZES}
               className="pointer-events-none object-cover select-none"
-              style={{ objectPosition: "center" }}
-              draggable={false}
             />
           </div>
         ))}

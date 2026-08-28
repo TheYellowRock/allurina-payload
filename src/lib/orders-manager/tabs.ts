@@ -1,4 +1,4 @@
-export const ORDERS_MANAGER_TABS = ["orders", "metrics", "products"] as const
+export const ORDERS_MANAGER_TABS = ["orders", "metrics", "products", "promotions"] as const
 export type OrdersManagerTab = (typeof ORDERS_MANAGER_TABS)[number]
 
 export function resolveOrdersManagerTab(raw: string | string[] | undefined): OrdersManagerTab {

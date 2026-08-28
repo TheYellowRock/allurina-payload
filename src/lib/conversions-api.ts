@@ -1,6 +1,10 @@
 import { headers } from "next/headers"
 
 import { hashUserData } from "@/lib/meta-hash"
+import { getActivePromo } from "@/lib/promotions/active"
+
+/** Events whose `value` must be the promo-resolved cart total, never trusted from the client. */
+const SERVER_PRICED_EVENTS = new Set(["AddToCart", "Purchase"])
 
 export type CapiProduct = { id: string; quantity: number; item_price: number }
 
@@ -91,15 +95,31 @@ export async function sendServerEvent(
     console.warn(`[conversions-api] ${eventName}: no event_source_url provided by caller`)
   }
 
+  // Server authority: for AddToCart/Purchase, the value is never trusted from the
+  // client — it's recomputed here from the active promo's own resolve(), same as
+  // checkout. `products` already carries {id, quantity, item_price} per line, which is
+  // exactly what `resolve()` needs (it only reads price/quantity).
+  let rawValue = eventData.value
+  if (SERVER_PRICED_EVENTS.has(eventName) && eventData.products && eventData.products.length > 0) {
+    const promo = await getActivePromo()
+    const resolved = promo.resolve(eventData.products.map((p) => ({ price: p.item_price, quantity: p.quantity })))
+    if (rawValue !== undefined && Math.abs(rawValue - resolved.total) > 0.01) {
+      console.warn(
+        `[conversions-api] ${eventName}: client-submitted value (${rawValue}) disagreed with server-resolved value (${resolved.total}) — using server value`,
+      )
+    }
+    rawValue = resolved.total
+  }
+
   // Guard: never forward a malformed monetary value. `value` must be present-and-valid
   // for the events that carry one (AddToCart, InitiateCheckout, Purchase — harmless to
   // apply to any other event that happens to include a value too).
   let value: number | undefined
-  if (eventData.value !== undefined) {
-    const rounded = Math.round(eventData.value * 100) / 100
+  if (rawValue !== undefined) {
+    const rounded = Math.round(rawValue * 100) / 100
     if (!isValidMonetaryValue(rounded) || CURRENCY !== "MAD") {
       console.error(`[conversions-api] ${eventName}: refusing to send — malformed value/currency`, {
-        value: eventData.value,
+        value: rawValue,
         currency: CURRENCY,
       })
       return

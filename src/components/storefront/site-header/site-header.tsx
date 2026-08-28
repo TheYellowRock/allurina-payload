@@ -11,23 +11,19 @@ import { navSans } from "@/components/storefront/site-header/nav-font"
 import { MobileNavDrawer } from "@/components/storefront/site-header/mobile-nav-drawer"
 import { useLockScrollAndEscape } from "@/components/storefront/site-header/use-nav-lock"
 import { orderChalesNavCategories } from "@/lib/navChales"
-import { PROMO_TIERS } from "@/lib/promo-tiers"
 import type { StorefrontCategory } from "@/lib/getStorefrontCategories"
 import type { StorefrontCollection } from "@/lib/getStorefrontCollections"
 import { cn } from "@/lib/utils"
 
-/** Archived copy (old "4+1" promo): "4 + 1 gratuit + livraison offerte dès 5 pièces au Maroc". */
-const FIRST_TIER = PROMO_TIERS[0]
-const ANNOUNCEMENT_COPY = FIRST_TIER
-  ? `Dès ${FIRST_TIER.qty} châles : ${FIRST_TIER.bundlePrice} DH + livraison offerte`
-  : ""
-
 export function SiteHeader({
   collections,
   categories,
+  topBar,
 }: {
   collections: StorefrontCollection[]
   categories: StorefrontCategory[]
+  /** The active promo's announcement-bar copy — resolved server-side via `getActivePromo()`. */
+  topBar: string
 }) {
   const merch = collections ?? []
   const chales = categories ?? []
@@ -48,7 +44,7 @@ export function SiteHeader({
           "bg-stone-900 py-2.5 text-center text-[11px] font-medium tracking-[0.14em] text-stone-100 uppercase sm:tracking-[0.18em]",
         )}
       >
-        <p className="mx-auto max-w-2xl px-3 leading-relaxed">{ANNOUNCEMENT_COPY}</p>
+        <p className="mx-auto max-w-2xl px-3 leading-relaxed">{topBar}</p>
       </div>
 
       <header

@@ -21,6 +21,7 @@ import {
   removeLine,
   setLineQuantity,
 } from "@/lib/cart/merge-lines"
+import type { PromoDefinition } from "@/lib/promotions/types"
 
 type CartState = {
   items: CartLineItem[]
@@ -87,6 +88,8 @@ export type CartContextValue = {
   /** Sum of cart line totals (unit price × quantity from Payload). */
   subtotal: number
   pricing: CartPricingBreakdown
+  /** The resolved active promo — same definition the top bar/banner render, passed down from a server ancestor's `getActivePromo()`. */
+  promo: PromoDefinition
   /** Cart/checkout revalidation findings (removed / price changed / stock reduced). */
   validationIssues: CartIssue[]
   openCart: () => void
@@ -104,7 +107,14 @@ export type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null)
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  children,
+  promo,
+}: {
+  children: ReactNode
+  /** Resolved server-side (`getActivePromo()`) by an ancestor layout and passed down — the same definition the top bar/banner render, so cart pricing can never disagree with them. */
+  promo: PromoDefinition
+}) {
   const [state, dispatch] = useReducer(cartReducer, initialState)
 
   useEffect(() => {
@@ -144,13 +154,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(() => {
     const itemCount = cartItemCount(state.items)
     const subtotal = cartSubtotal(state.items)
-    const pricing = computeCartPricing(state.items)
+    const pricing = computeCartPricing(state.items, promo)
     return {
       items: state.items,
       open: state.open,
       hydrated: state.hydrated,
       itemCount,
       subtotal,
+      promo,
       pricing,
       validationIssues: state.validationIssues,
       openCart,
@@ -168,6 +179,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     state.open,
     state.hydrated,
     state.validationIssues,
+    promo,
     openCart,
     closeCart,
     toggleCart,

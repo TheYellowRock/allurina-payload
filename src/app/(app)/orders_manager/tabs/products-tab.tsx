@@ -4,7 +4,6 @@ import type { Where } from "payload"
 import config from "@payload-config"
 import { rangeToWhereBounds, resolveDateRange } from "@/lib/orders-manager/date-range"
 import { formatDh, formatPercent, formatSignedPercent } from "@/lib/orders-manager/format"
-import type { ScarfRef } from "@/lib/orders-manager/never-sold"
 import { neverSoldProducts } from "@/lib/orders-manager/never-sold"
 import {
   flattenOrderItems,
@@ -16,6 +15,8 @@ import {
 import { serializeOrderDoc } from "@/lib/orders-manager/serialize-order"
 import type { OrdersManagerOrder } from "@/lib/orders-manager/serialize-order"
 import { firstParam } from "@/lib/orders-manager/tabs"
+import type { ScarfStockRef } from "@/lib/orders-manager/worst-performers"
+import { worstPerformers } from "@/lib/orders-manager/worst-performers"
 
 import { DateRangePicker } from "./date-range-picker"
 
@@ -106,7 +107,7 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
       collection: "scarves",
       depth: 0,
       limit: 1000,
-      select: { title: true, slug: true },
+      select: { title: true, slug: true, price: true, stockQuantity: true, createdAt: true },
       overrideAccess: true,
     }),
   ])
@@ -120,11 +121,20 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
   const trend = trending(last30Lines, now, 14).slice(0, TOP_N)
   const confByProduct = new Map(productConfirmationRate(rangeLines, now).map((r) => [r.productId, r]))
 
-  const scarves: ScarfRef[] = scarvesRes.docs.map((d) => {
+  const scarves: ScarfStockRef[] = scarvesRes.docs.map((d) => {
     const doc = d as Record<string, unknown>
-    return { id: String(doc.id), title: String(doc.title ?? ""), slug: String(doc.slug ?? "") }
+    return {
+      id: String(doc.id),
+      title: String(doc.title ?? ""),
+      slug: String(doc.slug ?? ""),
+      price: Number(doc.price ?? 0),
+      stockQuantity: Number(doc.stockQuantity ?? 0),
+      createdAt:
+        doc.createdAt instanceof Date ? doc.createdAt.toISOString() : String(doc.createdAt ?? ""),
+    }
   })
   const neverSold = neverSoldProducts(scarves, allTimeLines)
+  const worst = worstPerformers(scarves, last30Lines, allTimeLines, now)
 
   return (
     <section className="space-y-10">
@@ -278,6 +288,105 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
             </table>
           </div>
         </div>
+      </div>
+
+      {/* ——— Worst performers ——— */}
+      <div>
+        <h3 className="text-[11px] font-semibold tracking-[0.18em] text-stone-500 uppercase">
+          À repositionner
+        </h3>
+        <p className="mt-1 text-[11px] text-stone-500">
+          En stock uniquement — vélocité = unités vendues sur 30 jours ÷ jours de disponibilité sur la
+          fenêtre, pas les unités brutes, pour ne pas pénaliser les nouveautés. Produits à moins de{" "}
+          {14} jours de disponibilité exclus du classement (liste séparée ci-dessous).
+        </p>
+        <p className="mt-1 text-[11px] text-stone-500">
+          Vélocité médiane (tous produits en stock) :{" "}
+          <span className="font-semibold text-stone-700">{worst.medianVelocity.toFixed(2)} unité(s)/j</span>
+          {worst.delistedCount > 0 ? (
+            <>
+              {" "}
+              · {worst.delistedCount} produit{worst.delistedCount > 1 ? "s" : ""} de l&apos;historique des
+              commandes n&apos;ont plus de fiche catalogue (exclus).
+            </>
+          ) : null}
+        </p>
+
+        <div className="mt-3 overflow-x-auto rounded-sm border border-stone-300/90 bg-white shadow-sm">
+          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-stone-200 bg-stone-50 text-[11px] font-semibold tracking-wide text-stone-600 uppercase">
+                <th className="px-4 py-3">Produit</th>
+                <th className="px-4 py-3 text-right">Prix</th>
+                <th className="px-4 py-3 text-right">Unités (30j)</th>
+                <th className="px-4 py-3 text-right">Jours dispo.</th>
+                <th className="px-4 py-3 text-right">Vélocité (u/j)</th>
+                <th className="px-4 py-3 text-right">Unités (total)</th>
+                <th className="px-4 py-3 text-right">Dernière vente</th>
+              </tr>
+            </thead>
+            <tbody>
+              {worst.ranked.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-8 text-center text-stone-500" colSpan={7}>
+                    Pas assez de produits avec assez de recul pour établir ce classement.
+                  </td>
+                </tr>
+              ) : (
+                worst.ranked.map((r) => (
+                  <tr
+                    key={r.productId}
+                    className={
+                      r.isZeroSaleCandidate
+                        ? "border-b border-stone-100 bg-red-50"
+                        : "border-b border-stone-100"
+                    }
+                  >
+                    <td className="px-4 py-3 font-medium text-stone-900">
+                      {r.title || "(sans titre)"}
+                      {r.isZeroSaleCandidate ? (
+                        <span className="ml-1.5 inline-flex items-center rounded-sm bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-red-800 uppercase">
+                          0 vente / 30j+
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">{formatDh(r.price)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{r.unitsInWindow}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{r.daysAvailable}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{r.velocity.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{r.totalUnitsAllTime}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {r.daysSinceLastSale === null ? (
+                        <span className="text-stone-400">jamais vendu</span>
+                      ) : (
+                        `${r.daysSinceLastSale} j`
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {worst.tooRecent.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-[11px] font-medium text-stone-500">
+              Trop récent pour juger ({14}j min. de disponibilité) :
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {worst.tooRecent.map((t) => (
+                <li
+                  key={t.productId}
+                  className="rounded-sm border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700"
+                >
+                  {t.title || "(sans titre)"}{" "}
+                  <span className="text-stone-400">— {t.daysAvailable}j</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
 
       {/* ——— Never sold ——— */}

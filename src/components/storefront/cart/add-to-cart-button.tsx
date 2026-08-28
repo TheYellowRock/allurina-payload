@@ -12,7 +12,6 @@ import type { CartAddPayload } from "@/lib/cart/types"
 import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { gtmTrackAddToCart } from "@/lib/gtm"
 import { fbEvent } from "@/lib/pixel"
-import { resolvePromoPrice } from "@/lib/promo-tiers"
 import { cn } from "@/lib/utils"
 
 /** Lock window for the double-tap guard below — long enough to absorb a fast double-click/tap. */
@@ -34,7 +33,7 @@ export function AddToCartButton({
   openDrawer?: boolean
   onClick?: ButtonProps["onClick"]
 }) {
-  const { addItem, openCart } = useCart()
+  const { addItem, openCart, promo } = useCart()
   const isMobile = useIsMobile()
 
   // Ref, not state: click handlers run to completion before the next click is dispatched,
@@ -66,7 +65,9 @@ export function AddToCartButton({
           quantity: item.quantity,
         })
         const addToCartEventId = crypto.randomUUID()
-        const { total: resolvedValue } = resolvePromoPrice(item.quantity, item.price)
+        // Optimistic browser-side value only — the server recomputes this authoritatively
+        // from the active promo before sending the CAPI event (see conversions-api.ts).
+        const { total: resolvedValue } = promo.resolve([{ price: item.price, quantity: item.quantity }])
         fbEvent(
           "AddToCart",
           {

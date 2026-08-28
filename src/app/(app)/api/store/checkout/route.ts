@@ -9,6 +9,7 @@ import type { CartLineItem } from "@/lib/cart/types"
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
+import { getActivePromo } from "@/lib/promotions/active"
 import { storefrontMediaUrl } from "@/lib/storefront-scarf-display"
 
 function generateOrderReference(): string {
@@ -84,7 +85,14 @@ export async function POST(req: Request) {
       }
     })
 
-    const pricing = computeCartPricing(items)
+    // Server authority: the promo applied to this order is resolved here, server-side,
+    // from the SAME activation source the storefront reads — never from the client.
+    // `CheckoutRequestPayload` (see `checkout/types.ts`) has no promo id, discount, or
+    // total field at all — the client only ever sends `{productId, quantity}` per line,
+    // so there is nothing a client could submit here to disagree with; price/title and
+    // now the resolved total are entirely re-derived server-side, same as before.
+    const activePromo = await getActivePromo()
+    const pricing = computeCartPricing(items, activePromo)
     const orderReference = generateOrderReference()
 
     await upsertClientFromCheckout(payload, customer)

@@ -3,7 +3,6 @@ import Link from "next/link"
 import { AllScarvesGrid } from "@/components/AllScarvesGrid"
 import { PromoBanner } from "@/components/PromoBanner"
 import { HeroBanner } from "@/components/storefront/hero-banner"
-import { PromoMiniBanner } from "@/components/storefront/promo-mini-banner"
 // import { PromoSection } from "@/components/storefront/promo-section" // legacy promo banner — hidden 2026-08-20, keep for rollback
 import { HomeCategoryPreviewGrid } from "@/components/storefront/home-category-preview-grid"
 import { HomeCollectionRail } from "@/components/storefront/home-collection-rail"
@@ -26,6 +25,7 @@ import {
   chalesCategoryPath,
   collectionPath,
 } from "@/lib/routes"
+import { getActivePromo } from "@/lib/promotions/active"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 
 export const dynamic = "force-dynamic"
@@ -48,12 +48,14 @@ export default async function Home() {
     summerRail,
     outletRail,
     topSalesRail,
+    activePromo,
   ] = await Promise.all([
     getScarvesWithAvailability(),
     getStorefrontCategories(),
     getScarvesByCollectionSlug(HOME_SUMMER_COLLECTION_SLUG),
     getScarvesByCollectionSlug(HOME_OUTLET_COLLECTION_SLUG),
     getScarvesByCatalogTagSlug(HOME_TOP_SALES_TAG_SLUG, HOME_TOP_SALES_TAG_FALLBACK_ID),
+    getActivePromo(),
   ])
 
   const chalesPreviewTitle: Record<string, string> = {
@@ -108,7 +110,7 @@ export default async function Home() {
         <HeroBanner />
         {/* legacy promo banner — hidden 2026-08-20, keep for rollback */}
         {/* <PromoSection /> */}
-        <PromoBanner />
+        <PromoBanner banner={activePromo.banner} />
 
         <AllScarvesGrid />
 
@@ -120,8 +122,6 @@ export default async function Home() {
           headerActionLabel="Voir la collection"
           exploreHref={collectionPath(HOME_SUMMER_COLLECTION_SLUG)}
         />
-
-        <PromoMiniBanner />
 
         <HomeCollectionRail
           id="selection-outlet"
