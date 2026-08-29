@@ -6,7 +6,10 @@ import { ProductDescription } from "./product-description"
 import { ProductGallery } from "./product-gallery"
 import { ProductPurchasePanel } from "@/components/storefront/cart/product-purchase-panel"
 import { ProductViewTracker } from "@/components/storefront/product-view-tracker"
+import { PromoBadge } from "@/components/storefront/promo-badge"
+import { ScarfPrice } from "@/components/storefront/scarf-price"
 import { Badge } from "@/components/ui/badge"
+import { getReferencePrice } from "@/lib/pricing/reference-price"
 import { getStorefrontScarfBySlug } from "@/lib/getStorefrontScarfBySlug"
 import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import {
@@ -62,7 +65,11 @@ export default async function ProductPage({ params }: Props) {
 
         <div className="mt-8 grid gap-10 md:mt-10 md:grid-cols-2 md:gap-12 lg:gap-16">
           <div>
-            <ProductGallery images={images} productTitle={scarf.title} />
+            <ProductGallery
+              images={images}
+              productTitle={scarf.title}
+              badge={getReferencePrice(scarf.price) !== null ? <PromoBadge /> : null}
+            />
           </div>
 
           <div className="flex flex-col md:sticky md:top-28 md:self-start">
@@ -86,8 +93,12 @@ export default async function ProductPage({ params }: Props) {
               <p className="mt-2 text-sm font-light text-stone-500 md:text-base">{categoryLine}</p>
             ) : null}
 
-            <p className="mt-5 text-2xl font-light tabular-nums tracking-wide text-stone-900 md:text-3xl">
-              {formatScarfPrice(scarf.price)}
+            <p className="mt-5">
+              <ScarfPrice
+                price={scarf.price}
+                size="lg"
+                plainClassName="font-light tracking-wide text-stone-900"
+              />
             </p>
 
             <ProductPurchasePanel

@@ -2,6 +2,7 @@ import { getPayload } from "payload"
 import type { Where } from "payload"
 
 import config from "@payload-config"
+import { getReferencePrice, PROMO_LABEL, REFERENCE_PRICE } from "@/lib/pricing/reference-price"
 import { rangeToWhereBounds, resolveDateRange } from "@/lib/orders-manager/date-range"
 import { formatDh, formatPercent, formatSignedPercent } from "@/lib/orders-manager/format"
 import { neverSoldProducts } from "@/lib/orders-manager/never-sold"
@@ -298,7 +299,9 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
         <p className="mt-1 text-[11px] text-stone-500">
           En stock uniquement — vélocité = unités vendues sur 30 jours ÷ jours de disponibilité sur la
           fenêtre, pas les unités brutes, pour ne pas pénaliser les nouveautés. Produits à moins de{" "}
-          {14} jours de disponibilité exclus du classement (liste séparée ci-dessous).
+          {14} jours de disponibilité exclus du classement (liste séparée ci-dessous). Prix marqué{" "}
+          <span className="font-semibold text-[#e0102a]">{PROMO_LABEL}</span> : déjà sous le seuil de
+          référence ({formatDh(REFERENCE_PRICE)}).
         </p>
         <p className="mt-1 text-[11px] text-stone-500">
           Vélocité médiane (tous produits en stock) :{" "}
@@ -350,7 +353,14 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums">{formatDh(r.price)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      {formatDh(r.price)}
+                      {getReferencePrice(r.price) !== null ? (
+                        <span className="ml-1.5 inline-flex items-center rounded-sm bg-[#e0102a]/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-[#e0102a] uppercase">
+                          {PROMO_LABEL}
+                        </span>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.unitsInWindow}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.daysAvailable}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.velocity.toFixed(2)}</td>

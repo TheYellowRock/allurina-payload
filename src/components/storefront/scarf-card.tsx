@@ -5,12 +5,14 @@ import { ShoppingBag } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { AddToCartButton } from "@/components/storefront/cart/add-to-cart-button"
+import { PromoBadge } from "@/components/storefront/promo-badge"
 import { ScarfCardGallery } from "@/components/storefront/scarf-card-gallery"
+import { ScarfPrice } from "@/components/storefront/scarf-price"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardTitle } from "@/components/ui/card"
+import { getReferencePrice } from "@/lib/pricing/reference-price"
 import {
   availabilityBadgeClassName,
-  formatScarfPrice,
   storefrontPrimaryCategoryLine,
 } from "@/lib/storefront-scarf-display"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
@@ -47,6 +49,7 @@ export function ScarfCard({
 
   const categoryLine = storefrontPrimaryCategoryLine(scarf.categories)
   const isOutOfStock = scarf.availability.status === "out_of_stock"
+  const isDiscounted = getReferencePrice(scarf.price) !== null
 
   return (
     <div className={cn("group/card relative min-w-0", className)}>
@@ -56,6 +59,7 @@ export function ScarfCard({
         )}
       >
         <div className="relative w-full shrink-0 overflow-hidden bg-stone-100 aspect-4/5 sm:aspect-3/4 lg:aspect-3/5">
+          {isDiscounted ? <PromoBadge /> : null}
           <Badge
             variant="outline"
             className={cn(
@@ -89,10 +93,8 @@ export function ScarfCard({
                 {categoryLine}
               </span>
             ) : null}
-            <span className="mt-0.5 tabular-nums">
-              <span className="text-base font-medium leading-none tracking-wide text-foreground sm:text-[1.0625rem]">
-                {formatScarfPrice(scarf.price)}
-              </span>
+            <span className="mt-0.5">
+              <ScarfPrice price={scarf.price} size="md" plainClassName="leading-none tracking-wide" />
             </span>
           </Link>
 

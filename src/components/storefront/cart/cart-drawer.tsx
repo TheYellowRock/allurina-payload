@@ -9,12 +9,12 @@ import { CartPromoProgress } from "@/components/CartPromoProgress"
 import { useCart } from "@/components/storefront/cart/cart-context"
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
 import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
+import { ScarfPrice } from "@/components/storefront/scarf-price"
 import { Button } from "@/components/ui/button"
 import { applyCartValidation } from "@/lib/cart/reconcile"
 import { validateCart } from "@/lib/checkout/validateCart"
 import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
-import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 
 function useLockBody(open: boolean) {
   useEffect(() => {
@@ -156,8 +156,6 @@ export function CartDrawer() {
           ) : (
             <ul className="divide-y divide-stone-100">
               {items.map((line) => {
-                const lineSale = line.price * line.quantity
-
                 return (
                 <li key={line.productId} className="flex gap-3 px-4 py-4">
                   <Link
@@ -186,8 +184,13 @@ export function CartDrawer() {
                     >
                       {line.title}
                     </Link>
-                    <p className="mt-1 text-sm font-medium tabular-nums text-stone-900">
-                      {formatScarfPrice(lineSale)}
+                    <p className="mt-1">
+                      <ScarfPrice
+                        price={line.price}
+                        quantity={line.quantity}
+                        size="sm"
+                        plainClassName="text-stone-900"
+                      />
                     </p>
                     <div className="mt-3 flex items-center gap-2">
                       <div className="inline-flex items-center border border-stone-200">

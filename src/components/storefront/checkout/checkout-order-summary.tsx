@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { CartPricingBreakdownView } from "@/components/storefront/cart/cart-pricing-breakdown"
+import { ScarfPrice } from "@/components/storefront/scarf-price"
 import type { CartPricingBreakdown } from "@/lib/cart/pricing"
 import type { CartLineItem } from "@/lib/cart/types"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
@@ -49,8 +50,13 @@ export function CheckoutOrderSummary({
                 {formatScarfPrice(line.price)} × {line.quantity}
               </p>
             </div>
-            <p className="shrink-0 text-sm font-light tabular-nums text-stone-900">
-              {formatScarfPrice(line.price * line.quantity)}
+            <p className="shrink-0">
+              <ScarfPrice
+                price={line.price}
+                quantity={line.quantity}
+                size="sm"
+                plainClassName="font-light text-stone-900"
+              />
             </p>
           </li>
         ))}

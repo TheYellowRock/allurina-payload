@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -15,9 +16,12 @@ type GalleryImage = { src: string; alt: string }
 export function ProductGallery({
   images,
   productTitle,
+  badge,
 }: {
   images: GalleryImage[]
   productTitle: string
+  /** Rendered top-left over the main image (e.g. `PromoBadge`) — omitted entirely when there's no image to anchor it to. */
+  badge?: ReactNode
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -73,6 +77,7 @@ export function ProductGallery({
     const only = images[0]
     return (
       <div className="relative aspect-4/5 w-full min-w-0 overflow-hidden bg-stone-50 md:min-h-[min(70vh,36rem)]">
+        {badge}
         <Image
           src={only.src}
           alt={only.alt || productTitle}
@@ -126,6 +131,7 @@ export function ProductGallery({
         aria-roledescription="carrousel"
         aria-label={`Photos de ${productTitle} — glisser pour parcourir`}
       >
+        {badge}
         <div
           ref={scrollerRef}
           onScroll={updateIndexFromScroll}
