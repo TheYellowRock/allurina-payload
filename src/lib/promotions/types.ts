@@ -36,6 +36,10 @@ export type PromoBannerChip = {
   /** Short line under the numeral — target under 5 words. */
   label: string
   highlight?: boolean
+  /** Hero chip — rendered first-class: full width on mobile, larger numeral. Use for the one offer the promo is built around. */
+  featured?: boolean
+  /** Overrides the default "Meilleure offre" ribbon shown on highlighted chips. */
+  badge?: string
 }
 
 export type PromoBannerContent = {
@@ -61,6 +65,8 @@ export type PromoDefinition = {
   cart: {
     milestones: PromoCartMilestone[]
     statusFor: (itemCount: number) => PromoCartStatus
+    /** Optional sticky bottom-bar copy. When omitted, the bar derives a generic message from `milestones`. */
+    offerBarFor?: (itemCount: number) => string
   }
   resolve: (items: PromoLineInput[]) => PromoResolution
 }

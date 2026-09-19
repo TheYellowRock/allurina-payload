@@ -46,8 +46,8 @@ export function StickyOfferBar() {
   const pathname = usePathname()
 
   const message = useMemo(
-    () => offerMessage(itemCount, promo.cart.milestones),
-    [itemCount, promo.cart.milestones],
+    () => promo.cart.offerBarFor?.(itemCount) ?? offerMessage(itemCount, promo.cart.milestones),
+    [itemCount, promo.cart],
   )
 
   const isCheckout = pathname?.startsWith(CHECKOUT_PATH) ?? false

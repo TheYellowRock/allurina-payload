@@ -21,17 +21,27 @@ export function PromoBanner({ banner, className }: { banner: PromoBannerContent;
             <li
               key={`${chip.value}-${chip.label}`}
               className={cn(
-                "relative flex min-w-[104px] flex-1 basis-[calc(50%-0.375rem)] flex-col items-center border bg-white px-3 py-4 text-center sm:basis-0 sm:px-4 sm:py-5",
+                "relative flex min-w-[104px] flex-1 flex-col items-center border bg-white px-3 py-4 text-center sm:px-4 sm:py-5",
+                chip.featured
+                  ? "basis-full py-6 sm:basis-0 sm:grow-[1.4] sm:py-7"
+                  : "basis-[calc(50%-0.375rem)] sm:basis-0",
                 chip.highlight ? "border-2 border-[#e0102a]" : "border-stone-200",
               )}
             >
               {chip.highlight ? (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#e0102a] px-2 py-0.5 text-[9px] font-black tracking-widest text-white uppercase">
-                  Meilleure offre
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#e0102a] px-2 py-0.5 text-[9px] font-black tracking-widest text-white uppercase">
+                  {chip.badge ?? "Meilleure offre"}
                 </span>
               ) : null}
 
-              <span className="text-5xl font-black leading-none text-[#e0102a] sm:text-6xl">{chip.value}</span>
+              <span
+                className={cn(
+                  "font-black leading-none text-[#e0102a]",
+                  chip.featured ? "text-7xl sm:text-7xl" : "text-5xl sm:text-6xl",
+                )}
+              >
+                {chip.value}
+              </span>
               {chip.unit ? (
                 <span className="mt-1.5 text-[10px] font-bold tracking-widest text-stone-500 uppercase">
                   {chip.unit}
