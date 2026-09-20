@@ -40,9 +40,36 @@ async function readActivePromoRecord(): Promise<ActivePromoRecord | null> {
   return { promoId }
 }
 
+/**
+ * `revalidate: 60` is a safety net on top of the tag: Edge Config writes take a few
+ * seconds to propagate, so the first read right after an activation can still return the
+ * PREVIOUS record — without a TTL that stale value would then be cached until the next
+ * activation. With it, a stale fill heals itself within a minute.
+ */
 const readActivePromoRecordCached = unstable_cache(readActivePromoRecord, ["active-promo-record"], {
   tags: ["active-promo"],
+  revalidate: 60,
 })
+
+function resolvePromoFromRecord(record: ActivePromoRecord | null, now: Date): PromoDefinition {
+  const fallback = getPromoDefinition(DEFAULT_PROMO_ID)
+  if (!fallback) {
+    throw new Error(`[promotions] DEFAULT_PROMO_ID "${DEFAULT_PROMO_ID}" is not registered`)
+  }
+  if (!record) return fallback
+  if (!isWithinSchedule(record, now)) return fallback
+  return getPromoDefinition(record.promoId) ?? fallback
+}
+
+/**
+ * Uncached variant for the ONE place where a stale promo costs money: order creation.
+ * Reads the activation record straight from the backing store (an Edge Config read is a
+ * few ms, and checkout volume is tiny), so the price written on the order can never come
+ * from a stale cache entry.
+ */
+export async function getActivePromoFresh(now: Date = new Date()): Promise<PromoDefinition> {
+  return resolvePromoFromRecord(await readActivePromoRecord(), now)
+}
 
 function isWithinSchedule(record: ActivePromoRecord, now: Date): boolean {
   if (record.startsAt && now.getTime() < new Date(record.startsAt).getTime()) return false

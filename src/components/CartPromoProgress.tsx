@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils"
 export function CartPromoProgress({ className }: { className?: string }) {
   const { itemCount, pricing, promo } = useCart()
   const { milestones, statusFor } = promo.cart
+  const { footnote, subline } = promo.banner
 
   const topMilestoneQty = useMemo(
     () => milestones.reduce((max, m) => Math.max(max, m.qty), 1),
@@ -67,6 +68,13 @@ export function CartPromoProgress({ className }: { className?: string }) {
         <p className="text-center text-[11px] font-semibold text-[#c00000] sm:text-xs">
           Tu économises {formatScarfPrice(pricing.promoSavingsDh)}
         </p>
+      ) : null}
+
+      {footnote || subline ? (
+        <div className="space-y-0.5 pt-1 text-center text-xs font-semibold leading-snug text-[#e0102a] sm:text-sm">
+          {footnote ? <p>{footnote}</p> : null}
+          {subline ? <p>{subline}</p> : null}
+        </div>
       ) : null}
     </div>
   )

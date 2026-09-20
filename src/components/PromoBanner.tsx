@@ -53,13 +53,13 @@ export function PromoBanner({ banner, className }: { banner: PromoBannerContent;
         </ul>
 
         {banner.footnote ? (
-          <p className="mt-4 text-center text-[10px] font-medium tracking-[0.14em] text-stone-400 uppercase">
+          <p className="mt-5 text-center text-sm font-bold tracking-wide text-[#e0102a] uppercase sm:text-base">
             {banner.footnote}
           </p>
         ) : null}
 
         {banner.subline ? (
-          <p className="mt-2 text-center text-[11px] font-medium text-stone-500">{banner.subline}</p>
+          <p className="mt-2 text-center text-sm font-semibold text-[#e0102a] sm:text-base">{banner.subline}</p>
         ) : null}
       </div>
     </section>

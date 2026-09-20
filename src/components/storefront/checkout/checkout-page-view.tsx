@@ -106,6 +106,7 @@ export function CheckoutPageView() {
             paymentMethod: "cod",
             items: items.map((line) => ({ productId: line.productId, quantity: line.quantity })),
             idempotencyKey,
+            expectedGrandTotal: pricing.grandTotal,
             customer: {
               customerName,
               email,
@@ -123,11 +124,20 @@ export function CheckoutPageView() {
           error?: string
           orderReference?: string
           failedItems?: CheckoutStockFailure[]
+          priceMismatch?: boolean
         }
         if (res.status === 409 && Array.isArray(data.failedItems)) {
           const { items: nextItems, issues } = applyStockConflict(items, data.failedItems)
           setItems(nextItems)
           setValidationIssues(issues)
+          return
+        }
+        if (res.status === 409 && data.priceMismatch) {
+          // The server priced this cart differently from what is on screen (the active
+          // promo changed). Re-render the server layout so the cart picks up the current
+          // promo and shows the real total; the customer then confirms again.
+          setError(data.error ?? "Le total a été mis à jour. Vérifiez puis validez à nouveau.")
+          router.refresh()
           return
         }
         if (!res.ok) {
@@ -196,6 +206,7 @@ export function CheckoutPageView() {
     },
     [
       items,
+      pricing.grandTotal,
       idempotencyKey,
       customerName,
       email,

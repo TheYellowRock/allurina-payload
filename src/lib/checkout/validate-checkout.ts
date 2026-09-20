@@ -102,6 +102,9 @@ export function validateCheckoutBody(
       items,
       paymentMethod: "cod",
       idempotencyKey,
+      ...(typeof b.expectedGrandTotal === "number" && Number.isFinite(b.expectedGrandTotal)
+        ? { expectedGrandTotal: b.expectedGrandTotal }
+        : {}),
     },
   }
 }

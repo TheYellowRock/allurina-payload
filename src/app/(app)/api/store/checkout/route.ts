@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache"
 import { NextResponse } from "next/server"
 import { commitTransaction, createLocalReq, getPayload, initTransaction, killTransaction } from "payload"
 import { sql } from "@payloadcms/db-postgres"
@@ -9,7 +10,7 @@ import type { CartLineItem } from "@/lib/cart/types"
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
-import { getActivePromo } from "@/lib/promotions/active"
+import { getActivePromoFresh } from "@/lib/promotions/active"
 import { storefrontMediaUrl } from "@/lib/storefront-scarf-display"
 
 function generateOrderReference(): string {
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
 
-    const { customer, items: lineInputs, paymentMethod, idempotencyKey } = parsed.data
+    const { customer, items: lineInputs, paymentMethod, idempotencyKey, expectedGrandTotal } = parsed.data
 
     const resolvedConfig = await config
     const payload = await getPayload({ config: resolvedConfig })
@@ -91,8 +92,33 @@ export async function POST(req: Request) {
     // total field at all — the client only ever sends `{productId, quantity}` per line,
     // so there is nothing a client could submit here to disagree with; price/title and
     // now the resolved total are entirely re-derived server-side, same as before.
-    const activePromo = await getActivePromo()
+    //
+    // Read UNCACHED here (`getActivePromoFresh`): this is the amount written on the order,
+    // shown in the back office, e-mailed to the customer and summed into metrics — it must
+    // never come from a stale cache entry.
+    const activePromo = await getActivePromoFresh()
     const pricing = computeCartPricing(items, activePromo)
+
+    // The customer must be recorded at the amount they were shown. If the storefront
+    // displayed a different total (promo switched mid-session, stale promo cache, price
+    // edited), refuse BEFORE touching stock or creating anything, flush the promo cache so
+    // the storefront heals, and let the client refresh and show the real total.
+    if (expectedGrandTotal !== undefined && Math.abs(expectedGrandTotal - pricing.grandTotal) > 0.01) {
+      console.warn("[store/checkout] price mismatch", {
+        promoId: activePromo.id,
+        expectedGrandTotal,
+        serverGrandTotal: pricing.grandTotal,
+      })
+      revalidateTag("active-promo", { expire: 0 })
+      return NextResponse.json(
+        {
+          error: "Le total de votre commande a été mis à jour. Vérifiez le nouveau montant puis validez à nouveau.",
+          priceMismatch: true,
+          serverGrandTotal: pricing.grandTotal,
+        },
+        { status: 409 },
+      )
+    }
     const orderReference = generateOrderReference()
 
     await upsertClientFromCheckout(payload, customer)
@@ -164,6 +190,13 @@ export async function POST(req: Request) {
       })
 
       await commitTransaction(localReq)
+      console.info("[store/checkout] order priced", {
+        orderReference,
+        promoId: activePromo.id,
+        appliedLabel: pricing.appliedLabel,
+        listTotal: pricing.merchandiseListTotal,
+        grandTotal: pricing.grandTotal,
+      })
     } catch (err) {
       await killTransaction(localReq)
       throw err
