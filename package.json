@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "jiti scripts/seed.ts",
-    "migrate": "jiti scripts/payload-migrate.ts"
+    "migrate": "jiti scripts/payload-migrate.ts",
+    "respondio:smoke": "node scripts/respondio.cjs smoke",
+    "respondio:retry": "node scripts/respondio.cjs retry"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.6",

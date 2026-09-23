@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache"
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { commitTransaction, createLocalReq, getPayload, initTransaction, killTransaction } from "payload"
 import { sql } from "@payloadcms/db-postgres"
 
@@ -11,6 +11,7 @@ import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
 import { getActivePromoFresh } from "@/lib/promotions/active"
+import { syncOrderToRespondIo } from "@/lib/respondio/sync"
 import { storefrontMediaUrl } from "@/lib/storefront-scarf-display"
 
 function generateOrderReference(): string {
@@ -210,6 +211,26 @@ export async function POST(req: Request) {
     // errors internally (Resend failures are logged, never thrown).
     if (orderDoc) {
       await Promise.all([sendOrderConfirmation(orderDoc), sendOwnerNotification(orderDoc)])
+
+      // respond.io contact sync — outbound only; all messaging is configured in respond.io.
+      // `after()` (not a bare un-awaited promise) is the supported way to run work past the
+      // response: on Vercel it's backed by `waitUntil`, so it's guaranteed to complete
+      // without adding its network round-trips to the customer's checkout latency.
+      // Never throws, idempotent per order, and a no-op unless RESPONDIO_ENABLED=true.
+      // Built from the typed values above rather than `orderDoc` (Record<string, unknown>).
+      after(() =>
+        syncOrderToRespondIo(payload, {
+          orderReference,
+          customerName: customer.customerName,
+          email: customer.email,
+          phone: customer.phone,
+          addressLine1: customer.addressLine1,
+          addressLine2: customer.addressLine2 ?? null,
+          city: customer.city,
+          grandTotal: pricing.grandTotal,
+          items,
+        }),
+      )
     }
 
     return NextResponse.json({ orderReference })
