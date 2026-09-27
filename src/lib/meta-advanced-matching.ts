@@ -16,7 +16,8 @@ export type AdvancedMatchingInput = {
 }
 
 export type AdvancedMatchingData = {
-  em: string
+  /** Omitted when the customer gave no email — an empty `em` is noise for Meta. */
+  em?: string
   ph: string
   fn: string
   ln: string
@@ -25,8 +26,9 @@ export type AdvancedMatchingData = {
 }
 
 export function buildAdvancedMatchingData(input: AdvancedMatchingInput): AdvancedMatchingData {
+  const em = normalizeEmail(input.email)
   return {
-    em: normalizeEmail(input.email),
+    ...(em ? { em } : {}),
     ph: normalizePhone(input.phone),
     fn: normalizeName(input.firstName),
     ln: normalizeName(input.lastName),

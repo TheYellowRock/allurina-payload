@@ -1,6 +1,7 @@
 export type CheckoutCustomerPayload = {
   customerName: string
-  email: string
+  /** Optional — many COD customers have no email. Omitted (never "") when not given. */
+  email?: string
   phone: string
   addressLine1: string
   addressLine2?: string

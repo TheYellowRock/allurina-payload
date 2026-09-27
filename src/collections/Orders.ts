@@ -54,9 +54,12 @@ export const Orders: CollectionConfig = {
       label: 'Nom complet',
     },
     {
+      // Optional since 2026-09: many COD customers have no email. The NOT NULL constraint
+      // was dropped manually in Supabase (scripts/orders-email-optional.sql) — dev and
+      // prod share one database, so never rely on schema push/migrations for this.
       name: 'email',
       type: 'email',
-      required: true,
+      label: 'E-mail (optionnel)',
     },
     {
       name: 'phone',

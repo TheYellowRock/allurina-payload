@@ -225,9 +225,13 @@ function OrderCard({
                   <div>
                     <dt className="text-xs text-stone-500">E-mail</dt>
                     <dd>
-                      <a href={`mailto:${order.email}`} className="underline decoration-stone-400 underline-offset-2">
-                        {order.email}
-                      </a>
+                      {order.email ? (
+                        <a href={`mailto:${order.email}`} className="underline decoration-stone-400 underline-offset-2">
+                          {order.email}
+                        </a>
+                      ) : (
+                        <span className="text-stone-400">—</span>
+                      )}
                     </dd>
                   </div>
                   <div>

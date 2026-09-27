@@ -10,7 +10,9 @@ export async function upsertClientFromCheckout(
   payload: Payload,
   customer: CheckoutCustomerPayload,
 ): Promise<void> {
-  const email = customer.email.trim().toLowerCase()
+  // Clients are keyed by email — a customer who gave none simply gets no clients row
+  // (the order itself still stores name + phone).
+  const email = (customer.email ?? '').trim().toLowerCase()
   if (!email) return
 
   const existing = await payload.find({

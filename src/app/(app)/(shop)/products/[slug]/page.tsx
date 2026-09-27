@@ -8,6 +8,7 @@ import { ProductPurchasePanel } from "@/components/storefront/cart/product-purch
 import { ProductViewTracker } from "@/components/storefront/product-view-tracker"
 import { PromoBadge } from "@/components/storefront/promo-badge"
 import { ScarfPrice } from "@/components/storefront/scarf-price"
+import { WhatsAppProductContext } from "@/components/storefront/whatsapp/whatsapp-context"
 import { Badge } from "@/components/ui/badge"
 import { getReferencePrice } from "@/lib/pricing/reference-price"
 import { getStorefrontScarfBySlug } from "@/lib/getStorefrontScarfBySlug"
@@ -50,6 +51,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <div className="min-h-full flex-1 bg-white text-stone-900">
       <ProductViewTracker productId={String(scarf.id)} price={scarf.price} />
+      <WhatsAppProductContext title={scarf.title} />
       <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-12">
         <nav className="text-sm font-light text-stone-600">
           <Link href="/" className="hover:text-stone-900">

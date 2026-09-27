@@ -172,7 +172,7 @@ export async function POST(req: Request) {
           orderReference,
           idempotencyKey,
           customerName: customer.customerName,
-          email: customer.email,
+          ...(customer.email ? { email: customer.email } : {}),
           phone: customer.phone,
           addressLine1: customer.addressLine1,
           ...(customer.addressLine2 ? { addressLine2: customer.addressLine2 } : {}),
@@ -222,7 +222,7 @@ export async function POST(req: Request) {
         syncOrderToRespondIo(payload, {
           orderReference,
           customerName: customer.customerName,
-          email: customer.email,
+          email: customer.email ?? null,
           phone: customer.phone,
           addressLine1: customer.addressLine1,
           addressLine2: customer.addressLine2 ?? null,

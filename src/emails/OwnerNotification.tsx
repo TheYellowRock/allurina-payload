@@ -30,7 +30,7 @@ export default function OwnerNotificationEmail(props: OrderEmailProps) {
     "",
     "CUSTOMER",
     `name=${props.customerName}`,
-    `email=${props.email}`,
+    `email=${props.email || "—"}`,
     `phone=${props.phone}`,
     "",
     "SHIP TO",

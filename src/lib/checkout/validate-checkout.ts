@@ -67,8 +67,9 @@ export function validateCheckoutBody(
   if (customerName.length < 2) {
     return { ok: false, error: "Indiquez votre nom complet." }
   }
-  if (!EMAIL_RE.test(email)) {
-    return { ok: false, error: "Adresse e-mail invalide." }
+  // Email is optional (many COD customers have none) — but if one is typed, it must be valid.
+  if (email.length > 0 && !EMAIL_RE.test(email)) {
+    return { ok: false, error: "Adresse e-mail invalide (ou laissez le champ vide)." }
   }
   if (phone.length < 8) {
     return { ok: false, error: "Numéro de téléphone invalide." }
@@ -85,7 +86,7 @@ export function validateCheckoutBody(
 
   const customer: CheckoutCustomerPayload = {
     customerName,
-    email,
+    ...(email ? { email } : {}),
     phone,
     addressLine1,
     city,

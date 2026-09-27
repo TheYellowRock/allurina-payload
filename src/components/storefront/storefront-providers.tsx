@@ -6,6 +6,8 @@ import { CartProvider } from "@/components/storefront/cart/cart-context"
 import { CartDrawer } from "@/components/storefront/cart/cart-drawer"
 import { CartToaster } from "@/components/storefront/cart/cart-toaster"
 import { StickyOfferBar } from "@/components/storefront/cart/sticky-offer-bar"
+import { WhatsAppButton } from "@/components/storefront/whatsapp/whatsapp-button"
+import { WhatsAppProvider } from "@/components/storefront/whatsapp/whatsapp-context"
 import { DEFAULT_PROMO_ID, getPromoDefinition } from "@/lib/promotions/registry"
 
 export function StorefrontProviders({
@@ -24,10 +26,13 @@ export function StorefrontProviders({
 
   return (
     <CartProvider promo={promo}>
-      {children}
-      <StickyOfferBar />
-      <CartToaster />
-      <CartDrawer />
+      <WhatsAppProvider>
+        {children}
+        <StickyOfferBar />
+        <WhatsAppButton />
+        <CartToaster />
+        <CartDrawer />
+      </WhatsAppProvider>
     </CartProvider>
   )
 }

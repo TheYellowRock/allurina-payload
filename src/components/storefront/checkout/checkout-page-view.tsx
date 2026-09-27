@@ -109,7 +109,7 @@ export function CheckoutPageView() {
             expectedGrandTotal: pricing.grandTotal,
             customer: {
               customerName,
-              email,
+              ...(email.trim() ? { email: email.trim() } : {}),
               phone,
               addressLine1,
               ...(addressLine2.trim() ? { addressLine2: addressLine2.trim() } : {}),
@@ -169,7 +169,9 @@ export function CheckoutPageView() {
           },
           purchaseEventId,
         )
-        const externalId = await getClientIdByEmail(email).catch(() => null)
+        const externalId = email.trim()
+          ? await getClientIdByEmail(email).catch(() => null)
+          : null
         void fetch("/api/pixel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -299,19 +301,7 @@ export function CheckoutPageView() {
                   className={`mt-1.5 w-full ${rowInput}`}
                 />
               </label>
-              <label className="block">
-                <span className="text-xs font-light text-stone-600">E-mail</span>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-              </label>
-              <label className="block">
+              <label className="block sm:col-span-2">
                 <span className="text-xs font-light text-stone-600">Téléphone</span>
                 <input
                   name="phone"
@@ -400,6 +390,23 @@ export function CheckoutPageView() {
                   onChange={(e) => setNotes(e.target.value)}
                   className={`mt-1.5 w-full resize-y py-2.5 ${rowInput}`}
                 />
+              </label>
+              {/* Optional and deliberately last: many COD customers have no email, and a
+                  required field here was blocking them. Confirmation happens on WhatsApp. */}
+              <label className="block">
+                <span className="text-xs font-light text-stone-600">E-mail (optionnel)</span>
+                <input
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`mt-1.5 w-full ${rowInput}`}
+                />
+                <span className="mt-1 block text-xs font-light text-stone-500">
+                  Pour recevoir le récapitulatif de votre commande par e-mail.
+                </span>
               </label>
             </div>
           </section>
