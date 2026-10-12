@@ -169,9 +169,17 @@ async function upsertScarf(
     })
     console.log(`[seed] update scarf ${keySlug}`)
   } else {
+    // Every product needs a type since product types were introduced; seeded items are scarves.
+    const chales = await payload.find({
+      collection: "product-types",
+      where: { slug: { equals: "chales" } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
     await payload.create({
       collection: "scarves",
-      data: payloadData as never,
+      data: { productType: chales.docs[0]?.id, ...payloadData } as never,
     })
     console.log(`[seed] create scarf ${keySlug}`)
   }

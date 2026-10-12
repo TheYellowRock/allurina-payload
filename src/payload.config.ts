@@ -12,6 +12,10 @@ import { Clients } from './collections/Clients'
 import { Collections } from './collections/Collections'
 import { Media } from './collections/Media'
 import { Orders } from './collections/Orders'
+import { Colors } from './collections/Colors'
+import { ProductTypes } from './collections/ProductTypes'
+import { ProductVariants } from './collections/ProductVariants'
+import { Sizes } from './collections/Sizes'
 import { Scarves } from './collections/Scarves'
 import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
@@ -50,7 +54,11 @@ export default buildConfig({
     Categories,
     Collections,
     Tags,
+    ProductTypes,
+    Sizes,
+    Colors,
     Scarves,
+    ProductVariants,
     Clients,
     Orders,
   ],

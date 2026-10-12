@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getPayload } from "payload"
 
 import config from "@payload-config"
+import { SIMPLE_PRODUCTS_ONLY } from "@/lib/catalog/sellable"
 
 export const dynamic = "force-dynamic"
 
@@ -87,7 +88,7 @@ export async function GET(request: Request) {
     // `stockQuantity > 0` is the only availability gate this catalog uses.
     const res = await payload.find({
       collection: "scarves",
-      where: { stockQuantity: { greater_than: 0 } },
+      where: { and: [{ stockQuantity: { greater_than: 0 } }, SIMPLE_PRODUCTS_ONLY] },
       depth: 1,
       page,
       limit,

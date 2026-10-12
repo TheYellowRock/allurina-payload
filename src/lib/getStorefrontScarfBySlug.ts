@@ -2,6 +2,7 @@ import { cache } from "react"
 import { getPayload } from "payload"
 
 import config from "@payload-config"
+import { isVariableProduct } from "@/lib/catalog/sellable"
 import { mapDocToStorefrontScarf } from "@/lib/mapStorefrontScarf"
 import { productSlugLookupVariants } from "@/lib/normalizeProductSlug"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
@@ -26,7 +27,8 @@ export const getStorefrontScarfBySlug = cache(
     })
 
     const doc = res.docs[0]
-    if (!doc) return null
+    // Products with sizes/colours aren't sellable on the site yet (see `sellable.ts`).
+    if (!doc || isVariableProduct(doc)) return null
 
     return mapDocToStorefrontScarf(doc as Record<string, unknown>)
   },

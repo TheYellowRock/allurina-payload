@@ -21,6 +21,13 @@ export const Categories: CollectionConfig = {
       index: true,
     },
     {
+      name: 'productType',
+      type: 'relationship',
+      relationTo: 'product-types',
+      label: 'Type de produit',
+      admin: { description: 'Catégorie propre à un type (ex. matières de châles). Vide = tous types.' },
+    },
+    {
       name: 'description',
       type: 'textarea',
     },

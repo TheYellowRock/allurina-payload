@@ -9,6 +9,7 @@ import { computeCartPricing } from "@/lib/cart/pricing"
 import type { CartLineItem } from "@/lib/cart/types"
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
+import { isVariableProduct } from "@/lib/catalog/sellable"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
 import { getActivePromoFresh } from "@/lib/promotions/active"
 import { syncOrderToRespondIo } from "@/lib/respondio/sync"
@@ -65,7 +66,11 @@ export async function POST(req: Request) {
       limit: productIds.length,
       overrideAccess: true,
     })
-    const scarfById = new Map(scarvesRes.docs.map((doc) => [String(doc.id), doc]))
+    // Products with sizes/colours can't be ordered without a variant yet (see
+    // `sellable.ts`) — they fall into `missingProductIds` below and the order is refused.
+    const scarfById = new Map(
+      scarvesRes.docs.filter((doc) => !isVariableProduct(doc)).map((doc) => [String(doc.id), doc]),
+    )
 
     const missingProductIds = productIds.filter((id) => !scarfById.has(id))
     if (missingProductIds.length > 0) {

@@ -3,6 +3,7 @@
 import { getPayload } from "payload"
 
 import config from "@payload-config"
+import { isVariableProduct } from "@/lib/catalog/sellable"
 
 export type CartValidationLine = {
   productId: string
@@ -46,7 +47,11 @@ export async function validateCart(lines: CartValidationLine[]): Promise<CartVal
     limit: productIds.length,
     overrideAccess: true,
   })
-  const scarfById = new Map(res.docs.map((doc) => [String(doc.id), doc]))
+  // Products with sizes/colours can't be bought without a variant yet (see `sellable.ts`):
+  // treated as unavailable, so the cart drops them.
+  const scarfById = new Map(
+    res.docs.filter((doc) => !isVariableProduct(doc)).map((doc) => [String(doc.id), doc]),
+  )
 
   const items: CartValidationItem[] = lines.map((line) => {
     const scarf = scarfById.get(line.productId)
