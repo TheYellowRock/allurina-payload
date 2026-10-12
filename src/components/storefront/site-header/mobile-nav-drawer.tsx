@@ -10,7 +10,7 @@ import { NAV } from "@/components/storefront/site-header/nav-styles"
 import type { StorefrontCategory } from "@/lib/getStorefrontCategories"
 import type { StorefrontCollection } from "@/lib/getStorefrontCollections"
 import { chalesTypeLabel } from "@/lib/navLabels"
-import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH, chalesCategoryPath } from "@/lib/routes"
+import { CHALES_PATH, NOUVEAUTES_PATH, PULLS_PATH, TOUTES_LES_PIECES_PATH, chalesCategoryPath } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 export function MobileNavDrawer({
@@ -72,6 +72,14 @@ export function MobileNavDrawer({
             Nouveautés
           </Link>
 
+          <Link
+            href={PULLS_PATH}
+            className={cn(NAV.drawerLink, "-mx-1 px-1 font-semibold text-stone-900")}
+            onClick={onClose}
+          >
+            Pulls
+          </Link>
+
           <section>
             <p className={NAV.sectionLabel}>Collections</p>
             <div className="flex flex-col gap-0.5">
@@ -98,6 +106,9 @@ export function MobileNavDrawer({
           <section>
             <p className={NAV.sectionLabel}>Châles</p>
             <div className="flex flex-col gap-0.5">
+              <Link href={CHALES_PATH} className={cn(NAV.drawerLink, "text-stone-700")} onClick={onClose}>
+                Tous les châles
+              </Link>
               {chalesCategories.map((c) => (
                 <Link
                   key={`drawer-chales-${c.slug}`}

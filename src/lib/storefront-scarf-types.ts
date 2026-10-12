@@ -20,6 +20,12 @@ export type StorefrontScarf = {
   hasVariants?: boolean
   /** Product page only, for products with variants. */
   variantOptions?: StorefrontVariantOptions
+  /**
+   * Card-only overrides, used for "one card per colour" (a pull in Noir, the same pull in
+   * Beige…): where the card links to, and the line shown under the title.
+   */
+  cardHref?: string
+  cardSubtitle?: string
 }
 
 export type StorefrontVariant = {
@@ -33,6 +39,6 @@ export type StorefrontVariant = {
 export type StorefrontVariantOptions = {
   /** Sizes used by this product, smallest first. */
   sizes: { id: string; label: string }[]
-  colors: { id: string; name: string; hex: string; images: { src: string; alt: string }[] }[]
+  colors: { id: string; slug: string; name: string; hex: string; images: { src: string; alt: string }[] }[]
   variants: StorefrontVariant[]
 }

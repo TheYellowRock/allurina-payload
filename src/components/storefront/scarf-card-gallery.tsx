@@ -19,11 +19,13 @@ function GalleryImage({
   alt,
   priority,
   className,
+  sizes = CARD_IMAGE_SIZES,
 }: {
   src: string
   alt: string
   priority: boolean
   className?: string
+  sizes?: string
 }) {
   const [failed, setFailed] = useState(false)
 
@@ -41,7 +43,7 @@ function GalleryImage({
       alt={alt}
       fill
       priority={priority}
-      sizes={CARD_IMAGE_SIZES}
+      sizes={sizes}
       className={className}
       style={{ objectPosition: "center" }}
       draggable={false}
@@ -56,7 +58,10 @@ export function ScarfCardGallery({
   productTitle,
   onActiveIndexChange,
   priorityFirstSlide,
+  sizes,
 }: {
+  /** `sizes` for next/image — wider for the full-width "feature" cards. */
+  sizes?: string
   images: ImageEntry[]
   productHref: string
   productTitle: string
@@ -140,6 +145,7 @@ export function ScarfCardGallery({
           alt={only.alt}
           priority={Boolean(priorityFirstSlide)}
           className="object-cover"
+          sizes={sizes}
         />
       </button>
     )
@@ -188,12 +194,13 @@ export function ScarfCardGallery({
               alt={img.alt}
               priority={Boolean(priorityFirstSlide && i === 0)}
               className="pointer-events-none object-cover select-none"
+              sizes={sizes}
             />
           </div>
         ))}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center gap-1.5 px-2">
+      <div className="pointer-events-none absolute inset-x-0 bottom-2.5 z-10 flex justify-center gap-1 px-2">
         {images.map((_, i) => (
           <button
             key={i}
@@ -201,8 +208,8 @@ export function ScarfCardGallery({
             aria-label={`Image ${i + 1} sur ${images.length}`}
             aria-current={i === activeIndex ? true : undefined}
             className={cn(
-              "pointer-events-auto h-1.5 min-h-0 min-w-0 rounded-full p-0 transition-opacity duration-200",
-              i === activeIndex ? "w-5 bg-stone-900" : "w-1.5 bg-stone-100/90 ring-1 ring-stone-900/25",
+              "pointer-events-auto h-[3px] min-h-0 min-w-0 rounded-full p-0 transition-all duration-300",
+              i === activeIndex ? "w-4 bg-white" : "w-1.5 bg-white/55",
             )}
             onClick={(e) => {
               e.stopPropagation()

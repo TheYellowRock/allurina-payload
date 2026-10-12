@@ -41,14 +41,20 @@ function colorInStock(options: StorefrontVariantOptions, colorId: string): boole
 
 export function VariantSelectionProvider({
   options,
+  initialColorSlug,
   children,
 }: {
   options: StorefrontVariantOptions
+  /** From `?couleur=` (per-colour cards, ads) — used when that colour can be bought. */
+  initialColorSlug?: string | null
   children: ReactNode
 }) {
-  // Start on the first colour that can actually be bought; no size pre-selected, so the
-  // customer always picks one consciously (avoids wrong-size COD returns).
-  const firstColor = options.colors.find((c) => colorInStock(options, c.id)) ?? options.colors[0]
+  // Start on the requested colour if it's in stock, else the first colour that can be
+  // bought; no size pre-selected, so the customer always picks one consciously (avoids
+  // wrong-size COD returns).
+  const requested = options.colors.find((c) => c.slug === initialColorSlug && colorInStock(options, c.id))
+  const firstColor =
+    requested ?? options.colors.find((c) => colorInStock(options, c.id)) ?? options.colors[0]
   const [colorId, setColorIdState] = useState<string | null>(firstColor?.id ?? null)
   const [sizeId, setSizeId] = useState<string | null>(null)
 

@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
+import {
+  PRODUCT_GRID_CLASS,
+  ProductCardSkeleton,
+  productCellClass,
+  productLayoutAt,
+} from "@/components/storefront/product-grid"
 import { ScarfCard } from "@/components/storefront/scarf-card"
 import { Button } from "@/components/ui/button"
 import { resolveStorefrontAvailability } from "@/lib/availability"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
-import { cn } from "@/lib/utils"
 
 const BATCH_SIZE = 12
 const MAX_RETRIES = 3
@@ -23,6 +28,7 @@ type PublicScarfDoc = {
   price: number
   image: { url: string; width: number; height: number; alt: string } | null
   hasVariants?: boolean
+  stockQuantity?: number
 }
 
 type PublicScarvesResponse = {
@@ -36,9 +42,8 @@ type ScarvesPage = {
 }
 
 function toStorefrontScarf(doc: PublicScarfDoc): StorefrontScarf {
-  // The endpoint already filters to stockQuantity > 0; it doesn't expose the exact count,
-  // so `1` here is just "known in stock", not a real quantity.
-  const stockQuantity = 1
+  // The endpoint only returns products in stock; older responses had no count → "1".
+  const stockQuantity = typeof doc.stockQuantity === "number" && doc.stockQuantity > 0 ? doc.stockQuantity : 1
   return {
     id: doc.id,
     title: doc.title,
@@ -56,10 +61,15 @@ function toStorefrontScarf(doc: PublicScarfDoc): StorefrontScarf {
   }
 }
 
-async function fetchScarvesPage(page: number, signal: AbortSignal): Promise<ScarvesPage> {
+type GridFilter = { productType?: string; excludeIds?: string[]; params?: Record<string, string> }
+
+async function fetchScarvesPage(page: number, signal: AbortSignal, filter: GridFilter): Promise<ScarvesPage> {
   const params = new URLSearchParams()
   params.set("limit", String(BATCH_SIZE))
   params.set("page", String(page))
+  if (filter.productType) params.set("type", filter.productType)
+  if (filter.excludeIds?.length) params.set("exclude", filter.excludeIds.join(","))
+  for (const [k, v] of Object.entries(filter.params ?? {})) params.set(k, v)
 
   const res = await fetch(`/api/public/scarves?${params.toString()}`, { signal })
   if (!res.ok) throw new Error(`Failed to fetch scarves (${res.status})`)
@@ -73,21 +83,26 @@ async function fetchScarvesPage(page: number, signal: AbortSignal): Promise<Scar
   }
 }
 
-/** Same box dimensions as `ScarfCard`'s image + text stack, so a batch swapping in causes no shift. */
-function ScarfCardSkeleton() {
-  return (
-    <div className="min-w-0 animate-pulse">
-      <div className="aspect-4/5 w-full bg-stone-200 sm:aspect-3/4 lg:aspect-3/5" />
-      <div className="mt-2.5 space-y-2">
-        <div className="h-3.5 w-3/4 bg-stone-200" />
-        <div className="h-3 w-1/3 bg-stone-200" />
-        <div className="h-9 w-full bg-stone-100" />
-      </div>
-    </div>
-  )
-}
-
-export function AllScarvesGrid({ className }: { className?: string }) {
+/**
+ * Infinite-scroll product grid fed by `/api/public/scarves`. The filter is read once:
+ * to change it, remount with a new `key` (the filter bar does that per chip).
+ */
+export function AllScarvesGrid({
+  className,
+  productType,
+  excludeIds,
+  filterParams,
+}: {
+  className?: string
+  /** Only products of this type (slug, e.g. "chales"). */
+  productType?: string
+  /** Products already shown higher on the page. */
+  excludeIds?: string[]
+  /** Extra API params, e.g. a filter chip (`tags`, `categories`). */
+  filterParams?: Record<string, string>
+}) {
+  // Read once: the infinite loader below must keep the same filter for its whole life.
+  const filterRef = useRef<GridFilter>({ productType, excludeIds, params: filterParams })
   const [scarves, setScarves] = useState<StorefrontScarf[]>([])
   const [status, setStatus] = useState<Status>("idle")
   const [retryCount, setRetryCount] = useState(0)
@@ -113,7 +128,7 @@ export function AllScarvesGrid({ className }: { className?: string }) {
     abortControllerRef.current = controller
     const requestedPage = pageRef.current + 1
 
-    fetchScarvesPage(requestedPage, controller.signal)
+    fetchScarvesPage(requestedPage, controller.signal, filterRef.current)
       .then((result) => {
         const fresh = result.scarves.filter((s) => !seenIdsRef.current.has(String(s.id)))
         for (const s of fresh) seenIdsRef.current.add(String(s.id))
@@ -133,18 +148,17 @@ export function AllScarvesGrid({ className }: { className?: string }) {
       })
   }, [])
 
-  // First batch, fetched on mount. `loadNextPage` is stable (no deps), so this only ever
-  // runs once in practice (StrictMode's double-invoke is caught by the ref guard above).
+  // First batch on mount; abort whatever is in flight on unmount. Resetting "loading" back
+  // to "idle" in the cleanup matters: StrictMode (and a filter-chip remount racing a
+  // request) unmounts and remounts — without the reset the second mount would see
+  // "loading", skip its fetch, and leave the grid on skeletons forever.
   useEffect(() => {
     loadNextPage()
-  }, [loadNextPage])
-
-  // Aborts whatever's in flight when the component unmounts.
-  useEffect(() => {
     return () => {
       abortControllerRef.current?.abort()
+      if (statusRef.current === "loading") statusRef.current = "idle"
     }
-  }, [])
+  }, [loadNextPage])
 
   // Only watches for scroll while genuinely idle: this effect's own condition (not just
   // its cleanup) keeps the observer disconnected while loading, and permanently once
@@ -178,74 +192,65 @@ export function AllScarvesGrid({ className }: { className?: string }) {
   const retriesExhausted = status === "error" && retryCount >= MAX_RETRIES
 
   return (
-    <section
-      className={cn("border-b border-stone-200/80 bg-[#faf9f7] py-12 md:py-16", className)}
-      aria-label="Toutes les pièces"
-    >
-      <div className="mx-auto max-w-6xl px-5 md:px-6">
-        <h2 className="text-balance text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">
-          Toutes les pièces
-        </h2>
-
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-          {scarves.map((scarf, i) => (
-            <li key={String(scarf.id)} className="min-w-0">
-              {/* cardIndex keeps counting across batches, so only the first row ever gets
-                  `priority` — everything from index 4 on (including every later batch)
-                  loads lazily, protecting LCP. */}
-              <ScarfCard scarf={scarf} cardIndex={i} />
-            </li>
-          ))}
-          {status === "loading"
-            ? Array.from({ length: BATCH_SIZE }).map((_, i) => (
-                <li key={`skeleton-${i}`} className="min-w-0">
-                  <ScarfCardSkeleton />
+    <div className={className}>
+      <ul className={PRODUCT_GRID_CLASS}>
+        {scarves.map((scarf, i) => (
+          <li key={String(scarf.id)} className={productCellClass(i)}>
+            {/* cardIndex keeps counting across batches: only the first cards get priority. */}
+            <ScarfCard scarf={scarf} cardIndex={i} layout={productLayoutAt(i)} />
+          </li>
+        ))}
+        {status === "loading"
+          ? Array.from({ length: BATCH_SIZE }).map((_, k) => {
+              const i = scarves.length + k
+              return (
+                <li key={`skeleton-${k}`} className={productCellClass(i)}>
+                  <ProductCardSkeleton layout={productLayoutAt(i)} />
                 </li>
-              ))
-            : null}
-        </ul>
+              )
+            })
+          : null}
+      </ul>
 
-        {status === "error" ? (
-          <div className="mt-8 text-center">
-            <p className="text-sm text-red-700">
-              Impossible de charger plus de pièces pour le moment.
-            </p>
-            {retriesExhausted ? (
-              <p className="mt-2 text-sm text-stone-500">
-                Rechargez la page pour réessayer.
-              </p>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRetry}
-                className="mt-4 rounded-none border-stone-400 font-light"
-              >
-                Réessayer
-              </Button>
-            )}
-          </div>
-        ) : null}
-
-        {/* Sentinel: IntersectionObserver triggers the next batch ~400px before this is reached. */}
-        <div ref={sentinelRef} aria-hidden className="h-px" />
-
-        {status === "idle" || status === "loading" ? (
-          <div className="mt-8 text-center">
+      {status === "error" ? (
+        <div className="mt-10 text-center">
+          <p className="text-sm text-red-700">Impossible de charger plus de pièces pour le moment.</p>
+          {retriesExhausted ? (
+            <p className="mt-2 text-sm text-stone-500">Rechargez la page pour réessayer.</p>
+          ) : (
             <Button
               type="button"
               variant="outline"
-              disabled={status === "loading"}
-              onClick={loadNextPage}
-              className="rounded-none border-stone-400 font-light"
+              onClick={handleRetry}
+              className="mt-4 rounded-none border-stone-400 font-light"
             >
-              {status === "loading" ? "Chargement…" : "Charger plus"}
+              Réessayer
             </Button>
-          </div>
-        ) : status === "done" ? (
-          <p className="mt-8 text-center text-sm text-stone-500">Vous avez tout vu</p>
-        ) : null}
-      </div>
-    </section>
+          )}
+        </div>
+      ) : null}
+
+      {/* Sentinel: IntersectionObserver triggers the next batch ~400px before this is reached. */}
+      <div ref={sentinelRef} aria-hidden className="h-px" />
+
+      {status === "idle" ? (
+        <div className="mt-10 text-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={loadNextPage}
+            className="h-11 rounded-none border-stone-900 px-8 text-[11px] font-normal tracking-[0.2em] uppercase"
+          >
+            Voir plus
+          </Button>
+        </div>
+      ) : status === "done" && scarves.length > 0 ? (
+        <p className="mt-12 text-center text-[11px] tracking-[0.2em] text-stone-400 uppercase">
+          {scarves.length} pièce{scarves.length > 1 ? "s" : ""}
+        </p>
+      ) : status === "done" ? (
+        <p className="py-16 text-center text-sm text-stone-500">Aucune pièce dans cette sélection pour le moment.</p>
+      ) : null}
+    </div>
   )
 }

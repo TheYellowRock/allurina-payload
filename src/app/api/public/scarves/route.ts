@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getPayload } from "payload"
 
 import config from "@payload-config"
+import { parseSlugList } from "@/lib/catalog/filter-chips"
+import { getProductTypeId } from "@/lib/catalog/product-types"
 
 export const dynamic = "force-dynamic"
 
@@ -23,6 +25,8 @@ type PublicScarfDoc = {
   image: PublicScarfImage | null
   /** Sold in sizes/colours — the card links to the product page instead of adding to cart. */
   hasVariants: boolean
+  /** Real stock — the card shows "Plus que N" for the last pieces. */
+  stockQuantity: number
 }
 
 /** Rejects anything that isn't a plain integer string (no floats, no "1e3", no whitespace-only). */
@@ -80,16 +84,68 @@ export async function GET(request: Request) {
     limit = Math.min(MAX_LIMIT, Math.max(1, parsed))
   }
 
+  // Optional filters: `type=<product type slug>` (e.g. "chales") and
+  // `exclude=1,2,3` (ids already shown elsewhere on the page, e.g. the best-sellers rail).
+  const rawType = searchParams.get("type")
+  if (rawType !== null && !/^[a-z0-9-]{1,40}$/.test(rawType)) {
+    return NextResponse.json({ error: "Invalid \"type\" parameter." }, { status: 400 })
+  }
+  const rawExclude = searchParams.get("exclude")
+  const excludeIds = rawExclude ? rawExclude.split(",").filter((s) => /^\d+$/.test(s)).slice(0, 60) : []
+  // Filter chips: `tags=solid` / `categories=chales-en-crepe` (slugs, comma-separated).
+  // A product matches when it has ANY of them.
+  const tagSlugs = parseSlugList(searchParams.get("tags"))
+  const categorySlugs = parseSlugList(searchParams.get("categories"))
+  const hasChipFilter = tagSlugs.length > 0 || categorySlugs.length > 0
+
   try {
     const resolvedConfig = await config
     const payload = await getPayload({ config: resolvedConfig })
+    const typeId = rawType ? await getProductTypeId(payload, rawType) : null
+    if (rawType && typeId === null) {
+      return NextResponse.json({ docs: [], hasNextPage: false, page })
+    }
+
+    const [tagIds, categoryIds] = hasChipFilter
+      ? await Promise.all([
+          tagSlugs.length
+            ? payload
+                .find({ collection: "tags", where: { slug: { in: tagSlugs } }, depth: 0, limit: 20, overrideAccess: true })
+                .then((r) => r.docs.map((d) => d.id))
+            : Promise.resolve([]),
+          categorySlugs.length
+            ? payload
+                .find({ collection: "categories", where: { slug: { in: categorySlugs } }, depth: 0, limit: 20, overrideAccess: true })
+                .then((r) => r.docs.map((d) => d.id))
+            : Promise.resolve([]),
+        ])
+      : [[], []]
+    if (hasChipFilter && tagIds.length === 0 && categoryIds.length === 0) {
+      return NextResponse.json({ docs: [], hasNextPage: false, page })
+    }
 
     // Same filter + sort as the existing collection pages (`getAllScarvesWithAvailability`
     // in `getScarvesStorefront.ts`) — there's no separate "published" field on `scarves`,
     // `stockQuantity > 0` is the only availability gate this catalog uses.
     const res = await payload.find({
       collection: "scarves",
-      where: { stockQuantity: { greater_than: 0 } },
+      where: {
+        and: [
+          { stockQuantity: { greater_than: 0 } },
+          ...(typeId !== null ? [{ productType: { equals: typeId } }] : []),
+          ...(excludeIds.length ? [{ id: { not_in: excludeIds } }] : []),
+          ...(hasChipFilter
+            ? [
+                {
+                  or: [
+                    ...(tagIds.length ? [{ tags: { in: tagIds } }] : []),
+                    ...(categoryIds.length ? [{ categories: { in: categoryIds } }] : []),
+                  ],
+                },
+              ]
+            : []),
+        ],
+      },
       depth: 1,
       page,
       limit,
@@ -106,6 +162,7 @@ export async function GET(request: Request) {
         price: typeof d.price === "number" ? d.price : 0,
         image: readPrimaryImage(d),
         hasVariants: d.hasVariants === true,
+        stockQuantity: typeof d.stockQuantity === "number" ? d.stockQuantity : 0,
       }
     })
 

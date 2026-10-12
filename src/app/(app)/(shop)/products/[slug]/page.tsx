@@ -37,8 +37,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function ProductPage({ params }: Props) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: Props & { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { slug } = await params
+  // `?couleur=<slug>` — set by the per-colour cards (and usable in ads) to open the page
+  // on that colour.
+  const couleurParam = (await searchParams).couleur
+  const initialColorSlug = typeof couleurParam === "string" ? couleurParam : null
   const scarf = await getStorefrontScarfBySlug(slug)
   if (!scarf || scarf.stockQuantity <= 0) notFound()
 
@@ -68,7 +75,7 @@ export default async function ProductPage({ params }: Props) {
           <span className="text-stone-900">{scarf.title}</span>
         </nav>
 
-        <MaybeVariantSelection options={variantOptions}>
+        <MaybeVariantSelection options={variantOptions} initialColorSlug={initialColorSlug}>
         <div className="mt-8 grid gap-10 md:mt-10 md:grid-cols-2 md:gap-12 lg:gap-16">
           <div>
             {variantOptions ? (
@@ -160,10 +167,18 @@ export default async function ProductPage({ params }: Props) {
 /** Wraps the page in the size × colour selection only for products sold in variants. */
 function MaybeVariantSelection({
   options,
+  initialColorSlug,
   children,
 }: {
   options: StorefrontVariantOptions | null
+  initialColorSlug: string | null
   children: React.ReactNode
 }) {
-  return options ? <VariantSelectionProvider options={options}>{children}</VariantSelectionProvider> : <>{children}</>
+  return options ? (
+    <VariantSelectionProvider options={options} initialColorSlug={initialColorSlug}>
+      {children}
+    </VariantSelectionProvider>
+  ) : (
+    <>{children}</>
+  )
 }

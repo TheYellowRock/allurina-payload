@@ -37,7 +37,7 @@ export default async function ToutesLesPiecesPage() {
           scarves={scarves}
           footerLinks={[
             { href: NOUVEAUTES_PATH, label: "Nouveautés" },
-            { href: "/#matieres", label: "Par matière" },
+            { href: "/chales", label: "Tous les châles" },
           ]}
         />
       )}

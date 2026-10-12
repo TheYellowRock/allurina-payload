@@ -50,17 +50,19 @@ function offerBarFor(_itemCount: number, subtotalDh: number): string {
 export const freeDelivery250202610: PromoDefinition = {
   id: "free-delivery-250-2026-10",
   label: `Livraison offerte dès ${FREE_DELIVERY_MIN_DH} DH`,
-  topBar: `Livraison offerte dès ${FREE_DELIVERY_MIN_DH} DH d’achat · Paiement à la livraison`,
+  topBar: `LIVRAISON GRATUITE dès ${FREE_DELIVERY_MIN_DH} DH d’achat · Vous payez à la réception`,
+  // Reads top to bottom as one ad line: "Offre spéciale — 250 DH d'achat = livraison
+  // GRATUITE partout au Maroc — commandez aujourd'hui, payez à la réception".
   banner: {
-    subline: "Paiement à la livraison partout au Maroc",
+    subline: "Commandez aujourd’hui, vous payez seulement à la réception",
     chips: [
       {
         value: FREE_DELIVERY_MIN_DH,
-        unit: "DH",
-        label: "Livraison offerte dès ce montant",
+        unit: "DH d’achat",
+        label: "= Livraison GRATUITE partout au Maroc",
         highlight: true,
         featured: true,
-        badge: "Offre du moment",
+        badge: "Offre spéciale",
       },
     ],
   },

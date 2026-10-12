@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { ScarfCard } from "@/components/storefront/scarf-card"
+import { ProductGrid } from "@/components/storefront/product-grid"
 import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
 import type { StorefrontScarf } from "@/lib/storefront-scarf-types"
 
@@ -16,9 +16,9 @@ export function CollectionPageIntro({
   breadcrumbs: CatalogCrumb[]
 }) {
   return (
-    <div className="border-b border-stone-200/80 bg-[#faf9f7] px-5 pb-8 pt-10 md:px-6 md:pb-10 md:pt-14">
+    <div className="bg-[#faf9f7] px-4 pt-8 pb-5 sm:px-5 md:px-6 md:pt-12 md:pb-8">
       <div className="mx-auto max-w-6xl">
-        <nav className="text-sm text-stone-600">
+        <nav className="text-[11px] tracking-[0.14em] text-stone-500 uppercase">
           {breadcrumbs.map((c, i) => (
             <span key={`${c.label}-${i}`}>
               {i > 0 ? <span className="mx-2 text-stone-400">/</span> : null}
@@ -32,11 +32,11 @@ export function CollectionPageIntro({
             </span>
           ))}
         </nav>
-        <h1 className="mt-6 text-balance font-sans text-3xl font-semibold tracking-tight text-stone-900 md:text-4xl lg:text-5xl">
+        <h1 className="mt-5 text-balance font-sans text-2xl font-medium tracking-[0.18em] text-stone-900 uppercase md:text-3xl">
           {title}
         </h1>
         {description ? (
-          <p className="mt-4 max-w-2xl text-pretty text-base leading-relaxed text-stone-600 md:text-lg">
+          <p className="mt-2.5 max-w-2xl text-pretty text-sm leading-relaxed text-stone-500 md:text-base">
             {description}
           </p>
         ) : null}
@@ -61,18 +61,12 @@ export function CollectionProductGrid({
 
   return (
     <div className="border-t border-stone-200/80 bg-[#faf9f7] pb-16 pt-8 md:pb-20 md:pt-10">
-      <div className="mx-auto max-w-6xl px-5 md:px-6">
-        <p className="text-sm text-stone-600">
+      <div className="mx-auto max-w-6xl px-3 sm:px-5 md:px-6">
+        <p className="px-0.5 text-[11px] tracking-[0.16em] text-stone-500 uppercase">
           {scarves.length} pièce{scarves.length !== 1 ? "s" : ""}
         </p>
 
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-          {scarves.map((scarf, i) => (
-            <li key={String(scarf.id)} className="min-w-0">
-              <ScarfCard scarf={scarf} cardIndex={i} />
-            </li>
-          ))}
-        </ul>
+        <ProductGrid scarves={scarves} className="mt-6" />
 
         <p className="mt-12 text-center text-sm text-stone-500">
           {links.map((link, i) => (

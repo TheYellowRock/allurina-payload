@@ -54,7 +54,7 @@ export default async function ChalesCategoryPage({ params }: Props) {
         description={cat.description}
         breadcrumbs={[
           { label: "Accueil", href: "/" },
-          { label: "Châles", href: "/#matieres" },
+          { label: "Châles", href: "/chales" },
           { label: cat.name },
         ]}
       />

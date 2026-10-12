@@ -13,7 +13,7 @@ import {
 import type { StorefrontCategory } from "@/lib/getStorefrontCategories"
 import type { StorefrontCollection } from "@/lib/getStorefrontCollections"
 import { chalesTypeLabel } from "@/lib/navLabels"
-import { NOUVEAUTES_PATH, TOUTES_LES_PIECES_PATH, chalesCategoryPath } from "@/lib/routes"
+import { CHALES_PATH, NOUVEAUTES_PATH, PULLS_PATH, TOUTES_LES_PIECES_PATH, chalesCategoryPath } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { NAV } from "@/components/storefront/site-header/nav-styles"
@@ -70,6 +70,13 @@ export function DesktopNav({
           <NavigationMenuTrigger className={NAV.trigger}>Châles</NavigationMenuTrigger>
           <NavigationMenuContent className={cn(NAV.submenu, "min-w-52 p-0")}>
             <ul>
+              <li>
+                <NavigationMenuLink asChild>
+                  <Link href={CHALES_PATH} className={cn(NAV.link, NAV.linkInactive)}>
+                    Tous les châles
+                  </Link>
+                </NavigationMenuLink>
+              </li>
               {chalesCategories.map((c) => (
                 <li key={c.slug}>
                   <NavigationMenuLink asChild>
@@ -84,6 +91,14 @@ export function DesktopNav({
               ))}
             </ul>
           </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem value="pulls">
+          <NavigationMenuLink asChild>
+            <Link href={PULLS_PATH} className={NAV.link}>
+              Pulls
+            </Link>
+          </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

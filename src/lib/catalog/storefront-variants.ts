@@ -30,18 +30,23 @@ export async function loadStorefrontVariantOptions(
   const productPrice = Number(product.price ?? 0)
   const title = String(product.title ?? "")
   const sizes = new Map<string, { id: string; label: string; order: number }>()
-  const colors = new Map<string, { id: string; name: string; hex: string }>()
+  const colors = new Map<string, { id: string; slug: string; name: string; hex: string }>()
   const variants: StorefrontVariantOptions["variants"] = []
 
   for (const raw of res.docs) {
     const v = raw as Record<string, unknown>
     const size = v.size as { id?: unknown; label?: unknown; sortOrder?: unknown } | null
-    const color = v.color as { id?: unknown; name?: unknown; hex?: unknown } | null
+    const color = v.color as { id?: unknown; slug?: unknown; name?: unknown; hex?: unknown } | null
     const sizeId = relId(size)
     const colorId = relId(color)
     if (!sizeId || !colorId || !size || !color) continue
     sizes.set(sizeId, { id: sizeId, label: String(size.label ?? ""), order: Number(size.sortOrder ?? 0) })
-    colors.set(colorId, { id: colorId, name: String(color.name ?? ""), hex: String(color.hex ?? "#cccccc") })
+    colors.set(colorId, {
+      id: colorId,
+      slug: String(color.slug ?? colorId),
+      name: String(color.name ?? ""),
+      hex: String(color.hex ?? "#cccccc"),
+    })
     variants.push({
       id: String(v.id),
       sizeId,
