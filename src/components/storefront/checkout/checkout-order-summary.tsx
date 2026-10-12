@@ -6,6 +6,7 @@ import type { CartPricingBreakdown } from "@/lib/cart/pricing"
 import type { CartLineItem } from "@/lib/cart/types"
 import { formatScarfPrice } from "@/lib/storefront-scarf-display"
 import { productPath } from "@/lib/routes"
+import { lineDisplayTitle, lineKey } from "@/lib/cart/types"
 
 const rowInput =
   "h-11 rounded-none border border-stone-300 bg-white px-3 text-sm font-light text-stone-900 outline-none placeholder:text-stone-400 focus-visible:border-stone-900 focus-visible:ring-1 focus-visible:ring-stone-900"
@@ -24,7 +25,7 @@ export function CheckoutOrderSummary({
       </h2>
       <ul className="mt-4 divide-y divide-stone-200/90">
         {items.map((line) => (
-          <li key={line.productId} className="flex gap-3 py-3 first:pt-0">
+          <li key={lineKey(line)} className="flex gap-3 py-3 first:pt-0">
             <div className="relative size-14 shrink-0 overflow-hidden bg-stone-200">
               {line.imageSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -44,7 +45,7 @@ export function CheckoutOrderSummary({
                 href={productPath(line.slug)}
                 className="line-clamp-2 text-sm font-light text-stone-900 hover:underline"
               >
-                {line.title}
+                {lineDisplayTitle(line)}
               </Link>
               <p className="mt-0.5 text-xs font-light tabular-nums text-stone-600">
                 {formatScarfPrice(line.price)} × {line.quantity}

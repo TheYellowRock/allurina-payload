@@ -37,8 +37,8 @@ type CartAction =
   | { type: "CLOSE" }
   | { type: "TOGGLE" }
   | { type: "ADD"; payload: CartAddPayload }
-  | { type: "SET_QTY"; productId: string; quantity: number }
-  | { type: "REMOVE"; productId: string }
+  | { type: "SET_QTY"; lineKey: string; quantity: number }
+  | { type: "REMOVE"; lineKey: string }
   | { type: "CLEAR" }
   | { type: "SET_ITEMS"; items: CartLineItem[] }
   | { type: "SET_VALIDATION_ISSUES"; issues: CartIssue[] }
@@ -65,10 +65,10 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "SET_QTY":
       return {
         ...state,
-        items: setLineQuantity(state.items, action.productId, action.quantity),
+        items: setLineQuantity(state.items, action.lineKey, action.quantity),
       }
     case "REMOVE":
-      return { ...state, items: removeLine(state.items, action.productId) }
+      return { ...state, items: removeLine(state.items, action.lineKey) }
     case "CLEAR":
       return { ...state, items: [] }
     case "SET_ITEMS":
@@ -96,8 +96,9 @@ export type CartContextValue = {
   closeCart: () => void
   toggleCart: () => void
   addItem: (payload: CartAddPayload) => void
-  setQuantity: (productId: string, quantity: number) => void
-  removeItem: (productId: string) => void
+  /** `key` = `lineKey(line)` (product + variant), see `@/lib/cart/types`. */
+  setQuantity: (key: string, quantity: number) => void
+  removeItem: (key: string) => void
   clearCart: () => void
   /** Wholesale replace — used to fold in `validateCart`/409 reconciliation results. */
   setItems: (items: CartLineItem[]) => void
@@ -137,11 +138,11 @@ export function CartProvider({
   const toggleCart = useCallback(() => dispatch({ type: "TOGGLE" }), [])
   const addItem = useCallback((payload: CartAddPayload) => dispatch({ type: "ADD", payload }), [])
   const setQuantity = useCallback(
-    (productId: string, quantity: number) => dispatch({ type: "SET_QTY", productId, quantity }),
+    (key: string, quantity: number) => dispatch({ type: "SET_QTY", lineKey: key, quantity }),
     [],
   )
   const removeItem = useCallback(
-    (productId: string) => dispatch({ type: "REMOVE", productId }),
+    (key: string) => dispatch({ type: "REMOVE", lineKey: key }),
     [],
   )
   const clearCart = useCallback(() => dispatch({ type: "CLEAR" }), [])

@@ -28,5 +28,6 @@ export function mapDocToStorefrontScarf(doc: Record<string, unknown>): Storefron
     tags: doc.tags,
     availabilityTags: doc.availabilityTags,
     availability,
+    hasVariants: doc.hasVariants === true,
   }
 }

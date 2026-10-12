@@ -15,7 +15,9 @@ function isValidLine(x: unknown): x is CartLineItem {
     typeof o.quantity === "number" &&
     Number.isInteger(o.quantity) &&
     o.quantity >= 1 &&
-    (o.imageSrc === null || typeof o.imageSrc === "string")
+    (o.imageSrc === null || typeof o.imageSrc === "string") &&
+    (o.variantId === undefined || (typeof o.variantId === "string" && o.variantId.length > 0)) &&
+    (o.variantLabel === undefined || typeof o.variantLabel === "string")
   )
 }
 

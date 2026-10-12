@@ -13,7 +13,8 @@ function isCheckoutLineInput(x: unknown): x is CheckoutLineInput {
     o.productId.length > 0 &&
     typeof o.quantity === "number" &&
     Number.isInteger(o.quantity) &&
-    o.quantity >= 1
+    o.quantity >= 1 &&
+    (o.variantId === undefined || (typeof o.variantId === "string" && /^\d+$/.test(o.variantId)))
   )
 }
 
@@ -38,10 +39,15 @@ export function validateCheckoutBody(
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
     return { ok: false, error: "Le panier est vide." }
   }
-  const items = rawItems.filter(isCheckoutLineInput)
-  if (items.length !== rawItems.length) {
+  if (!rawItems.every(isCheckoutLineInput)) {
     return { ok: false, error: "Lignes panier invalides." }
   }
+  // Only the trusted shape goes further — any extra client fields are dropped here.
+  const items: CheckoutLineInput[] = rawItems.map((line) => ({
+    productId: line.productId,
+    ...(line.variantId ? { variantId: line.variantId } : {}),
+    quantity: line.quantity,
+  }))
 
   const idempotencyKey = trim(b.idempotencyKey, 100)
   if (idempotencyKey.length < 8) {

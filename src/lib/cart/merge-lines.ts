@@ -1,16 +1,17 @@
-import type { CartAddPayload, CartLineItem } from "@/lib/cart/types"
+import { lineKey, type CartAddPayload, type CartLineItem } from "@/lib/cart/types"
 
-export function addOrMergeLine(
-  items: CartLineItem[],
-  incoming: CartAddPayload,
-): CartLineItem[] {
+/** Lines are identified by `lineKey` (product + optional variant), not by productId alone. */
+export function addOrMergeLine(items: CartLineItem[], incoming: CartAddPayload): CartLineItem[] {
   const qty = Math.max(1, Math.floor(incoming.quantity))
-  const idx = items.findIndex((i) => i.productId === incoming.productId)
+  const key = lineKey(incoming)
+  const idx = items.findIndex((i) => lineKey(i) === key)
   if (idx === -1) {
     return [
       ...items,
       {
         productId: incoming.productId,
+        ...(incoming.variantId ? { variantId: incoming.variantId } : {}),
+        ...(incoming.variantLabel ? { variantLabel: incoming.variantLabel } : {}),
         slug: incoming.slug,
         title: incoming.title,
         price: incoming.price,
@@ -20,23 +21,19 @@ export function addOrMergeLine(
     ]
   }
   const next = [...items]
-  const cur = next[idx]
+  const cur = next[idx]!
   next[idx] = { ...cur, quantity: cur.quantity + qty }
   return next
 }
 
-export function setLineQuantity(
-  items: CartLineItem[],
-  productId: string,
-  quantity: number,
-): CartLineItem[] {
+export function setLineQuantity(items: CartLineItem[], key: string, quantity: number): CartLineItem[] {
   const q = Math.floor(quantity)
-  if (q < 1) return items.filter((i) => i.productId !== productId)
-  return items.map((i) => (i.productId === productId ? { ...i, quantity: q } : i))
+  if (q < 1) return items.filter((i) => lineKey(i) !== key)
+  return items.map((i) => (lineKey(i) === key ? { ...i, quantity: q } : i))
 }
 
-export function removeLine(items: CartLineItem[], productId: string): CartLineItem[] {
-  return items.filter((i) => i.productId !== productId)
+export function removeLine(items: CartLineItem[], key: string): CartLineItem[] {
+  return items.filter((i) => lineKey(i) !== key)
 }
 
 export function cartItemCount(items: CartLineItem[]): number {

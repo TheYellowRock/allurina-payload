@@ -22,7 +22,7 @@ export const WHATSAPP_NUMBER = "212696707488"
 const CONFIRMATION_PATH = `${CHECKOUT_PATH}/confirmation`
 
 /** Paths where the button never renders (staff area shares the same root layout). */
-const HIDDEN_PREFIXES = ["/orders_manager", "/admin"]
+const HIDDEN_PREFIXES = ["/studio", "/admin"]
 
 function buildMessage(pathname: string, productTitle: string | null): string {
   if (productTitle) {

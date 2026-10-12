@@ -60,12 +60,17 @@ export function CartPricingBreakdownView({
           </div>
 
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 font-medium text-[#c00000]">
-            <span>
-              Réduction{appliedLabel ? ` ${appliedLabel}` : ""}
-              {deliverySavingDh > 0 ? (
-                <span className="block text-[11px] font-normal">livraison offerte incluse</span>
-              ) : null}
-            </span>
+            {promoSavingsDh > 0 ? (
+              <span>
+                Réduction{appliedLabel ? ` ${appliedLabel}` : ""}
+                {deliverySavingDh > 0 ? (
+                  <span className="block text-[11px] font-normal">livraison offerte incluse</span>
+                ) : null}
+              </span>
+            ) : (
+              // Only the delivery is offered (e.g. "dès 250 DH"): say exactly that.
+              <span>Livraison offerte</span>
+            )}
             <span className="text-right text-base font-semibold tabular-nums">
               −{formatScarfPrice(reductionDh)}
             </span>

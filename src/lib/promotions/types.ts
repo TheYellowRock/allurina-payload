@@ -16,7 +16,7 @@ export type PromoResolution = {
 
 /** One dot on the cart progress bar. */
 export type PromoCartMilestone = {
-  /** Item-count threshold this milestone represents. */
+  /** Threshold this milestone represents: an item count, or a DH amount when the promo's `cart.metric` is "amount". */
   qty: number
   label: string
 }
@@ -63,10 +63,16 @@ export type PromoDefinition = {
   topBar: string
   banner: PromoBannerContent
   cart: {
+    /**
+     * What the progress bar and milestones measure: number of items (default) or the
+     * merchandise total in DH (items at catalog price, before delivery).
+     */
+    metric?: "items" | "amount"
     milestones: PromoCartMilestone[]
-    statusFor: (itemCount: number) => PromoCartStatus
+    /** `subtotalDh` = merchandise total at catalog price, before delivery. Item-count promos ignore it. */
+    statusFor: (itemCount: number, subtotalDh: number) => PromoCartStatus
     /** Optional sticky bottom-bar copy. When omitted, the bar derives a generic message from `milestones`. */
-    offerBarFor?: (itemCount: number) => string
+    offerBarFor?: (itemCount: number, subtotalDh: number) => string
   }
   resolve: (items: PromoLineInput[]) => PromoResolution
 }

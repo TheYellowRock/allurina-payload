@@ -49,7 +49,7 @@ export function CheckoutPageView() {
     const current = itemsRef.current
     if (!hydrated || current.length === 0) return
     let cancelled = false
-    validateCart(current.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })))
+    validateCart(current.map((line) => ({ productId: line.productId, variantId: line.variantId, quantity: line.quantity, price: line.price })))
       .then((result) => {
         if (cancelled || result.ok) return
         const { items: nextItems, issues } = applyCartValidation(current, result.items)
@@ -90,7 +90,7 @@ export function CheckoutPageView() {
         // between mount and this click. Any drift blocks this submit; the user must
         // review the correction and click again.
         const validation = await validateCart(
-          items.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })),
+          items.map((line) => ({ productId: line.productId, variantId: line.variantId, quantity: line.quantity, price: line.price })),
         )
         if (!validation.ok) {
           const { items: nextItems, issues } = applyCartValidation(items, validation.items)
@@ -104,7 +104,11 @@ export function CheckoutPageView() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             paymentMethod: "cod",
-            items: items.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+            items: items.map((line) => ({
+              productId: line.productId,
+              ...(line.variantId ? { variantId: line.variantId } : {}),
+              quantity: line.quantity,
+            })),
             idempotencyKey,
             expectedGrandTotal: pricing.grandTotal,
             customer: {

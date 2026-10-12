@@ -3,16 +3,18 @@
 import { getPayload } from "payload"
 
 import config from "@payload-config"
-import { isVariableProduct } from "@/lib/catalog/sellable"
+import { resolveLines } from "@/lib/catalog/resolve-lines"
 
 export type CartValidationLine = {
   productId: string
+  variantId?: string
   quantity: number
   price: number
 }
 
 export type CartValidationItem = {
   productId: string
+  variantId: string | null
   exists: boolean
   title: string | null
   currentPrice: number | null
@@ -27,37 +29,24 @@ export type CartValidationResult = {
 }
 
 /**
- * Re-reads price and stock for every cart line from `scarves` — called on cart/checkout
- * mount so the UI can flag drift before the user submits (see `applyCartValidation` in
- * `@/lib/cart/reconcile` for how the result is folded back into the cart).
+ * Re-reads price and stock for every cart line (product, or product + variant) — called
+ * on cart/checkout mount so the UI can flag drift before the user submits (see
+ * `applyCartValidation` in `@/lib/cart/reconcile` for how the result is folded back).
  */
 export async function validateCart(lines: CartValidationLine[]): Promise<CartValidationResult> {
   if (lines.length === 0) {
     return { ok: true, items: [] }
   }
 
-  const resolvedConfig = await config
-  const payload = await getPayload({ config: resolvedConfig })
+  const payload = await getPayload({ config: await config })
+  const resolved = await resolveLines(payload, lines)
 
-  const productIds = [...new Set(lines.map((line) => line.productId))]
-  const res = await payload.find({
-    collection: "scarves",
-    where: { id: { in: productIds } },
-    depth: 0,
-    limit: productIds.length,
-    overrideAccess: true,
-  })
-  // Products with sizes/colours can't be bought without a variant yet (see `sellable.ts`):
-  // treated as unavailable, so the cart drops them.
-  const scarfById = new Map(
-    res.docs.filter((doc) => !isVariableProduct(doc)).map((doc) => [String(doc.id), doc]),
-  )
-
-  const items: CartValidationItem[] = lines.map((line) => {
-    const scarf = scarfById.get(line.productId)
-    if (!scarf) {
+  const items: CartValidationItem[] = lines.map((line, i) => {
+    const r = resolved[i]!
+    if (!r.exists || r.price === null || r.stock === null) {
       return {
         productId: line.productId,
+        variantId: r.variantId,
         exists: false,
         title: null,
         currentPrice: null,
@@ -66,16 +55,15 @@ export async function validateCart(lines: CartValidationLine[]): Promise<CartVal
         insufficientStock: false,
       }
     }
-    const currentPrice = Number(scarf.price)
-    const currentStock = Number(scarf.stockQuantity ?? 0)
     return {
       productId: line.productId,
+      variantId: r.variantId,
       exists: true,
-      title: String(scarf.title),
-      currentPrice,
-      currentStock,
-      priceChanged: currentPrice !== line.price,
-      insufficientStock: currentStock < line.quantity,
+      title: r.title,
+      currentPrice: r.price,
+      currentStock: r.stock,
+      priceChanged: r.price !== line.price,
+      insufficientStock: r.stock < line.quantity,
     }
   })
 

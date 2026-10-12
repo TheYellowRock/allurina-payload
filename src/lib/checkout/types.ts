@@ -19,6 +19,8 @@ export type CheckoutCustomerPayload = {
  */
 export type CheckoutLineInput = {
   productId: string
+  /** Required for products with sizes/colours, refused for simple products (server-checked). */
+  variantId?: string
   quantity: number
 }
 
@@ -47,6 +49,7 @@ export type CheckoutPriceMismatch = {
 /** 409 response shape from `POST /api/store/checkout` when a line can't clear the atomic stock check. */
 export type CheckoutStockFailure = {
   productId: string
+  variantId?: string | null
   title: string
   availableStock: number
 }

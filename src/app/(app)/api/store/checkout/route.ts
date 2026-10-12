@@ -9,11 +9,10 @@ import { computeCartPricing } from "@/lib/cart/pricing"
 import type { CartLineItem } from "@/lib/cart/types"
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
-import { isVariableProduct } from "@/lib/catalog/sellable"
+import { resolveLines } from "@/lib/catalog/resolve-lines"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
 import { getActivePromoFresh } from "@/lib/promotions/active"
 import { syncOrderToRespondIo } from "@/lib/respondio/sync"
-import { storefrontMediaUrl } from "@/lib/storefront-scarf-display"
 
 function generateOrderReference(): string {
   return `ALL-${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -55,24 +54,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ orderReference: existingOrder.orderReference })
     }
 
-    // Server-side re-pricing: the client only sent { productId, quantity } — everything
-    // else (price, title, slug, imageSrc) is re-derived from `scarves` right here, in one
-    // query, and only that DB-derived data is ever stored on the order.
-    const productIds = [...new Set(lineInputs.map((line) => line.productId))]
-    const scarvesRes = await payload.find({
-      collection: "scarves",
-      where: { id: { in: productIds } },
-      depth: 0,
-      limit: productIds.length,
-      overrideAccess: true,
-    })
-    // Products with sizes/colours can't be ordered without a variant yet (see
-    // `sellable.ts`) — they fall into `missingProductIds` below and the order is refused.
-    const scarfById = new Map(
-      scarvesRes.docs.filter((doc) => !isVariableProduct(doc)).map((doc) => [String(doc.id), doc]),
-    )
-
-    const missingProductIds = productIds.filter((id) => !scarfById.has(id))
+    // Server-side re-pricing: the client only sent { productId, variantId?, quantity } —
+    // price, title, slug, variant label and photo are re-derived from the database here
+    // (`resolveLines`, the same resolver the cart revalidation uses), and only that
+    // DB-derived data is ever stored on the order. A product with sizes/colours sent
+    // without a valid variant of its own is refused like a missing product.
+    const resolved = await resolveLines(payload, lineInputs)
+    const missingProductIds = resolved.filter((r) => !r.exists).map((r) => r.productId)
     if (missingProductIds.length > 0) {
       return NextResponse.json(
         { error: "Certains articles ne sont plus disponibles.", missingProductIds },
@@ -80,15 +68,17 @@ export async function POST(req: Request) {
       )
     }
 
-    const items: CartLineItem[] = lineInputs.map((line) => {
-      const scarf = scarfById.get(line.productId)!
+    const items: CartLineItem[] = lineInputs.map((line, i) => {
+      const r = resolved[i]!
       return {
         productId: line.productId,
-        slug: String(scarf.slug),
-        title: String(scarf.title),
-        price: Number(scarf.price),
+        ...(r.variantId ? { variantId: r.variantId } : {}),
+        ...(r.variantLabel ? { variantLabel: r.variantLabel } : {}),
+        slug: r.slug ?? "",
+        title: r.title ?? "",
+        price: r.price ?? 0,
         quantity: line.quantity,
-        imageSrc: storefrontMediaUrl(scarf.featuredImage),
+        imageSrc: r.imageSrc,
       }
     })
 
@@ -140,20 +130,23 @@ export async function POST(req: Request) {
         | undefined
 
       // Atomic per-line stock decrement — single `UPDATE ... WHERE stock_quantity >= qty
-      // RETURNING`, no read-then-write. Runs before the order row exists.
+      // RETURNING`, no read-then-write. Runs before the order row exists. Variant lines
+      // decrement the variant (and, inside the same SQL function, the product's total).
       const stockFailures: CheckoutStockFailure[] = []
-      for (const line of items) {
+      for (const [i, line] of items.entries()) {
         const { rows } = await payload.db.execute({
           db: txDb,
-          sql: sql`SELECT decrement_stock(${Number(line.productId)}, ${line.quantity}) AS new_stock`,
+          sql: line.variantId
+            ? sql`SELECT decrement_variant_stock(${Number(line.variantId)}, ${line.quantity}) AS new_stock`
+            : sql`SELECT decrement_stock(${Number(line.productId)}, ${line.quantity}) AS new_stock`,
         })
         const newStock = rows[0]?.new_stock
         if (newStock === null || newStock === undefined) {
-          const scarf = scarfById.get(line.productId)!
           stockFailures.push({
             productId: line.productId,
-            title: line.title,
-            availableStock: Number(scarf.stockQuantity ?? 0),
+            variantId: line.variantId ?? null,
+            title: line.variantLabel ? `${line.title} — ${line.variantLabel}` : line.title,
+            availableStock: resolved[i]?.stock ?? 0,
           })
         }
       }

@@ -134,7 +134,7 @@ export async function writeActivePromoRecord(record: ActivePromoRecord): Promise
   await writeActivePromoRecordToEdgeConfig(record)
 }
 
-/** Backing data for the /orders_manager?tab=promotions panel. */
+/** Backing data for the /studio/promotions page. */
 export async function getPromotionsPanelData(now: Date = new Date()): Promise<PromotionsPanelData> {
   const backingStore = getActivePromoBackingStore()
   const writable = canActivatePromoViaPanel()

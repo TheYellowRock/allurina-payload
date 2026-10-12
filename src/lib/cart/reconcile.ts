@@ -1,6 +1,6 @@
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import type { CartValidationItem } from "@/lib/checkout/validateCart"
-import type { CartLineItem } from "@/lib/cart/types"
+import { lineKey, lineDisplayTitle, type CartLineItem } from "@/lib/cart/types"
 
 export type CartIssue = {
   productId: string
@@ -23,18 +23,18 @@ export function applyCartValidation(
   items: CartLineItem[],
   validation: CartValidationItem[],
 ): { items: CartLineItem[]; issues: CartIssue[] } {
-  const byProductId = new Map(validation.map((item) => [item.productId, item]))
+  const byKey = new Map(validation.map((item) => [lineKey(item), item]))
   const issues: CartIssue[] = []
   const nextItems: CartLineItem[] = []
 
   for (const line of items) {
-    const check = byProductId.get(line.productId)
+    const check = byKey.get(lineKey(line))
     if (!check || !check.exists || (check.currentStock ?? 0) <= 0) {
       issues.push({
         productId: line.productId,
-        title: line.title,
+        title: lineDisplayTitle(line),
         reason: "removed",
-        detail: removedDetail(line.title),
+        detail: removedDetail(lineDisplayTitle(line)),
       })
       continue
     }
@@ -44,18 +44,18 @@ export function applyCartValidation(
       next = { ...next, price: check.currentPrice }
       issues.push({
         productId: line.productId,
-        title: line.title,
+        title: lineDisplayTitle(line),
         reason: "price_changed",
-        detail: `Le prix de ${line.title} a été mis à jour.`,
+        detail: `Le prix de ${lineDisplayTitle(line)} a été mis à jour.`,
       })
     }
     if (check.insufficientStock && check.currentStock !== null && check.currentStock > 0) {
       next = { ...next, quantity: check.currentStock }
       issues.push({
         productId: line.productId,
-        title: line.title,
+        title: lineDisplayTitle(line),
         reason: "stock_reduced",
-        detail: stockReducedDetail(line.title, check.currentStock),
+        detail: stockReducedDetail(lineDisplayTitle(line), check.currentStock),
       })
     }
     nextItems.push(next)
@@ -69,12 +69,12 @@ export function applyStockConflict(
   items: CartLineItem[],
   failures: CheckoutStockFailure[],
 ): { items: CartLineItem[]; issues: CartIssue[] } {
-  const byProductId = new Map(failures.map((failure) => [failure.productId, failure]))
+  const byKey = new Map(failures.map((failure) => [lineKey(failure), failure]))
   const issues: CartIssue[] = []
   const nextItems: CartLineItem[] = []
 
   for (const line of items) {
-    const failure = byProductId.get(line.productId)
+    const failure = byKey.get(lineKey(line))
     if (!failure) {
       nextItems.push(line)
       continue
@@ -82,18 +82,18 @@ export function applyStockConflict(
     if (failure.availableStock <= 0) {
       issues.push({
         productId: line.productId,
-        title: line.title,
+        title: lineDisplayTitle(line),
         reason: "removed",
-        detail: removedDetail(line.title),
+        detail: removedDetail(lineDisplayTitle(line)),
       })
       continue
     }
     nextItems.push({ ...line, quantity: failure.availableStock })
     issues.push({
       productId: line.productId,
-      title: line.title,
+      title: lineDisplayTitle(line),
       reason: "stock_reduced",
-      detail: stockReducedDetail(line.title, failure.availableStock),
+      detail: stockReducedDetail(lineDisplayTitle(line), failure.availableStock),
     })
   }
 

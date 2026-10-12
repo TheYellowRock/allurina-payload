@@ -89,7 +89,10 @@ function parseItemsJson(raw: unknown, publicBase: string | null): OrderEmailLine
   for (const x of raw) {
     if (!x || typeof x !== "object") continue
     const o = x as Record<string, unknown>
-    const title = readStr(o.title)
+    // Variant lines (pulls…) read "Pull Nora — M/L · Noir" in both emails.
+    const variantLabel = readStr(o.variantLabel).trim()
+    const baseTitle = readStr(o.title)
+    const title = variantLabel && baseTitle ? `${baseTitle} — ${variantLabel}` : baseTitle
     const quantity = Math.max(0, Math.floor(readNum(o.quantity)))
     const unitPriceDh = Math.max(0, readNum(o.price))
     if (!title || quantity < 1) continue

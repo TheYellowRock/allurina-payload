@@ -45,14 +45,19 @@ export function StickyOfferBar() {
   const { itemCount, hydrated, open, promo, pricing, openCart } = useCart()
   const pathname = usePathname()
 
+  const subtotalDh = pricing.merchandiseListTotal
   const message = useMemo(
-    () => promo.cart.offerBarFor?.(itemCount) ?? offerMessage(itemCount, promo.cart.milestones),
-    [itemCount, promo.cart],
+    () =>
+      promo.cart.offerBarFor?.(itemCount, subtotalDh) ?? offerMessage(itemCount, promo.cart.milestones),
+    [itemCount, subtotalDh, promo.cart],
   )
 
   const isCheckout = pathname?.startsWith(CHECKOUT_PATH) ?? false
+  // The staff CRM shares the root layout (and so this provider); the bar would cover its
+  // own bottom action bars there.
+  const isStaffArea = pathname?.startsWith("/studio") ?? false
 
-  if (!hydrated || open || isCheckout || !message) return null
+  if (!hydrated || open || isCheckout || isStaffArea || !message) return null
 
   return (
     <button

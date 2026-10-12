@@ -98,32 +98,43 @@ export function ScarfCard({
             </span>
           </Link>
 
-          <AddToCartButton
-            disabled={isOutOfStock}
-            item={{
-              productId,
-              slug: scarf.slug,
-              title: scarf.title,
-              price: scarf.price,
-              imageSrc: cartImageSrc,
-              quantity: 1,
-            }}
-            size="sm"
-            variant="outline"
-            className={cn(
-              "relative z-20 h-9 w-full min-w-0 justify-center gap-2 rounded-none border-2 border-stone-900 bg-transparent px-4 text-xs font-medium uppercase tracking-[0.2em] text-stone-900 shadow-none transition-colors hover:bg-stone-900 hover:text-white active:bg-stone-950 active:text-white [&_svg]:text-stone-900 hover:[&_svg]:text-white active:[&_svg]:text-white",
-              isOutOfStock &&
-                "border-stone-300 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-400 active:border-stone-300 active:bg-stone-50 active:text-stone-400 [&_svg]:text-stone-400 hover:[&_svg]:text-stone-400 active:[&_svg]:text-stone-400 disabled:opacity-100!",
-            )}
-            aria-label={
-              isOutOfStock
-                ? `${scarf.title} — ${scarf.availability.label}`
-                : `Ajouter ${scarf.title} au panier`
-            }
-          >
-            <ShoppingBag className="size-3.5" strokeWidth={1.75} />
-            Ajouter
-          </AddToCartButton>
+          {scarf.hasVariants && !isOutOfStock ? (
+            // Sizes/colours are chosen on the product page — no one-tap add from a card.
+            <Link
+              href={href}
+              className="relative z-20 flex h-9 w-full min-w-0 items-center justify-center gap-2 rounded-none border-2 border-stone-900 px-4 text-xs font-medium uppercase tracking-[0.2em] text-stone-900 transition-colors hover:bg-stone-900 hover:text-white"
+              aria-label={`Choisir la taille et la couleur de ${scarf.title}`}
+            >
+              Choisir
+            </Link>
+          ) : (
+            <AddToCartButton
+              disabled={isOutOfStock}
+              item={{
+                productId,
+                slug: scarf.slug,
+                title: scarf.title,
+                price: scarf.price,
+                imageSrc: cartImageSrc,
+                quantity: 1,
+              }}
+              size="sm"
+              variant="outline"
+              className={cn(
+                "relative z-20 h-9 w-full min-w-0 justify-center gap-2 rounded-none border-2 border-stone-900 bg-transparent px-4 text-xs font-medium uppercase tracking-[0.2em] text-stone-900 shadow-none transition-colors hover:bg-stone-900 hover:text-white active:bg-stone-950 active:text-white [&_svg]:text-stone-900 hover:[&_svg]:text-white active:[&_svg]:text-white",
+                isOutOfStock &&
+                  "border-stone-300 bg-stone-50 text-stone-400 hover:border-stone-300 hover:bg-stone-50 hover:text-stone-400 active:border-stone-300 active:bg-stone-50 active:text-stone-400 [&_svg]:text-stone-400 hover:[&_svg]:text-stone-400 active:[&_svg]:text-stone-400 disabled:opacity-100!",
+              )}
+              aria-label={
+                isOutOfStock
+                  ? `${scarf.title} — ${scarf.availability.label}`
+                  : `Ajouter ${scarf.title} au panier`
+              }
+            >
+              <ShoppingBag className="size-3.5" strokeWidth={1.75} />
+              Ajouter
+            </AddToCartButton>
+          )}
         </div>
       </Card>
     </div>

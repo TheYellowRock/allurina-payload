@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 
 const GTM_ID = (process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-MLPCW62M").trim()
 
-/** Shell shared by storefront `(shop)` and staff `/orders_manager` (no shop chrome here). */
+/** Shell shared by storefront `(shop)` and staff `/studio` (no shop chrome here). */
 export default async function AppLayout({
   children,
 }: Readonly<{

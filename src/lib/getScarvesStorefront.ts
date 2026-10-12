@@ -3,7 +3,6 @@ import { getPayload } from "payload"
 import type { Where } from "payload"
 
 import config from "@payload-config"
-import { SIMPLE_PRODUCTS_ONLY } from "@/lib/catalog/sellable"
 import { mapDocToStorefrontScarf } from "@/lib/mapStorefrontScarf"
 import {
   availabilityBadgeTone,
@@ -20,9 +19,10 @@ const NOUVEAUTES_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
  * A product is out of stock when `stockQuantity <= 0` — hidden from every storefront
- * listing query below. Products with variants are also excluded for now (see `sellable.ts`).
+ * listing query below. For a product with sizes/colours, `stockQuantity` is the sum of
+ * its variants (kept in sync), so the same filter applies.
  */
-const IN_STOCK: Where = { and: [{ stockQuantity: { greater_than: 0 } }, SIMPLE_PRODUCTS_ONLY] }
+const IN_STOCK: Where = { stockQuantity: { greater_than: 0 } }
 
 function withInStock(where?: Where): Where {
   return where ? { and: [where, IN_STOCK] } : IN_STOCK

@@ -22,6 +22,7 @@ type PublicScarfDoc = {
   title: string
   price: number
   image: { url: string; width: number; height: number; alt: string } | null
+  hasVariants?: boolean
 }
 
 type PublicScarvesResponse = {
@@ -51,6 +52,7 @@ function toStorefrontScarf(doc: PublicScarfDoc): StorefrontScarf {
     tags: null,
     availabilityTags: [],
     availability: resolveStorefrontAvailability({ stockQuantity, availabilityTags: [] }),
+    hasVariants: doc.hasVariants === true,
   }
 }
 

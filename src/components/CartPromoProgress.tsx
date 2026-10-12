@@ -1,6 +1,6 @@
 "use client"
 
-import { Check } from "lucide-react"
+import { Check, Truck } from "lucide-react"
 import { useMemo } from "react"
 
 import { useCart } from "@/components/storefront/cart/cart-context"
@@ -18,18 +18,22 @@ import { cn } from "@/lib/utils"
  */
 export function CartPromoProgress({ className }: { className?: string }) {
   const { itemCount, pricing, promo } = useCart()
-  const { milestones, statusFor } = promo.cart
+  const { milestones, statusFor, metric = "items" } = promo.cart
   const { footnote, subline } = promo.banner
+  const subtotalDh = pricing.merchandiseListTotal
+  const isAmount = metric === "amount"
+  // What the bar measures: item count, or the DH merchandise total for amount-based promos.
+  const progressValue = isAmount ? subtotalDh : itemCount
 
   const topMilestoneQty = useMemo(
     () => milestones.reduce((max, m) => Math.max(max, m.qty), 1),
     [milestones],
   )
 
-  const status = useMemo(() => statusFor(itemCount), [statusFor, itemCount])
+  const status = useMemo(() => statusFor(itemCount, subtotalDh), [statusFor, itemCount, subtotalDh])
   const fillPercent = useMemo(
-    () => Math.min(100, (itemCount / topMilestoneQty) * 100),
-    [itemCount, topMilestoneQty],
+    () => Math.min(100, (progressValue / topMilestoneQty) * 100),
+    [progressValue, topMilestoneQty],
   )
 
   return (
@@ -40,7 +44,7 @@ export function CartPromoProgress({ className }: { className?: string }) {
           style={{ width: `${fillPercent}%` }}
         />
         {milestones.map((milestone) => {
-          const reached = itemCount >= milestone.qty
+          const reached = progressValue >= milestone.qty
           const leftPercent = (milestone.qty / topMilestoneQty) * 100
           return (
             <div
@@ -52,9 +56,16 @@ export function CartPromoProgress({ className }: { className?: string }) {
                   : "border-stone-300 bg-white text-stone-400",
               )}
               style={{ left: `${leftPercent}%` }}
-              aria-label={`${milestone.qty} pièces — ${milestone.label}${reached ? " (atteint)" : ""}`}
+              aria-label={`${milestone.qty}${isAmount ? " DH" : " pièces"} — ${milestone.label}${reached ? " (atteint)" : ""}`}
             >
-              {reached ? <Check className="size-3" strokeWidth={3} /> : milestone.qty}
+              {reached ? (
+                <Check className="size-3" strokeWidth={3} />
+              ) : isAmount ? (
+                // An amount like "250" doesn't fit in the dot — the status line below carries it.
+                <Truck className="size-3" strokeWidth={2.5} />
+              ) : (
+                milestone.qty
+              )}
             </div>
           )
         })}

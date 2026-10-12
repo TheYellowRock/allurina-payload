@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 
 import { ProductDescription } from "./product-description"
 import { ProductGallery } from "./product-gallery"
+import { VariantGallery, VariantPurchasePanel, VariantSelectionProvider } from "./variant-selection"
 import { ProductPurchasePanel } from "@/components/storefront/cart/product-purchase-panel"
 import { ProductViewTracker } from "@/components/storefront/product-view-tracker"
 import { PromoBadge } from "@/components/storefront/promo-badge"
@@ -18,6 +19,7 @@ import {
   formatScarfPrice,
   storefrontPrimaryCategoryLine,
 } from "@/lib/storefront-scarf-display"
+import type { StorefrontVariantOptions } from "@/lib/storefront-scarf-types"
 import { storefrontProductImages } from "@/lib/storefrontProductMedia"
 import { cn } from "@/lib/utils"
 
@@ -47,6 +49,7 @@ export default async function ProductPage({ params }: Props) {
   )
 
   const categoryLine = storefrontPrimaryCategoryLine(scarf.categories)
+  const variantOptions = scarf.hasVariants && scarf.variantOptions?.variants.length ? scarf.variantOptions : null
 
   return (
     <div className="min-h-full flex-1 bg-white text-stone-900">
@@ -65,13 +68,22 @@ export default async function ProductPage({ params }: Props) {
           <span className="text-stone-900">{scarf.title}</span>
         </nav>
 
+        <MaybeVariantSelection options={variantOptions}>
         <div className="mt-8 grid gap-10 md:mt-10 md:grid-cols-2 md:gap-12 lg:gap-16">
           <div>
-            <ProductGallery
-              images={images}
-              productTitle={scarf.title}
-              badge={getReferencePrice(scarf.price) !== null ? <PromoBadge /> : null}
-            />
+            {variantOptions ? (
+              <VariantGallery
+                fallbackImages={images}
+                productTitle={scarf.title}
+                badge={getReferencePrice(scarf.price) !== null ? <PromoBadge /> : null}
+              />
+            ) : (
+              <ProductGallery
+                images={images}
+                productTitle={scarf.title}
+                badge={getReferencePrice(scarf.price) !== null ? <PromoBadge /> : null}
+              />
+            )}
           </div>
 
           <div className="flex flex-col md:sticky md:top-28 md:self-start">
@@ -103,16 +115,27 @@ export default async function ProductPage({ params }: Props) {
               />
             </p>
 
-            <ProductPurchasePanel
-              purchaseDisabled={scarf.availability.status === "out_of_stock"}
-              product={{
-                productId: String(scarf.id),
-                slug: scarf.slug,
-                title: scarf.title,
-                price: scarf.price,
-                imageSrc: images[0]?.src ?? null,
-              }}
-            />
+            {variantOptions ? (
+              <VariantPurchasePanel
+                product={{
+                  productId: String(scarf.id),
+                  slug: scarf.slug,
+                  title: scarf.title,
+                  fallbackImageSrc: images[0]?.src ?? null,
+                }}
+              />
+            ) : (
+              <ProductPurchasePanel
+                purchaseDisabled={scarf.availability.status === "out_of_stock"}
+                product={{
+                  productId: String(scarf.id),
+                  slug: scarf.slug,
+                  title: scarf.title,
+                  price: scarf.price,
+                  imageSrc: images[0]?.src ?? null,
+                }}
+              />
+            )}
 
             <div className="mt-10 border-t border-stone-200 pt-10">
               <h2 className="text-xs font-light uppercase tracking-[0.25em] text-stone-500">
@@ -128,7 +151,19 @@ export default async function ProductPage({ params }: Props) {
             </p>
           </div>
         </div>
+        </MaybeVariantSelection>
       </div>
     </div>
   )
+}
+
+/** Wraps the page in the size × colour selection only for products sold in variants. */
+function MaybeVariantSelection({
+  options,
+  children,
+}: {
+  options: StorefrontVariantOptions | null
+  children: React.ReactNode
+}) {
+  return options ? <VariantSelectionProvider options={options}>{children}</VariantSelectionProvider> : <>{children}</>
 }

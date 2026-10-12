@@ -44,7 +44,7 @@ export type RespondIoOrderInput = {
   addressLine2?: string | null
   city: string
   grandTotal: number
-  items: ReadonlyArray<{ title: string; quantity: number }>
+  items: ReadonlyArray<{ title: string; quantity: number; variantLabel?: string | null }>
 }
 
 export type SyncOutcome =
@@ -92,7 +92,7 @@ function splitName(fullName: string): { firstName: string; lastName: string | nu
 export function formatItems(items: RespondIoOrderInput["items"]): string {
   const text = items
     .filter((line) => line && typeof line.title === "string" && line.quantity > 0)
-    .map((line) => `${line.quantity}x ${line.title.trim()}`)
+    .map((line) => `${line.quantity}x ${line.title.trim()}${line.variantLabel ? ` (${line.variantLabel})` : ""}`)
     .join(", ")
   return text.length > MAX_ITEMS_TEXT ? `${text.slice(0, MAX_ITEMS_TEXT - 3).trimEnd()}...` : text
 }
@@ -309,6 +309,6 @@ export function respondIoOrderFromDoc(doc: Record<string, unknown>): RespondIoOr
     grandTotal: Number(doc.grandTotal) || 0,
     items: rawItems
       .filter((l): l is Record<string, unknown> => Boolean(l) && typeof l === "object")
-      .map((l) => ({ title: str(l.title), quantity: Number(l.quantity) || 0 })),
+      .map((l) => ({ title: str(l.title), quantity: Number(l.quantity) || 0, variantLabel: str(l.variantLabel) || null })),
   }
 }

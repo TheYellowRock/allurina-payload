@@ -15,6 +15,7 @@ import { applyCartValidation } from "@/lib/cart/reconcile"
 import { validateCart } from "@/lib/checkout/validateCart"
 import { gtmTrackBeginCheckout } from "@/lib/gtm"
 import { CHECKOUT_PATH, NOUVEAUTES_PATH, productPath, TOUTES_LES_PIECES_PATH } from "@/lib/routes"
+import { lineDisplayTitle, lineKey } from "@/lib/cart/types"
 
 function useLockBody(open: boolean) {
   useEffect(() => {
@@ -65,7 +66,7 @@ export function CartDrawer() {
     const current = itemsRef.current
     if (current.length === 0) return
     let cancelled = false
-    validateCart(current.map((line) => ({ productId: line.productId, quantity: line.quantity, price: line.price })))
+    validateCart(current.map((line) => ({ productId: line.productId, variantId: line.variantId, quantity: line.quantity, price: line.price })))
       .then((result) => {
         if (cancelled || result.ok) return
         const { items: nextItems, issues } = applyCartValidation(current, result.items)
@@ -157,7 +158,7 @@ export function CartDrawer() {
             <ul className="divide-y divide-stone-100">
               {items.map((line) => {
                 return (
-                <li key={line.productId} className="flex gap-3 px-4 py-4">
+                <li key={lineKey(line)} className="flex gap-3 px-4 py-4">
                   <Link
                     href={productPath(line.slug)}
                     onClick={closeCart}
@@ -182,7 +183,7 @@ export function CartDrawer() {
                       onClick={closeCart}
                       className="line-clamp-2 text-sm font-light leading-snug text-stone-900 hover:underline"
                     >
-                      {line.title}
+                      {lineDisplayTitle(line)}
                     </Link>
                     <p className="mt-1">
                       <ScarfPrice
@@ -199,7 +200,7 @@ export function CartDrawer() {
                           className="flex size-8 items-center justify-center text-stone-700 hover:bg-stone-50"
                           aria-label="Diminuer la quantité"
                           onClick={() =>
-                            setQuantity(line.productId, line.quantity - 1)
+                            setQuantity(lineKey(line), line.quantity - 1)
                           }
                         >
                           <Minus className="size-3.5" strokeWidth={1.5} />
@@ -212,7 +213,7 @@ export function CartDrawer() {
                           className="flex size-8 items-center justify-center text-stone-700 hover:bg-stone-50"
                           aria-label="Augmenter la quantité"
                           onClick={() =>
-                            setQuantity(line.productId, line.quantity + 1)
+                            setQuantity(lineKey(line), line.quantity + 1)
                           }
                         >
                           <Plus className="size-3.5" strokeWidth={1.5} />
@@ -221,8 +222,8 @@ export function CartDrawer() {
                       <button
                         type="button"
                         className="ml-auto inline-flex size-8 items-center justify-center text-stone-500 hover:bg-stone-100 hover:text-stone-900"
-                        aria-label={`Retirer ${line.title}`}
-                        onClick={() => removeItem(line.productId)}
+                        aria-label={`Retirer ${lineDisplayTitle(line)}`}
+                        onClick={() => removeItem(lineKey(line))}
                       >
                         <Trash2 className="size-4" strokeWidth={1.5} />
                       </button>

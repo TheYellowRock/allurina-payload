@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { getPayload } from "payload"
 
 import config from "@payload-config"
-import { SIMPLE_PRODUCTS_ONLY } from "@/lib/catalog/sellable"
 
 export const dynamic = "force-dynamic"
 
@@ -22,6 +21,8 @@ type PublicScarfDoc = {
   title: string
   price: number
   image: PublicScarfImage | null
+  /** Sold in sizes/colours — the card links to the product page instead of adding to cart. */
+  hasVariants: boolean
 }
 
 /** Rejects anything that isn't a plain integer string (no floats, no "1e3", no whitespace-only). */
@@ -88,7 +89,7 @@ export async function GET(request: Request) {
     // `stockQuantity > 0` is the only availability gate this catalog uses.
     const res = await payload.find({
       collection: "scarves",
-      where: { and: [{ stockQuantity: { greater_than: 0 } }, SIMPLE_PRODUCTS_ONLY] },
+      where: { stockQuantity: { greater_than: 0 } },
       depth: 1,
       page,
       limit,
@@ -104,6 +105,7 @@ export async function GET(request: Request) {
         title: String(d.title ?? ""),
         price: typeof d.price === "number" ? d.price : 0,
         image: readPrimaryImage(d),
+        hasVariants: d.hasVariants === true,
       }
     })
 
