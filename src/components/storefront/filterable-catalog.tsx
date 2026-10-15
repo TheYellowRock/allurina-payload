@@ -69,8 +69,10 @@ export function FilterableProductGrid({
   const anchorRef = useRef<HTMLDivElement>(null)
   const visible = activeChip ? scarves.filter((s) => productMatchesChip(s, activeChip)) : scarves
 
+  // Own wrapper: the sticky bar stays pinned only while this grid is on screen, never
+  // over the footer.
   return (
-    <>
+    <div>
       <CatalogFilterBar
         chips={chips}
         activeKey={activeKey}
@@ -81,6 +83,6 @@ export function FilterableProductGrid({
       <div ref={anchorRef} className="mx-auto w-full max-w-6xl px-3 pt-5 pb-16 sm:px-5 md:px-6 md:pt-8">
         <ProductGrid key={activeKey} scarves={visible} />
       </div>
-    </>
+    </div>
   )
 }

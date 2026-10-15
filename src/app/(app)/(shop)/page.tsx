@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic"
  *   1. Hero + active promo banner
  *   2. Meilleures ventes — best-selling scarves (last 90 days), carousel → /chales
  *   3. Pulls — one card per colour in stock, carousel → /pulls
- *   4. Tous nos châles — every other scarf, sticky filter chips + infinite scroll
- *      (best sellers excluded)
+ *   4. Tous nos châles — every scarf (best sellers included), sticky filter chips +
+ *      infinite scroll
  *
  * The previous sections (Summer/Outlet/Top-sales rails, material tiles, per-material
  * previews, testimonials) were removed from this page; their components still exist
@@ -30,8 +30,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
     getActivePromo(),
     searchParams,
   ])
-  const excludeIds = bestSellers.map((s) => String(s.id))
-  const { chips, total } = await getFilterChips("chales", excludeIds.join(","))
+  // The full list repeats the best sellers on purpose: a visitor scrolling the grid
+  // must find every scarf there, whatever the rail above showed.
+  const { chips, total } = await getFilterChips("chales")
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-[#faf9f7] text-stone-900">
@@ -68,7 +69,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
         <HomeCatalog
           title="Tous nos châles"
           productType="chales"
-          excludeIds={excludeIds}
+          excludeIds={[]}
           chips={chips}
           totalCount={total}
           initialFilter={filtre}

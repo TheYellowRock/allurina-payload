@@ -19,8 +19,12 @@ export default async function ShopLayout({
   return (
     <>
       <SiteHeader collections={collections} categories={categories} topBar={activePromo.topBar} />
-      <CartOfferBarScrollPadding>{children}</CartOfferBarScrollPadding>
-      <SiteFooter />
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+      {/* The sticky offer bar sits over the bottom of the screen: pad below the footer (in
+          the footer's colour) so the copyright line isn't hidden behind it. */}
+      <CartOfferBarScrollPadding className="flex-none bg-stone-50">
+        <SiteFooter />
+      </CartOfferBarScrollPadding>
     </>
   )
 }

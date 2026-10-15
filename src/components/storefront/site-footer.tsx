@@ -66,10 +66,15 @@ export function SiteFooter() {
             intemporelles, finitions soignées. Une expérience d&apos;achat simple et
             transparente — disponibilité et stocks synchronisés avec notre atelier.
           </p>
+          {/* Legal operator — must match the name submitted for Meta business verification. */}
+          <p className="mt-4 text-xs leading-relaxed text-stone-500">
+            AllurinaScarf est une marque exploitée par{" "}
+            <span className="font-medium text-stone-700">Ihsan Acheddad</span>, entrepreneur individuel.
+          </p>
         </div>
       </div>
 
-      <div className="border-t border-stone-200/80 py-4 text-center text-xs text-stone-500">
+      <div className="border-t border-stone-200/80 px-4 py-4 text-center text-xs text-stone-500">
         © {new Date().getFullYear()} AllurinaScarf — Tous droits réservés
       </div>
     </footer>
