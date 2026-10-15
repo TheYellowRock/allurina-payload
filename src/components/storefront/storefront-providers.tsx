@@ -10,6 +10,9 @@ import { WhatsAppButton } from "@/components/storefront/whatsapp/whatsapp-button
 import { WhatsAppProvider } from "@/components/storefront/whatsapp/whatsapp-context"
 import { DEFAULT_PROMO_ID, getPromoDefinition } from "@/lib/promotions/registry"
 
+/** Floating WhatsApp button (wa.me → +212696707488). Hidden for now — set to true to bring it back. */
+const SHOW_WHATSAPP_WIDGET = false
+
 export function StorefrontProviders({
   children,
   activePromoId,
@@ -29,7 +32,7 @@ export function StorefrontProviders({
       <WhatsAppProvider>
         {children}
         <StickyOfferBar />
-        <WhatsAppButton />
+        {SHOW_WHATSAPP_WIDGET ? <WhatsAppButton /> : null}
         <CartToaster />
         <CartDrawer />
       </WhatsAppProvider>
