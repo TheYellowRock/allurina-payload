@@ -6,6 +6,7 @@ import { confirmationRateByCity } from "@/lib/studio/city-stats"
 import { ESTIMATED_UNIT_COST } from "@/lib/studio/cost-config"
 import { previousEquivalentRange, rangeToWhereBounds, resolveDateRange } from "@/lib/studio/date-range"
 import { formatDh, formatPercent, formatSignedPercent } from "@/lib/studio/format"
+import { itemsSoldBreakdown, type ProductTypeInfo } from "@/lib/studio/items-sold"
 import { estimateAggregateMargin } from "@/lib/studio/margin"
 import {
   comparePeriodValue,
@@ -55,6 +56,36 @@ async function fetchOrdersInRange(
     )
   }
   return serializeDocs(res.docs)
+}
+
+/** Product type + current title of every product referenced by these orders' lines. */
+async function fetchProductTypes(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  orders: OrdersManagerOrder[],
+): Promise<Map<string, ProductTypeInfo>> {
+  const ids = [...new Set(orders.flatMap((o) => o.items.map((l) => l.productId)))].filter((id) => /^\d+$/.test(id))
+  const out = new Map<string, ProductTypeInfo>()
+  if (ids.length === 0) return out
+  const res = await payload.find({
+    collection: "scarves",
+    where: { id: { in: ids } },
+    select: { title: true, productType: true },
+    depth: 1,
+    limit: ids.length,
+    pagination: false,
+    overrideAccess: true,
+  })
+  for (const doc of res.docs) {
+    const d = doc as Record<string, unknown>
+    const type = d.productType && typeof d.productType === "object" ? (d.productType as Record<string, unknown>) : null
+    if (!type || typeof type.slug !== "string") continue
+    out.set(String(d.id), {
+      typeSlug: type.slug,
+      typeName: String(type.name ?? type.slug),
+      title: String(d.title ?? ""),
+    })
+  }
+  return out
 }
 
 /** Small "indicatif" marker for any figure resting on a sample under 20 — same threshold as confirmation rate. */
@@ -109,6 +140,8 @@ export async function MetricsTab({ searchParams }: { searchParams: SearchParams 
   const tiers = tierMix(orders)
   const cities = confirmationRateByCity(orders, now)
   const repeat = repeatRateByPhone(orders)
+
+  const itemsSold = itemsSoldBreakdown(orders, await fetchProductTypes(payload, orders))
 
   const deliveredOrders = orders.filter((o) => o.status === "delivered")
   const marginAgg = estimateAggregateMargin(deliveredOrders, ESTIMATED_UNIT_COST)
@@ -189,6 +222,69 @@ export async function MetricsTab({ searchParams }: { searchParams: SearchParams 
             {confRate.sampleSize} commande{confRate.sampleSize > 1 ? "s" : ""} de +14j
             {confRate.indicative ? " · indicatif (échantillon < 20)" : ""}
           </p>
+        </div>
+      </div>
+
+      {/* ——— Units sold: scarves by price, other types by product ——— */}
+      <div>
+        <h3 className="text-[11px] font-semibold tracking-[0.18em] text-stone-500 uppercase">Articles vendus</h3>
+        <div className="mt-3 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-sm border border-stone-300/90 bg-white p-5 shadow-sm">
+            <p className="text-xs font-medium text-stone-500">Articles vendus (hors annulées)</p>
+            <p className="mt-2 text-2xl font-semibold text-stone-900">{itemsSold.sold}</p>
+          </div>
+          <div className="rounded-sm border border-stone-300/90 bg-white p-5 shadow-sm">
+            <p className="text-xs font-medium text-stone-500">Articles livrés</p>
+            <p className="mt-2 text-2xl font-semibold text-emerald-800">{itemsSold.delivered}</p>
+          </div>
+        </div>
+        <div className="mt-4 overflow-x-auto rounded-sm border border-stone-300/90 bg-white shadow-sm">
+          <table className="w-full min-w-[420px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-stone-200 bg-stone-50 text-[11px] font-semibold tracking-wide text-stone-600 uppercase">
+                <th className="px-4 py-3">Article</th>
+                <th className="px-4 py-3 text-right">Vendus</th>
+                <th className="px-4 py-3 text-right">Livrés</th>
+              </tr>
+            </thead>
+            {itemsSold.groups.length === 0 ? (
+              <tbody>
+                <tr>
+                  <td className="px-4 py-8 text-center text-stone-500" colSpan={3}>
+                    Aucun article vendu sur cette période.
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              itemsSold.groups.map((g) => (
+                <tbody key={g.typeSlug}>
+                  {g.rows.map((r) => (
+                    <tr key={r.key} className="border-b border-stone-100">
+                      <td className="px-4 py-2.5 text-stone-800">
+                        {g.typeSlug === "chales" ? `Châle ${r.label}` : r.label}
+                      </td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{r.sold}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums text-stone-500">{r.delivered}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-b border-stone-300 bg-stone-50/70 font-semibold text-stone-900">
+                    <td className="px-4 py-2.5">Total {g.typeName.toLowerCase()}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums">{g.sold}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums">{g.delivered}</td>
+                  </tr>
+                </tbody>
+              ))
+            )}
+            {itemsSold.groups.length > 1 ? (
+              <tfoot>
+                <tr className="bg-stone-100 font-semibold text-stone-900">
+                  <td className="px-4 py-3">Total articles</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{itemsSold.sold}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{itemsSold.delivered}</td>
+                </tr>
+              </tfoot>
+            ) : null}
+          </table>
         </div>
       </div>
 
