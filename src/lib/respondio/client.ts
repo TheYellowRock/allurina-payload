@@ -7,7 +7,7 @@
  * Settings → Integrations → Developer API, sent as a bearer token.
  *
  * Never throws: every call resolves to `{ ok: true, data }` or `{ ok: false, error }`.
- * Retries (every call used here is an upsert or a set-add, so a retry is always safe):
+ * Retries (every call used here is an upsert, a set-add or a set-remove, so a retry is always safe):
  * - 429 / 5xx / network errors: up to 3 attempts, exponential backoff, honours `retry-after`.
  * - 449 "request is in the queue": respond.io returns this right after a contact is
  *   created, while it's still being processed — typically on the tag call that follows the
@@ -67,7 +67,7 @@ function extractMessage(body: unknown): string | null {
 }
 
 async function request<T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "DELETE",
   path: string,
   body?: unknown,
 ): Promise<RespondIoResult<T>> {
@@ -152,6 +152,11 @@ export function createOrUpdateContact(identifier: RespondIoIdentifier, fields: R
 /** `POST /contact/{identifier}/tag` — body is the bare array of tag names. */
 export function addContactTags(identifier: RespondIoIdentifier, tags: string[]) {
   return request<{ contactId: number }>("POST", `/contact/${identifier}/tag`, tags)
+}
+
+/** `DELETE /contact/{identifier}/tag` — body is the bare array of tag names to remove. */
+export function removeContactTags(identifier: RespondIoIdentifier, tags: string[]) {
+  return request<{ contactId: number }>("DELETE", `/contact/${identifier}/tag`, tags)
 }
 
 /** `GET /contact/{identifier}` */

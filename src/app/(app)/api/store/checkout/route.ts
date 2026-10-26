@@ -13,6 +13,8 @@ import { resolveLines } from "@/lib/catalog/resolve-lines"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
 import { getActivePromoFresh } from "@/lib/promotions/active"
 import { syncOrderToRespondIo } from "@/lib/respondio/sync"
+import { toMoroccanE164 } from "@/lib/respondio/config"
+import { markLeadsConverted } from "@/lib/respondio/leads"
 
 function generateOrderReference(): string {
   return `ALL-${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -229,6 +231,10 @@ export async function POST(req: Request) {
           items,
         }),
       )
+      // Checkout step 1 left a lead for this phone: mark it converted and take the
+      // `lead-checkout` tag off, so the abandoned-cart Workflow never messages a customer
+      // who did order. Never throws; a no-op when there is no open lead.
+      after(() => markLeadsConverted(payload, toMoroccanE164(customer.phone), orderReference))
     }
 
     return NextResponse.json({ orderReference })

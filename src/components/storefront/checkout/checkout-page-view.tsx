@@ -20,12 +20,20 @@ import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { buildAdvancedMatchingData } from "@/lib/meta-advanced-matching"
 import { fbEvent, initAdvancedMatching } from "@/lib/pixel"
+import { toMoroccanE164 } from "@/lib/respondio/config"
 
 /** Meta only has a single "full name" field from this form — split on the first space. */
 function splitFullName(fullName: string): { firstName: string; lastName: string } {
   const parts = fullName.trim().split(/\s+/)
   return { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") }
 }
+
+/**
+ * Two-step checkout: (1) name + phone → "Continuer", (2) delivery address → confirm.
+ * Step 1 is sent to /api/store/lead the moment it's done, so a customer who leaves at
+ * the address step is already a hot lead in respond.io (abandoned-cart follow-up).
+ */
+type CheckoutStep = "contact" | "delivery"
 
 export function CheckoutPageView() {
   const router = useRouter()
@@ -74,9 +82,98 @@ export function CheckoutPageView() {
   const [country, setCountry] = useState("Maroc")
   const [notes, setNotes] = useState("")
 
+  const [step, setStep] = useState<CheckoutStep>("contact")
+  const [contactError, setContactError] = useState<string | null>(null)
+  // One per checkout session: re-sending step 1 (customer corrected their phone) updates
+  // the same lead instead of creating a second one.
+  const [leadKey] = useState(() => crypto.randomUUID())
+  const lastLeadSentRef = useRef<string | null>(null)
+  const addressInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (step === "delivery") addressInputRef.current?.focus({ preventScroll: true })
+  }, [step])
+
+  const onContinue = useCallback(() => {
+    setContactError(null)
+    if (customerName.trim().length < 2) {
+      setContactError("Indiquez votre nom complet.")
+      return
+    }
+    const phoneE164 = toMoroccanE164(phone)
+    if (!phoneE164) {
+      setContactError("Numéro de téléphone invalide. Exemple : 06 12 34 56 78")
+      return
+    }
+    setStep("delivery")
+
+    // Same name + number already sent for this session (back and forth between steps).
+    const signature = `${customerName.trim()}|${phoneE164}`
+    if (lastLeadSentRef.current === signature) return
+    lastLeadSentRef.current = signature
+
+    // Fire-and-forget: the customer never waits on this. `keepalive` lets the request
+    // finish even if they close the tab right after clicking.
+    void fetch("/api/store/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        leadKey,
+        customerName: customerName.trim(),
+        phone,
+        items: items.map((line) => ({
+          productId: line.productId,
+          ...(line.variantId ? { variantId: line.variantId } : {}),
+          quantity: line.quantity,
+        })),
+      }),
+    }).catch(() => {
+      // Best-effort — never blocks the checkout.
+    })
+
+    // Meta "Lead": browser + server with the same event id (deduplicated by Meta).
+    const { firstName, lastName } = splitFullName(customerName)
+    initAdvancedMatching(buildAdvancedMatchingData({ email: "", phone, firstName, lastName, city: "" }))
+    const leadEventId = crypto.randomUUID()
+    fbEvent(
+      "Lead",
+      {
+        content_ids: items.map((item) => item.productId),
+        content_type: "product",
+        value: pricing.grandTotal,
+        currency: "MAD",
+      },
+      leadEventId,
+    )
+    void fetch("/api/pixel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        eventName: "Lead",
+        eventData: {
+          eventId: leadEventId,
+          value: pricing.grandTotal,
+          eventSourceUrl: window.location.href,
+          phone,
+          firstName,
+          lastName,
+          fbp: readFbp() ?? undefined,
+          fbc: readFbc() ?? undefined,
+        },
+      }),
+    }).catch(() => {})
+  }, [customerName, phone, items, leadKey, pricing.grandTotal])
+
   const onSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault()
+      if (step === "contact") {
+        // Enter in the name/phone fields = "Continuer".
+        onContinue()
+        return
+      }
       setError(null)
       if (items.length === 0) {
         setError("Votre panier est vide.")
@@ -211,6 +308,8 @@ export function CheckoutPageView() {
       }
     },
     [
+      step,
+      onContinue,
       items,
       pricing.grandTotal,
       idempotencyKey,
@@ -271,7 +370,7 @@ export function CheckoutPageView() {
         Finaliser la commande
       </h1>
       <p className="mt-2 max-w-xl text-sm font-light text-stone-600">
-        Renseignez vos coordonnées. Paiement à la livraison — aucun prélèvement en ligne.
+        Deux étapes rapides. Paiement à la livraison — aucun prélèvement en ligne.
       </p>
 
       {validationIssues.length > 0 ? (
@@ -289,162 +388,195 @@ export function CheckoutPageView() {
           className="space-y-5 lg:col-span-7"
           noValidate
         >
-          <section>
-            <h2 className="text-xs font-light uppercase tracking-[0.22em] text-stone-500">
-              Coordonnées
-            </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="block sm:col-span-2">
-                <span className="text-xs font-light text-stone-600">Nom complet</span>
-                <input
-                  name="customerName"
-                  required
-                  autoComplete="name"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-              </label>
-              <label className="block sm:col-span-2">
-                <span className="text-xs font-light text-stone-600">Téléphone</span>
-                <input
-                  name="phone"
-                  type="tel"
-                  required
-                  autoComplete="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-              </label>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-xs font-light uppercase tracking-[0.22em] text-stone-500">
-              Livraison
-            </h2>
-            <div className="mt-4 grid gap-4">
-              <label className="block">
-                <span className="text-xs font-light text-stone-600">Adresse</span>
-                <input
-                  name="addressLine1"
-                  required
-                  autoComplete="street-address"
-                  value={addressLine1}
-                  onChange={(e) => setAddressLine1(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-light text-stone-600">
-                  Complément (optionnel)
-                </span>
-                <input
-                  name="addressLine2"
-                  autoComplete="address-line2"
-                  value={addressLine2}
-                  onChange={(e) => setAddressLine2(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="text-xs font-light text-stone-600">Ville</span>
-                  <input
-                    name="city"
-                    required
-                    autoComplete="address-level2"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className={`mt-1.5 w-full ${rowInput}`}
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs font-light text-stone-600">
-                    Code postal (optionnel)
-                  </span>
-                  <input
-                    name="postalCode"
-                    autoComplete="postal-code"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    className={`mt-1.5 w-full ${rowInput}`}
-                  />
-                </label>
+          {/* ——— Step 1: name + phone ——— */}
+          <section className="border border-stone-200 bg-white p-4 sm:p-5">
+            <StepTitle number={1} title="Vos coordonnées" done={step === "delivery"} />
+            {step === "contact" ? (
+              <>
+                <div className="mt-4 grid gap-4">
+                  <label className="block">
+                    <span className="text-xs font-light text-stone-600">Nom complet</span>
+                    <input
+                      name="customerName"
+                      required
+                      autoComplete="name"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className={`mt-1.5 w-full ${rowInput}`}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-light text-stone-600">Téléphone</span>
+                    <input
+                      name="phone"
+                      type="tel"
+                      inputMode="tel"
+                      required
+                      autoComplete="tel"
+                      placeholder="06 12 34 56 78"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className={`mt-1.5 w-full ${rowInput}`}
+                    />
+                  </label>
+                </div>
+                {contactError ? (
+                  <p
+                    className="mt-4 border border-red-200 bg-red-50 px-3 py-2 text-sm font-light text-red-800"
+                    role="alert"
+                  >
+                    {contactError}
+                  </p>
+                ) : null}
+                <Button
+                  type="submit"
+                  className="mt-5 h-12 w-full rounded-none border-2 border-stone-900 bg-stone-900 px-8 text-xs font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800 sm:w-auto sm:min-w-48"
+                >
+                  Continuer
+                </Button>
+                <p className="mt-3 text-[11px] leading-relaxed font-light text-stone-500">
+                  Nous pouvons vous contacter par téléphone ou WhatsApp au sujet de votre commande.
+                </p>
+              </>
+            ) : (
+              <div className="mt-3 flex items-start justify-between gap-4 text-sm font-light text-stone-800">
+                <p>
+                  {customerName.trim()}
+                  <span className="mx-2 text-stone-300">·</span>
+                  <span className="tabular-nums">{phone.trim()}</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStep("contact")}
+                  className="shrink-0 text-xs text-stone-600 underline underline-offset-4 hover:text-stone-900"
+                >
+                  Modifier
+                </button>
               </div>
-              <label className="block sm:max-w-xs">
-                <span className="text-xs font-light text-stone-600">Pays</span>
-                <input
-                  name="country"
-                  autoComplete="country-name"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-light text-stone-600">
-                  Notes pour la livraison (optionnel)
-                </span>
-                <textarea
-                  name="notes"
-                  rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className={`mt-1.5 w-full resize-y py-2.5 ${rowInput}`}
-                />
-              </label>
-              {/* Optional and deliberately last: many COD customers have no email, and a
-                  required field here was blocking them. Confirmation happens on WhatsApp. */}
-              <label className="block">
-                <span className="text-xs font-light text-stone-600">E-mail (optionnel)</span>
-                <input
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`mt-1.5 w-full ${rowInput}`}
-                />
-                <span className="mt-1 block text-xs font-light text-stone-500">
-                  Pour recevoir le récapitulatif de votre commande par e-mail.
-                </span>
-              </label>
-            </div>
+            )}
           </section>
 
-          <section className="border border-stone-200 bg-white p-4">
-            <h2 className="text-xs font-light uppercase tracking-[0.22em] text-stone-500">
-              Paiement
-            </h2>
-            <p className="mt-3 text-sm font-light text-stone-800">
-              Paiement à la livraison
-            </p>
-            <p className="mt-2 text-xs font-light leading-relaxed text-stone-600">
-              Vous payez à la réception de votre colis. Préparez le montant exact si possible
-              (espèces).
-            </p>
+          {/* ——— Step 2: delivery + confirm ——— */}
+          <section
+            className={
+              step === "delivery" ? "border border-stone-200 bg-white p-4 sm:p-5" : "border border-stone-200 p-4 sm:p-5"
+            }
+          >
+            <StepTitle number={2} title="Livraison" muted={step === "contact"} />
+            {step === "delivery" ? (
+              <div className="mt-4 grid gap-4">
+                <label className="block">
+                  <span className="text-xs font-light text-stone-600">Adresse</span>
+                  <input
+                    ref={addressInputRef}
+                    name="addressLine1"
+                    required
+                    autoComplete="street-address"
+                    value={addressLine1}
+                    onChange={(e) => setAddressLine1(e.target.value)}
+                    className={`mt-1.5 w-full ${rowInput}`}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-light text-stone-600">Complément (optionnel)</span>
+                  <input
+                    name="addressLine2"
+                    autoComplete="address-line2"
+                    value={addressLine2}
+                    onChange={(e) => setAddressLine2(e.target.value)}
+                    className={`mt-1.5 w-full ${rowInput}`}
+                  />
+                </label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-xs font-light text-stone-600">Ville</span>
+                    <input
+                      name="city"
+                      required
+                      autoComplete="address-level2"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className={`mt-1.5 w-full ${rowInput}`}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-light text-stone-600">Code postal (optionnel)</span>
+                    <input
+                      name="postalCode"
+                      autoComplete="postal-code"
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      className={`mt-1.5 w-full ${rowInput}`}
+                    />
+                  </label>
+                </div>
+                <label className="block sm:max-w-xs">
+                  <span className="text-xs font-light text-stone-600">Pays</span>
+                  <input
+                    name="country"
+                    autoComplete="country-name"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className={`mt-1.5 w-full ${rowInput}`}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-light text-stone-600">Notes pour la livraison (optionnel)</span>
+                  <textarea
+                    name="notes"
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className={`mt-1.5 w-full resize-y py-2.5 ${rowInput}`}
+                  />
+                </label>
+                {/* Optional and deliberately last: many COD customers have no email, and a
+                    required field here was blocking them. Confirmation happens on WhatsApp. */}
+                <label className="block">
+                  <span className="text-xs font-light text-stone-600">E-mail (optionnel)</span>
+                  <input
+                    name="email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={`mt-1.5 w-full ${rowInput}`}
+                  />
+                  <span className="mt-1 block text-xs font-light text-stone-500">
+                    Pour recevoir le récapitulatif de votre commande par e-mail.
+                  </span>
+                </label>
+
+                <div className="border-t border-stone-200 pt-4">
+                  <p className="text-sm font-light text-stone-800">Paiement à la livraison</p>
+                  <p className="mt-1 text-xs font-light leading-relaxed text-stone-600">
+                    Vous payez à la réception de votre colis. Préparez le montant exact si possible
+                    (espèces).
+                  </p>
+                </div>
+
+                {error ? (
+                  <p
+                    className="border border-red-200 bg-red-50 px-3 py-2 text-sm font-light text-red-800"
+                    role="alert"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+
+                <Button
+                  type="submit"
+                  disabled={pending}
+                  className="h-12 w-full rounded-none border-2 border-stone-900 bg-stone-900 px-8 text-xs font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800 disabled:opacity-60 sm:w-auto sm:min-w-48"
+                >
+                  {pending ? "Envoi…" : "Confirmer la commande"}
+                </Button>
+              </div>
+            ) : null}
           </section>
 
-          {error ? (
-            <p
-              className="border border-red-200 bg-red-50 px-3 py-2 text-sm font-light text-red-800"
-              role="alert"
-            >
-              {error}
-            </p>
-          ) : null}
-
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <Button
-              type="submit"
-              disabled={pending}
-              className="h-12 min-w-48 rounded-none border-2 border-stone-900 bg-stone-900 px-8 text-xs font-light tracking-[0.2em] text-white uppercase hover:bg-stone-800 disabled:opacity-60"
-            >
-              {pending ? "Envoi…" : "Confirmer la commande"}
-            </Button>
+          <div className="pt-1">
             <Link
               href="/"
               className="text-sm font-light text-stone-600 underline underline-offset-4 hover:text-stone-900"
@@ -463,5 +595,35 @@ export function CheckoutPageView() {
         </div>
       </div>
     </div>
+  )
+}
+
+function StepTitle({
+  number,
+  title,
+  done = false,
+  muted = false,
+}: {
+  number: number
+  title: string
+  done?: boolean
+  muted?: boolean
+}) {
+  return (
+    <h2
+      className={`flex items-center gap-2.5 text-xs font-light tracking-[0.22em] uppercase ${
+        muted ? "text-stone-400" : "text-stone-700"
+      }`}
+    >
+      <span
+        className={`flex size-6 items-center justify-center rounded-full text-[11px] tracking-normal ${
+          done ? "bg-emerald-700 text-white" : muted ? "border border-stone-300 text-stone-400" : "bg-stone-900 text-white"
+        }`}
+        aria-hidden
+      >
+        {done ? "✓" : number}
+      </span>
+      {title}
+    </h2>
   )
 }

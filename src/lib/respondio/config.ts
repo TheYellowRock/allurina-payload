@@ -27,6 +27,9 @@ export const RESPONDIO_FIELDS = {
   ordersCount: "ordersCount",
   source: "source",
   env: "env",
+  /** Checkout leads (step 1): what was in the cart when the customer left name + phone. */
+  cartItems: "cartItems",
+  cartTotal: "cartTotal",
 } as const
 
 /**
@@ -38,6 +41,13 @@ export const RESPONDIO_TAGS = {
   toConfirm: "cod-a-confirmer",
   repeatCustomer: "client-recurrent",
   test: "test-ignore",
+  /**
+   * Checkout step 1 done (name + phone), order not placed yet. Added by the lead sync,
+   * removed by the site as soon as an order is placed with that phone — so a respond.io
+   * Workflow that waits N minutes and then checks "contact still has lead-checkout" only
+   * ever reaches people who really abandoned.
+   */
+  checkoutLead: "lead-checkout",
 } as const
 
 /** Written once per new order. After that, `codStatus` belongs to respond.io Workflows. */
@@ -78,6 +88,14 @@ export function parseTestPhones(csv: string | undefined): Set<string> {
 
 export function isRespondIoEnabled(env: Env = process.env): boolean {
   return env.RESPONDIO_ENABLED === "true" && Boolean(env.RESPONDIO_API_TOKEN)
+}
+
+/**
+ * Checkout leads have their own switch on top of RESPONDIO_ENABLED, so the order sync
+ * can stay live while the lead fields/tag/Workflow are being set up in respond.io.
+ */
+export function isLeadSyncEnabled(env: Env = process.env): boolean {
+  return isRespondIoEnabled(env) && env.RESPONDIO_LEADS_ENABLED === "true"
 }
 
 export type SyncMode =
