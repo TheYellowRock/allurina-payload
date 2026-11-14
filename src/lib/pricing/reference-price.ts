@@ -1,4 +1,4 @@
-export const REFERENCE_PRICE = 80
+export const REFERENCE_PRICE = 95
 export const PROMO_LABEL = "PROMO"
 
 /**

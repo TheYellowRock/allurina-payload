@@ -50,19 +50,24 @@ function offerBarFor(_itemCount: number, subtotalDh: number): string {
 export const freeDelivery250202610: PromoDefinition = {
   id: "free-delivery-250-2026-10",
   label: `Livraison offerte dès ${FREE_DELIVERY_MIN_DH} DH`,
-  topBar: `LIVRAISON GRATUITE dès ${FREE_DELIVERY_MIN_DH} DH d’achat · Vous payez à la réception`,
-  // Reads top to bottom as one ad line: "Offre spéciale — 250 DH d'achat = livraison
-  // GRATUITE partout au Maroc — commandez aujourd'hui, payez à la réception".
+  // Sale banner copy only — the 250 DH free-delivery cart rule below (milestones,
+  // statusFor, offerBarFor, resolve) is untouched by the 65 DH scarf sale.
+  topBar: `TOUS LES CHÂLES À 65 DH · LIVRAISON GRATUITE dès ${FREE_DELIVERY_MIN_DH} DH d’achat · Paiement à la réception`,
   banner: {
     subline: "Commandez aujourd’hui, vous payez seulement à la réception",
     chips: [
       {
-        value: FREE_DELIVERY_MIN_DH,
-        unit: "DH d’achat",
-        label: "= Livraison GRATUITE partout au Maroc",
+        value: 65,
+        unit: "DH",
+        label: "Tous les châles",
         highlight: true,
         featured: true,
-        badge: "Offre spéciale",
+        badge: "GRANDE VENTE",
+      },
+      {
+        value: FREE_DELIVERY_MIN_DH,
+        unit: "DH d’achat",
+        label: "Livraison GRATUITE partout au Maroc",
       },
     ],
   },
