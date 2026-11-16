@@ -19,6 +19,21 @@ function relId(value: unknown): number | null {
   return null
 }
 
+function toRow(d: unknown, typeName: Map<number, string>): CatalogRow {
+  const doc = d as Record<string, unknown>
+  const tId = relId(doc.productType)
+  return {
+    id: Number(doc.id),
+    title: String(doc.title ?? ""),
+    slug: String(doc.slug ?? ""),
+    price: Number(doc.price ?? 0),
+    stock: Number(doc.stockQuantity ?? 0),
+    typeName: tId ? (typeName.get(tId) ?? "") : "",
+    hasVariants: doc.hasVariants === true,
+    thumb: mediaUrl(doc.featuredImage, true),
+  }
+}
+
 /** Catalogue page — product list with search, type filter, quick stock and links to the quick editor. */
 export async function CatalogTab({ searchParams }: { searchParams: SearchParams }) {
   const q = (firstParam(searchParams.q) ?? "").trim().slice(0, 80)
@@ -40,38 +55,52 @@ export async function CatalogTab({ searchParams }: { searchParams: SearchParams 
   if (q) filters.push({ title: { like: q } })
   if (typeId) filters.push({ productType: { equals: typeId } })
 
-  const res = await payload.find({
-    collection: "scarves",
-    where: filters.length ? { and: filters } : undefined,
-    depth: 0, // featuredImage is still hydrated by the collection's afterRead hook
-    limit: LIST_LIMIT,
-    sort: "-updatedAt",
-    select: {
-      title: true,
-      slug: true,
-      price: true,
-      stockQuantity: true,
-      productType: true,
-      hasVariants: true,
-      featuredImage: true,
-    },
-    overrideAccess: true,
-  })
+  const selectFields = {
+    title: true,
+    slug: true,
+    price: true,
+    stockQuantity: true,
+    productType: true,
+    hasVariants: true,
+    featuredImage: true,
+  } as const
 
-  const rows: CatalogRow[] = res.docs.map((d) => {
-    const doc = d as Record<string, unknown>
-    const tId = relId(doc.productType)
-    return {
-      id: Number(doc.id),
-      title: String(doc.title ?? ""),
-      slug: String(doc.slug ?? ""),
-      price: Number(doc.price ?? 0),
-      stock: Number(doc.stockQuantity ?? 0),
-      typeName: tId ? (typeName.get(tId) ?? "") : "",
-      hasVariants: doc.hasVariants === true,
-      thumb: mediaUrl(doc.featuredImage, true),
-    }
-  })
+  const [res, statsRes] = await Promise.all([
+    payload.find({
+      collection: "scarves",
+      where: filters.length ? { and: filters } : undefined,
+      depth: 0, // featuredImage is still hydrated by the collection's afterRead hook
+      limit: LIST_LIMIT,
+      sort: "-updatedAt",
+      select: selectFields,
+      overrideAccess: true,
+    }),
+    // Unfiltered — the stock-by-category cards and the out-of-stock list below
+    // always reflect the whole catalogue, independent of the search/type filter above.
+    payload.find({
+      collection: "scarves",
+      depth: 0,
+      limit: LIST_LIMIT,
+      pagination: false,
+      select: selectFields,
+      overrideAccess: true,
+    }),
+  ])
+
+  const rows: CatalogRow[] = res.docs.map((d) => toRow(d, typeName))
+  const statsRows: CatalogRow[] = statsRes.docs.map((d) => toRow(d, typeName))
+
+  const stockByType = new Map<string, { stock: number; count: number }>()
+  for (const row of statsRows) {
+    const entry = stockByType.get(row.typeName) ?? { stock: 0, count: 0 }
+    entry.stock += row.stock
+    entry.count += 1
+    stockByType.set(row.typeName, entry)
+  }
+
+  const outOfStockRows = statsRows
+    .filter((row) => row.stock === 0)
+    .sort((a, b) => a.title.localeCompare(b.title))
 
   const chip = (active: boolean) =>
     `inline-flex min-h-9 items-center border px-3 text-sm ${
@@ -87,6 +116,22 @@ export async function CatalogTab({ searchParams }: { searchParams: SearchParams 
 
   return (
     <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {types.docs.map((t) => {
+          const name = String(t.name ?? "")
+          const entry = stockByType.get(name) ?? { stock: 0, count: 0 }
+          return (
+            <div key={String(t.id)} className="rounded-sm border border-stone-300/90 bg-white p-5 shadow-sm">
+              <p className="text-sm text-stone-500">Stock restant — {name}</p>
+              <p className="mt-2 text-2xl font-semibold text-stone-900">{entry.stock}</p>
+              <p className="mt-1 text-xs text-stone-500">
+                {entry.count} produit{entry.count > 1 ? "s" : ""}
+              </p>
+            </div>
+          )
+        })}
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-stone-500">
           {res.totalDocs} produit{res.totalDocs > 1 ? "s" : ""}
@@ -128,6 +173,17 @@ export async function CatalogTab({ searchParams }: { searchParams: SearchParams 
         <p className="text-xs text-stone-500">
           {LIST_LIMIT} produits affichés sur {res.totalDocs} — affinez avec la recherche.
         </p>
+      ) : null}
+
+      {outOfStockRows.length > 0 ? (
+        <details className="border border-stone-300 bg-white">
+          <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold text-stone-900">
+            Produits en rupture ({outOfStockRows.length})
+          </summary>
+          <div className="border-t border-stone-200 p-3">
+            <CatalogList rows={outOfStockRows} />
+          </div>
+        </details>
       ) : null}
     </div>
   )
