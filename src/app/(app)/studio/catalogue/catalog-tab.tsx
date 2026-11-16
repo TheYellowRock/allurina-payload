@@ -54,6 +54,9 @@ export async function CatalogTab({ searchParams }: { searchParams: SearchParams 
   const filters: Where[] = []
   if (q) filters.push({ title: { like: q } })
   if (typeId) filters.push({ productType: { equals: typeId } })
+  // Out-of-stock products never show in the main list — they only live in the
+  // "Produits en rupture" collapsible below, fed separately by statsRes.
+  filters.push({ stockQuantity: { greater_than: 0 } })
 
   const selectFields = {
     title: true,
@@ -94,7 +97,8 @@ export async function CatalogTab({ searchParams }: { searchParams: SearchParams 
   for (const row of statsRows) {
     const entry = stockByType.get(row.typeName) ?? { stock: 0, count: 0 }
     entry.stock += row.stock
-    entry.count += 1
+    // Count only products actually in stock — out-of-stock ones are tracked separately.
+    if (row.stock > 0) entry.count += 1
     stockByType.set(row.typeName, entry)
   }
 
