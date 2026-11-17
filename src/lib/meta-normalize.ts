@@ -30,3 +30,14 @@ export function normalizeName(name: string): string {
 export function normalizeCity(city: string): string {
   return city.trim().toLowerCase().replace(/\s+/g, "")
 }
+
+/**
+ * Stable first-party `external_id` for Meta. Every COD checkout collects a phone number,
+ * but most customers give no email, so an email-keyed client id left `external_id` empty
+ * on most Purchases. The same value must go to both the Pixel (advanced matching) and the
+ * Conversions API so the two events dedupe and match as one person.
+ */
+export function buildExternalId(phone: string): string | undefined {
+  const digits = normalizePhone(phone)
+  return digits.length > 3 ? `ph_${digits}` : undefined
+}

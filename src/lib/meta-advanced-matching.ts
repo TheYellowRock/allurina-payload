@@ -1,4 +1,10 @@
-import { normalizeCity, normalizeEmail, normalizeName, normalizePhone } from "@/lib/meta-normalize"
+import {
+  buildExternalId,
+  normalizeCity,
+  normalizeEmail,
+  normalizeName,
+  normalizePhone,
+} from "@/lib/meta-normalize"
 
 /**
  * Browser-side (manual) Advanced Matching for `fbq('init', pixelId, data)`. Values here
@@ -19,6 +25,8 @@ export type AdvancedMatchingData = {
   /** Omitted when the customer gave no email — an empty `em` is noise for Meta. */
   em?: string
   ph: string
+  /** Stable id derived from the phone number — plain text, the Pixel hashes it. */
+  external_id?: string
   fn: string
   ln: string
   ct: string
@@ -30,6 +38,7 @@ export function buildAdvancedMatchingData(input: AdvancedMatchingInput): Advance
   return {
     ...(em ? { em } : {}),
     ph: normalizePhone(input.phone),
+    ...(buildExternalId(input.phone) ? { external_id: buildExternalId(input.phone) } : {}),
     fn: normalizeName(input.firstName),
     ln: normalizeName(input.lastName),
     ct: normalizeCity(input.city),

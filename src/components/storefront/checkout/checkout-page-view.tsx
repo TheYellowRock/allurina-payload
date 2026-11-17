@@ -13,12 +13,12 @@ import { CheckoutUpsellGrid } from "@/components/storefront/checkout/checkout-up
 import { CartValidationBanner } from "@/components/storefront/cart/cart-validation-banner"
 import { Button } from "@/components/ui/button"
 import { applyCartValidation, applyStockConflict } from "@/lib/cart/reconcile"
-import { getClientIdByEmail } from "@/lib/clients/getClientIdByEmail"
 import { checkoutConfirmationPath, NOUVEAUTES_PATH } from "@/lib/routes"
 import { validateCart } from "@/lib/checkout/validateCart"
 import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { buildAdvancedMatchingData } from "@/lib/meta-advanced-matching"
+import { buildExternalId } from "@/lib/meta-normalize"
 import { fbEvent, initAdvancedMatching } from "@/lib/pixel"
 import { toMoroccanE164 } from "@/lib/respondio/config"
 
@@ -270,9 +270,7 @@ export function CheckoutPageView() {
           },
           purchaseEventId,
         )
-        const externalId = email.trim()
-          ? await getClientIdByEmail(email).catch(() => null)
-          : null
+        const externalId = buildExternalId(phone)
         void fetch("/api/pixel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
