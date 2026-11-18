@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache"
-import { NextResponse, after } from "next/server"
+import { NextResponse } from "next/server"
 import { commitTransaction, createLocalReq, getPayload, initTransaction, killTransaction } from "payload"
 import { sql } from "@payloadcms/db-postgres"
 
@@ -12,9 +12,6 @@ import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
 import { resolveLines } from "@/lib/catalog/resolve-lines"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
 import { getActivePromoFresh } from "@/lib/promotions/active"
-import { syncOrderToRespondIo } from "@/lib/respondio/sync"
-import { toMoroccanE164 } from "@/lib/respondio/config"
-import { markLeadsConverted } from "@/lib/respondio/leads"
 
 function generateOrderReference(): string {
   return `ALL-${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -211,30 +208,6 @@ export async function POST(req: Request) {
     // errors internally (Resend failures are logged, never thrown).
     if (orderDoc) {
       await Promise.all([sendOrderConfirmation(orderDoc), sendOwnerNotification(orderDoc)])
-
-      // respond.io contact sync — outbound only; all messaging is configured in respond.io.
-      // `after()` (not a bare un-awaited promise) is the supported way to run work past the
-      // response: on Vercel it's backed by `waitUntil`, so it's guaranteed to complete
-      // without adding its network round-trips to the customer's checkout latency.
-      // Never throws, idempotent per order, and a no-op unless RESPONDIO_ENABLED=true.
-      // Built from the typed values above rather than `orderDoc` (Record<string, unknown>).
-      after(() =>
-        syncOrderToRespondIo(payload, {
-          orderReference,
-          customerName: customer.customerName,
-          email: customer.email ?? null,
-          phone: customer.phone,
-          addressLine1: customer.addressLine1,
-          addressLine2: customer.addressLine2 ?? null,
-          city: customer.city,
-          grandTotal: pricing.grandTotal,
-          items,
-        }),
-      )
-      // Checkout step 1 left a lead for this phone: mark it converted and take the
-      // `lead-checkout` tag off, so the abandoned-cart Workflow never messages a customer
-      // who did order. Never throws; a no-op when there is no open lead.
-      after(() => markLeadsConverted(payload, toMoroccanE164(customer.phone), orderReference))
     }
 
     return NextResponse.json({ orderReference })

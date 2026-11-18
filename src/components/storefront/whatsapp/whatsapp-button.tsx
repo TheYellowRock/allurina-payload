@@ -10,12 +10,8 @@ import { CHECKOUT_PATH } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 /**
- * Floating click-to-chat button. The number is the one connected to respond.io, so every
- * conversation lands in the same inbox as the order contacts (WhatsApp identifies the
- * contact by phone, same identifier the order sync upserts on).
- *
- * The trailing "(site)" in each message lets a respond.io Workflow tag the contact's
- * source. Keep it if you edit the wording.
+ * Floating click-to-chat button — opens WhatsApp with a prefilled message.
+ * The trailing "(site)" marks the message as site-originated for whoever reads the inbox.
  */
 export const WHATSAPP_NUMBER = "212696707488"
 

@@ -20,7 +20,7 @@ import type { CheckoutStockFailure } from "@/lib/checkout/types"
 import { readFbc, readFbp } from "@/lib/fb-cookies"
 import { buildAdvancedMatchingData } from "@/lib/meta-advanced-matching"
 import { fbEvent, initAdvancedMatching } from "@/lib/pixel"
-import { toMoroccanE164 } from "@/lib/respondio/config"
+import { toMoroccanE164 } from "@/lib/phone/moroccan-e164"
 
 /** Meta only has a single "full name" field from this form — split on the first space. */
 function splitFullName(fullName: string): { firstName: string; lastName: string } {
@@ -28,11 +28,7 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
   return { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") }
 }
 
-/**
- * Two-step checkout: (1) name + phone → "Continuer", (2) delivery address → confirm.
- * Step 1 is sent to /api/store/lead the moment it's done, so a customer who leaves at
- * the address step is already a hot lead in respond.io (abandoned-cart follow-up).
- */
+/** Two-step checkout: (1) name + phone → "Continuer", (2) delivery address → confirm. */
 type CheckoutStep = "contact" | "delivery"
 
 export function CheckoutPageView() {
@@ -84,9 +80,9 @@ export function CheckoutPageView() {
 
   const [step, setStep] = useState<CheckoutStep>("contact")
   const [contactError, setContactError] = useState<string | null>(null)
-  // One per checkout session: re-sending step 1 (customer corrected their phone) updates
-  // the same lead instead of creating a second one.
-  const [leadKey] = useState(() => crypto.randomUUID())
+  // Guards the Meta "Lead" event below from firing again for the same name + number
+  // (customer going back and forth between steps) — Meta would count each as distinct
+  // since every call mints a fresh event id.
   const lastLeadSentRef = useRef<string | null>(null)
   const addressInputRef = useRef<HTMLInputElement>(null)
 
@@ -111,26 +107,6 @@ export function CheckoutPageView() {
     const signature = `${customerName.trim()}|${phoneE164}`
     if (lastLeadSentRef.current === signature) return
     lastLeadSentRef.current = signature
-
-    // Fire-and-forget: the customer never waits on this. `keepalive` lets the request
-    // finish even if they close the tab right after clicking.
-    void fetch("/api/store/lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-      body: JSON.stringify({
-        leadKey,
-        customerName: customerName.trim(),
-        phone,
-        items: items.map((line) => ({
-          productId: line.productId,
-          ...(line.variantId ? { variantId: line.variantId } : {}),
-          quantity: line.quantity,
-        })),
-      }),
-    }).catch(() => {
-      // Best-effort — never blocks the checkout.
-    })
 
     // Meta "Lead": browser + server with the same event id (deduplicated by Meta).
     const { firstName, lastName } = splitFullName(customerName)
@@ -164,7 +140,7 @@ export function CheckoutPageView() {
         },
       }),
     }).catch(() => {})
-  }, [customerName, phone, items, leadKey, pricing.grandTotal])
+  }, [customerName, phone, items, pricing.grandTotal])
 
   const onSubmit = useCallback(
     async (e: React.FormEvent) => {
