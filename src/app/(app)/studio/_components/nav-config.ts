@@ -1,4 +1,4 @@
-import { LayoutGrid, Package, RotateCcw, Shirt, ShoppingCart, Tag, Truck, Users } from "lucide-react"
+import { LayoutGrid, Package, PhoneMissed, RotateCcw, Shirt, ShoppingCart, Tag, Truck, Users } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { STUDIO_PATHS } from "@/lib/studio/paths"
@@ -24,6 +24,7 @@ export const NAV_GROUPS: NavGroup[] = ["Opérations", "Analyse", "Configuration"
  */
 export const NAV_ITEMS: NavItem[] = [
   { id: "orders", label: "Commandes", icon: ShoppingCart, group: "Opérations", href: STUDIO_PATHS.orders, badgeKey: "urgentPending" },
+  { id: "abandoned-leads", label: "Paniers abandonnés", icon: PhoneMissed, group: "Opérations", href: STUDIO_PATHS.abandonedLeads },
   { id: "catalog", label: "Catalogue", icon: Shirt, group: "Opérations", href: STUDIO_PATHS.catalog },
   { id: "livraisons", label: "Livraisons", icon: Truck, group: "Opérations" },
   { id: "retours", label: "Retours", icon: RotateCcw, group: "Opérations" },

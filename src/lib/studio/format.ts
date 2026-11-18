@@ -1,3 +1,13 @@
+import { toMoroccanE164 } from "@/lib/phone/moroccan-e164"
+
+/** "0698661195" / "+212698661195" / etc. → "06 98 66 11 95". Falls back to the raw input if it isn't a valid Moroccan number. */
+export function formatMoroccanPhone(raw: string): string {
+  const e164 = toMoroccanE164(raw)
+  if (!e164) return raw
+  const local = `0${e164.slice(4)}` // "+212698661195" → "0698661195"
+  return local.match(/.{1,2}/g)?.join(" ") ?? local
+}
+
 /** Exact, unabbreviated Dh amount with grouped thousands and 2 decimals — e.g. "12 847,50 DH". */
 export function formatDh(n: number): string {
   const safe = Number.isFinite(n) ? n : 0

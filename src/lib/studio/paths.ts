@@ -7,6 +7,7 @@ export const STUDIO_PATHS = {
   metrics: "/studio/metriques",
   performance: "/studio/performances",
   clients: "/studio/clients",
+  abandonedLeads: "/studio/paniers-abandonnes",
   promotions: "/studio/promotions",
 } as const
 

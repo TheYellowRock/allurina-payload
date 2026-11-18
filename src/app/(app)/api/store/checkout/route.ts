@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache"
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { commitTransaction, createLocalReq, getPayload, initTransaction, killTransaction } from "payload"
 import { sql } from "@payloadcms/db-postgres"
 
@@ -12,6 +12,8 @@ import { validateCheckoutBody } from "@/lib/checkout/validate-checkout"
 import { resolveLines } from "@/lib/catalog/resolve-lines"
 import { sendOrderConfirmation, sendOwnerNotification } from "@/lib/email"
 import { getActivePromoFresh } from "@/lib/promotions/active"
+import { markLeadsConverted } from "@/lib/leads/checkout-leads"
+import { toMoroccanE164 } from "@/lib/phone/moroccan-e164"
 
 function generateOrderReference(): string {
   return `ALL-${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -208,6 +210,10 @@ export async function POST(req: Request) {
     // errors internally (Resend failures are logged, never thrown).
     if (orderDoc) {
       await Promise.all([sendOrderConfirmation(orderDoc), sendOwnerNotification(orderDoc)])
+
+      // Checkout step 1 left a lead for this phone: mark it converted so it drops off
+      // /studio/paniers-abandonnes. Never throws; a no-op when there is no open lead.
+      after(() => markLeadsConverted(payload, toMoroccanE164(customer.phone), orderReference))
     }
 
     return NextResponse.json({ orderReference })
