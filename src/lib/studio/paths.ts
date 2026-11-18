@@ -6,6 +6,7 @@ export const STUDIO_PATHS = {
   newProduct: "/studio/catalogue/nouveau",
   metrics: "/studio/metriques",
   performance: "/studio/performances",
+  clients: "/studio/clients",
   promotions: "/studio/promotions",
 } as const
 

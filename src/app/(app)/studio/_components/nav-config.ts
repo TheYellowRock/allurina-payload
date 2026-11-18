@@ -29,6 +29,6 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "retours", label: "Retours", icon: RotateCcw, group: "Opérations" },
   { id: "metrics", label: "Métriques", icon: LayoutGrid, group: "Analyse", href: STUDIO_PATHS.metrics },
   { id: "performance", label: "Performances produits", icon: Package, group: "Analyse", href: STUDIO_PATHS.performance },
-  { id: "clients", label: "Clients", icon: Users, group: "Analyse" },
+  { id: "clients", label: "Clients", icon: Users, group: "Analyse", href: STUDIO_PATHS.clients },
   { id: "promotions", label: "Promotions", icon: Tag, group: "Configuration", href: STUDIO_PATHS.promotions },
 ]
