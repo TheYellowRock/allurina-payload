@@ -41,6 +41,11 @@ export async function AbandonedLeadsTab() {
                 <div className="flex items-center gap-2">
                   <span className="truncate text-sm font-medium text-stone-900">{lead.customerName}</span>
                   <span className="text-xs text-stone-500">{formatMoroccanPhone(lead.phoneE164)}</span>
+                  {lead.attempts > 1 ? (
+                    <span className="inline-flex items-center rounded-none bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-950 ring-1 ring-inset ring-amber-900/15">
+                      {lead.attempts} tentatives
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-0.5 truncate text-xs text-stone-500">{itemsSummary(lead.items)}</p>
                 <p className="mt-0.5 text-xs text-stone-500">

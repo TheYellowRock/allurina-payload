@@ -51,6 +51,8 @@ export type OpenLead = {
   items: LeadItem[]
   cartTotal: number
   createdAt: string
+  /** Separate drop-off sessions from this same phone, still collapsed into this one row. */
+  attempts: number
 }
 
 /**
@@ -117,7 +119,13 @@ export async function markLeadsConverted(
   }
 }
 
-/** Leads still `new` — dropped at step 1/2, never placed an order. For the "paniers abandonnés" studio page. */
+/**
+ * Leads still `new` — dropped at step 1/2, never placed an order. For the "paniers
+ * abandonnés" studio page. One row per phone number: a customer who tried and dropped
+ * off more than once (different session, maybe a typo'd name the first time) collapses
+ * into a single row — the most recent attempt's name/cart, with `attempts` counting how
+ * many separate sessions it represents.
+ */
 export async function listOpenLeads(payload: Payload, limit = 300): Promise<OpenLead[]> {
   try {
     const rows = await query(
@@ -128,14 +136,27 @@ export async function listOpenLeads(payload: Payload, limit = 300): Promise<Open
            ORDER BY created_at DESC
            LIMIT ${limit}`,
     )
-    return rows.map((r) => ({
-      leadKey: String(r.lead_key),
-      customerName: String(r.customer_name),
-      phoneE164: String(r.phone_e164),
-      items: (Array.isArray(r.items) ? r.items : []) as LeadItem[],
-      cartTotal: Number(r.cart_total ?? 0),
-      createdAt: new Date(String(r.created_at)).toISOString(),
-    }))
+
+    // Rows arrive newest-first, so the first row seen for a phone is its latest attempt.
+    const byPhone = new Map<string, OpenLead>()
+    for (const r of rows) {
+      const phoneE164 = String(r.phone_e164)
+      const existing = byPhone.get(phoneE164)
+      if (existing) {
+        existing.attempts += 1
+        continue
+      }
+      byPhone.set(phoneE164, {
+        leadKey: String(r.lead_key),
+        customerName: String(r.customer_name),
+        phoneE164,
+        items: (Array.isArray(r.items) ? r.items : []) as LeadItem[],
+        cartTotal: Number(r.cart_total ?? 0),
+        createdAt: new Date(String(r.created_at)).toISOString(),
+        attempts: 1,
+      })
+    }
+    return [...byPhone.values()]
   } catch (err) {
     console.error(LOG, "listOpenLeads failed", { error: err instanceof Error ? err.message : String(err) })
     return []
