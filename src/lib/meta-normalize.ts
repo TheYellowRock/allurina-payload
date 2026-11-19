@@ -13,12 +13,14 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
 
-/** Morocco-only: digits, country code, no `+`, no leading 0 (0612345678 -> 212612345678). */
+/**
+ * Morocco-only: digits, country code, no `+`, no leading 0 (0612345678 -> 212612345678).
+ * Strips a leading 0 both before AND after removing the "212" prefix — "+212 06…" has one
+ * on each side of it, and dropping only the first used to leave a stray 0 after "212".
+ */
 export function normalizePhone(phone: string): string {
-  let digits = phone.replace(/\D/g, "")
-  if (digits.startsWith("00212")) digits = digits.slice(2)
-  if (digits.startsWith("212")) return digits
-  if (digits.startsWith("0")) return `212${digits.slice(1)}`
+  let digits = phone.replace(/\D/g, "").replace(/^0+/, "")
+  if (digits.startsWith("212")) digits = digits.slice(3).replace(/^0+/, "")
   return `212${digits}`
 }
 
