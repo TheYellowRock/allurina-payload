@@ -6,6 +6,8 @@ export type StorefrontScarf = {
   title: string
   slug: string
   price: number
+  /** Struck-through "ancien prix" from the product sheet — null when the price is plain. */
+  referencePrice: number | null
   stockQuantity: number
   /** Lexical JSON — use on product page only when needed */
   description?: unknown

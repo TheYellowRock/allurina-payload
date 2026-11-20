@@ -54,6 +54,7 @@ export function CheckoutOrderSummary({
             <p className="shrink-0">
               <ScarfPrice
                 price={line.price}
+                referencePrice={line.referencePrice ?? null}
                 quantity={line.quantity}
                 size="sm"
                 plainClassName="font-light text-stone-900"

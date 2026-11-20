@@ -10,6 +10,8 @@ export type ProductPurchasePayload = {
   slug: string
   title: string
   price: number
+  /** The product's "prix barré" — carried onto the cart line so the drawer shows it. */
+  referencePrice: number | null
   imageSrc: string | null
 }
 
@@ -58,6 +60,7 @@ export function ProductPurchasePanel({
           slug: product.slug,
           title: product.title,
           price: product.price,
+          referencePrice: product.referencePrice,
           imageSrc: product.imageSrc,
           quantity: qty,
         }}

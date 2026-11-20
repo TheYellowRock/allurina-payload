@@ -133,9 +133,12 @@ export function ProductEditor({ productId, slug, initial, options, justSaved }: 
   const save = async (thenDuplicate: boolean) => {
     setError(null)
     const price = Number(values.price.replace(",", "."))
+    const referencePrice = values.referencePrice.trim() === "" ? null : Number(values.referencePrice.replace(",", "."))
     const stock = values.stockQuantity.trim() === "" ? NaN : Number(values.stockQuantity)
     if (values.title.trim().length < 2) return setError("Indiquez un titre.")
     if (!Number.isFinite(price) || price < 0) return setError("Indiquez un prix valide.")
+    if (referencePrice !== null && (!Number.isFinite(referencePrice) || referencePrice <= price))
+      return setError("Le prix barré doit être supérieur au prix. Laissez-le vide pour un prix normal.")
     if (!values.productTypeId) return setError("Choisissez un type de produit.")
     if (!values.hasVariants && (!Number.isInteger(stock) || stock < 0)) return setError("Indiquez le stock (0 ou plus).")
 
@@ -153,6 +156,7 @@ export function ProductEditor({ productId, slug, initial, options, justSaved }: 
     const body: ProductSavePayload = {
       title: values.title.trim(),
       price,
+      referencePrice,
       stockQuantity: values.hasVariants ? 0 : stock,
       productType: values.productTypeId,
       hasVariants: values.hasVariants,
@@ -339,6 +343,19 @@ export function ProductEditor({ productId, slug, initial, options, justSaved }: 
               </div>
             ) : null}
           </div>
+          <label className="block">
+            <span className={labelClass}>Prix barré (DH) — optionnel</span>
+            <input
+              className={cn(inputClass, "mt-1.5 max-w-[calc(50%-0.375rem)]")}
+              value={values.referencePrice}
+              onChange={(e) => set("referencePrice", e.target.value)}
+              inputMode="decimal"
+              placeholder="—"
+            />
+            <span className="mt-1 block text-[11px] text-stone-400">
+              Ancien prix affiché barré avec le badge PROMO. Vide = prix normal (ex. nouvelle collection).
+            </span>
+          </label>
           <label className="block">
             <span className={labelClass}>Description</span>
             <textarea

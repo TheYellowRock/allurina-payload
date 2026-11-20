@@ -188,6 +188,7 @@ export function CartDrawer() {
                     <p className="mt-1">
                       <ScarfPrice
                         price={line.price}
+                        referencePrice={line.referencePrice ?? null}
                         quantity={line.quantity}
                         size="sm"
                         plainClassName="text-stone-900"

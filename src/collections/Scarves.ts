@@ -86,6 +86,16 @@ export const Scarves: CollectionConfig = {
       },
     },
     {
+      name: 'referencePrice',
+      type: 'number',
+      min: 0,
+      label: 'Prix barré (ancien prix)',
+      admin: {
+        description:
+          'Prix de référence affiché barré à côté du prix (avec badge PROMO). Ne s’affiche que s’il est supérieur au prix. Laisser vide pour un prix normal sans promo — ex. nouvelle collection.',
+      },
+    },
+    {
       name: 'stockQuantity',
       type: 'number',
       required: true,

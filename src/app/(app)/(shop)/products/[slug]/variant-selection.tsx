@@ -90,7 +90,14 @@ export function VariantGallery({
 export function VariantPurchasePanel({
   product,
 }: {
-  product: { productId: string; slug: string; title: string; fallbackImageSrc: string | null }
+  product: {
+    productId: string
+    slug: string
+    title: string
+    /** Product-level "prix barré" — carried onto the cart line (variants share it). */
+    referencePrice: number | null
+    fallbackImageSrc: string | null
+  }
 }) {
   const { options, colorId, sizeId, setColorId, setSizeId } = useSelection()
   const [qty, setQty] = useState(1)
@@ -201,6 +208,7 @@ export function VariantPurchasePanel({
           slug: product.slug,
           title: product.title,
           price: variant?.price ?? 0,
+          referencePrice: product.referencePrice,
           imageSrc: color?.images[0]?.src ?? product.fallbackImageSrc,
           quantity: qty,
         }}

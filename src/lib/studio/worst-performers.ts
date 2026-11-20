@@ -6,6 +6,7 @@ export type ScarfStockRef = {
   title: string
   slug: string
   price: number
+  referencePrice: number | null
   stockQuantity: number
   createdAt: string
 }
@@ -14,6 +15,7 @@ export type WorstPerformerRow = {
   productId: string
   title: string
   price: number
+  referencePrice: number | null
   unitsInWindow: number
   daysAvailable: number
   /** units per day, over `daysAvailable` — NOT over the raw window length. */
@@ -106,6 +108,7 @@ export function worstPerformers(
     productId: string
     title: string
     price: number
+    referencePrice: number | null
     unitsInWindow: number
     daysAvailableExact: number
     velocity: number
@@ -127,6 +130,7 @@ export function worstPerformers(
       productId: s.id,
       title: s.title,
       price: s.price,
+      referencePrice: s.referencePrice,
       unitsInWindow,
       daysAvailableExact,
       velocity,
@@ -148,6 +152,7 @@ export function worstPerformers(
       productId: c.productId,
       title: c.title,
       price: c.price,
+      referencePrice: c.referencePrice,
       unitsInWindow: c.unitsInWindow,
       daysAvailable: Math.floor(c.daysAvailableExact),
       velocity: c.velocity,

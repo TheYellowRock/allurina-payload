@@ -8,6 +8,12 @@ export type CartLineItem = {
   slug: string
   title: string
   price: number
+  /**
+   * The product's "prix barré" shown struck through next to `price` — absent/null for a
+   * plain price; variant lines share the product's. Optional because carts persisted
+   * before the field existed don't have it; `applyCartValidation` backfills it silently.
+   */
+  referencePrice?: number | null
   quantity: number
   imageSrc: string | null
 }

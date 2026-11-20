@@ -27,6 +27,8 @@ export type ResolvedLine = {
   /** e.g. "M/L · Noir" — null for simple products. */
   variantLabel: string | null
   price: number | null
+  /** The product's "prix barré" (display only) — variant lines share the product's. */
+  referencePrice: number | null
   stock: number | null
   imageSrc: string | null
 }
@@ -92,6 +94,7 @@ export async function resolveLines(payload: Payload, refs: LineRef[]): Promise<R
       slug: null,
       variantLabel: null,
       price: null,
+      referencePrice: null,
       stock: null,
       imageSrc: null,
     }
@@ -111,6 +114,7 @@ export async function resolveLines(payload: Payload, refs: LineRef[]): Promise<R
         ...base,
         exists: true,
         price: productPrice,
+        referencePrice: typeof product.referencePrice === "number" ? product.referencePrice : null,
         stock: Number(product.stockQuantity ?? 0),
         imageSrc: storefrontMediaUrl(product.featuredImage),
       }
@@ -128,6 +132,7 @@ export async function resolveLines(payload: Payload, refs: LineRef[]): Promise<R
       exists: true,
       variantLabel: [size?.label, color?.name].filter(Boolean).map(String).join(" · ") || null,
       price: typeof override === "number" ? override : productPrice,
+      referencePrice: typeof product.referencePrice === "number" ? product.referencePrice : null,
       stock: Number(variant.stockQuantity ?? 0),
       imageSrc: imageFor(product, relId(color)),
     }

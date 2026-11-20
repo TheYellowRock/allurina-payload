@@ -106,6 +106,7 @@ export const getColorwayCards = cache(async (productTypeSlug?: string): Promise<
         title,
         slug,
         price: price ?? productPrice,
+        referencePrice: typeof product.referencePrice === "number" ? product.referencePrice : null,
         stockQuantity: stock,
         featuredImage,
         galleryImages,

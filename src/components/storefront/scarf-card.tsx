@@ -71,7 +71,7 @@ export function ScarfCard({
 
   const href = scarf.cardHref ?? productPath(scarf.slug)
   const isOutOfStock = scarf.availability.status === "out_of_stock"
-  const isDiscounted = getReferencePrice(scarf.price) !== null
+  const isDiscounted = getReferencePrice(scarf.price, scarf.referencePrice) !== null
   const lowStock = !isOutOfStock && scarf.stockQuantity > 0 && scarf.stockQuantity <= LOW_STOCK_THRESHOLD
   const isFeature = layout === "feature"
 
@@ -119,6 +119,7 @@ export function ScarfCard({
               slug: scarf.slug,
               title: scarf.title,
               price: scarf.price,
+              referencePrice: scarf.referencePrice,
               imageSrc: cartImageSrc,
               quantity: 1,
             }}
@@ -153,6 +154,7 @@ export function ScarfCard({
         <p className="mt-1">
           <ScarfPrice
             price={scarf.price}
+            referencePrice={scarf.referencePrice}
             size="sm"
             plainClassName={cn("font-normal text-stone-700", isFeature ? "text-sm" : "text-[12px] sm:text-[13px]")}
           />

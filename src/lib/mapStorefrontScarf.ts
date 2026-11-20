@@ -19,6 +19,7 @@ export function mapDocToStorefrontScarf(doc: Record<string, unknown>): Storefron
     title: String(doc.title ?? ""),
     slug: String(doc.slug ?? ""),
     price: num(doc.price, 0),
+    referencePrice: typeof doc.referencePrice === "number" && !Number.isNaN(doc.referencePrice) ? doc.referencePrice : null,
     stockQuantity,
     description: doc.description,
     featuredImage: doc.featuredImage,

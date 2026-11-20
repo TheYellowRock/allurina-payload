@@ -10,19 +10,22 @@ const SIZE_CLASS = {
 
 /**
  * The one place every surface renders a scarf price from — decides discounted vs plain
- * by calling `getReferencePrice(price)` itself, so no call site ever reimplements the
- * `price < REFERENCE_PRICE` check. `price` must always be the real unit price (that's
- * what the threshold applies to); pass `quantity` to scale the DISPLAYED numbers for a
- * cart/checkout line total — the discount test still runs against the unit price.
+ * by calling `getReferencePrice(price, referencePrice)` itself, so no call site ever
+ * reimplements the comparison. `price` must always be the real unit price and
+ * `referencePrice` the product's own "prix barré" (null when there is none); pass
+ * `quantity` to scale the DISPLAYED numbers for a cart/checkout line total — the
+ * discount test still runs against the unit prices.
  */
 export function ScarfPrice({
   price,
+  referencePrice,
   quantity = 1,
   size = "md",
   className,
   plainClassName,
 }: {
   price: number
+  referencePrice: number | null
   quantity?: number
   size?: "sm" | "md" | "lg"
   className?: string
@@ -33,7 +36,7 @@ export function ScarfPrice({
    */
   plainClassName?: string
 }) {
-  const referenceUnitPrice = getReferencePrice(price)
+  const referenceUnitPrice = getReferencePrice(price, referencePrice)
   const sizes = SIZE_CLASS[size]
 
   if (referenceUnitPrice === null) {

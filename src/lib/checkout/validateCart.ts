@@ -18,6 +18,8 @@ export type CartValidationItem = {
   exists: boolean
   title: string | null
   currentPrice: number | null
+  /** The product's current "prix barré" — folded back onto the line for display. */
+  currentReferencePrice: number | null
   currentStock: number | null
   priceChanged: boolean
   insufficientStock: boolean
@@ -50,6 +52,7 @@ export async function validateCart(lines: CartValidationLine[]): Promise<CartVal
         exists: false,
         title: null,
         currentPrice: null,
+        currentReferencePrice: null,
         currentStock: null,
         priceChanged: false,
         insufficientStock: false,
@@ -61,6 +64,7 @@ export async function validateCart(lines: CartValidationLine[]): Promise<CartVal
       exists: true,
       title: r.title,
       currentPrice: r.price,
+      currentReferencePrice: r.referencePrice,
       currentStock: r.stock,
       priceChanged: r.price !== line.price,
       insufficientStock: r.stock < line.quantity,

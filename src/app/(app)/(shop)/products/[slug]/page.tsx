@@ -82,13 +82,13 @@ export default async function ProductPage({
               <VariantGallery
                 fallbackImages={images}
                 productTitle={scarf.title}
-                badge={getReferencePrice(scarf.price) !== null ? <PromoBadge /> : null}
+                badge={getReferencePrice(scarf.price, scarf.referencePrice) !== null ? <PromoBadge /> : null}
               />
             ) : (
               <ProductGallery
                 images={images}
                 productTitle={scarf.title}
-                badge={getReferencePrice(scarf.price) !== null ? <PromoBadge /> : null}
+                badge={getReferencePrice(scarf.price, scarf.referencePrice) !== null ? <PromoBadge /> : null}
               />
             )}
           </div>
@@ -117,6 +117,7 @@ export default async function ProductPage({
             <p className="mt-5">
               <ScarfPrice
                 price={scarf.price}
+                referencePrice={scarf.referencePrice}
                 size="lg"
                 plainClassName="font-light tracking-wide text-stone-900"
               />
@@ -128,6 +129,7 @@ export default async function ProductPage({
                   productId: String(scarf.id),
                   slug: scarf.slug,
                   title: scarf.title,
+                  referencePrice: scarf.referencePrice,
                   fallbackImageSrc: images[0]?.src ?? null,
                 }}
               />
@@ -139,6 +141,7 @@ export default async function ProductPage({
                   slug: scarf.slug,
                   title: scarf.title,
                   price: scarf.price,
+                  referencePrice: scarf.referencePrice,
                   imageSrc: images[0]?.src ?? null,
                 }}
               />

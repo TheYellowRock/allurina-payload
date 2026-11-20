@@ -40,6 +40,11 @@ export function applyCartValidation(
     }
 
     let next = line
+    // Display-only drift: refresh the "prix barré" silently (also backfills carts
+    // persisted before the field existed) — no issue raised, nothing charged changes.
+    if ((line.referencePrice ?? null) !== check.currentReferencePrice) {
+      next = { ...next, referencePrice: check.currentReferencePrice }
+    }
     if (check.priceChanged && check.currentPrice !== null) {
       next = { ...next, price: check.currentPrice }
       issues.push({

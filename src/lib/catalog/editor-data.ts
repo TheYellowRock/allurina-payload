@@ -133,6 +133,7 @@ export async function loadProductForEditor(payload: Payload, id: number): Promis
     values: {
       title: String(doc.title ?? ""),
       price: doc.price != null ? String(doc.price) : "",
+      referencePrice: doc.referencePrice != null ? String(doc.referencePrice) : "",
       stockQuantity: doc.stockQuantity != null ? String(doc.stockQuantity) : "",
       productTypeId: relId(doc.productType),
       hasVariants: doc.hasVariants === true,
@@ -166,6 +167,7 @@ export function emptyValues(defaultTypeId: number | null): ProductEditorValues {
   return {
     title: "",
     price: "",
+    referencePrice: "",
     stockQuantity: "",
     productTypeId: defaultTypeId,
     hasVariants: false,
@@ -187,6 +189,7 @@ export function toProductData(input: ProductSavePayload): Record<string, unknown
   return {
     title: input.title,
     price: input.price,
+    referencePrice: input.referencePrice,
     stockQuantity: input.stockQuantity,
     productType: input.productType,
     hasVariants: input.hasVariants,

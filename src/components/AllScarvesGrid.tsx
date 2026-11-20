@@ -26,6 +26,7 @@ type PublicScarfDoc = {
   slug: string
   title: string
   price: number
+  referencePrice: number | null
   image: { url: string; width: number; height: number; alt: string } | null
   hasVariants?: boolean
   stockQuantity?: number
@@ -49,6 +50,7 @@ function toStorefrontScarf(doc: PublicScarfDoc): StorefrontScarf {
     title: doc.title,
     slug: doc.slug,
     price: doc.price,
+    referencePrice: typeof doc.referencePrice === "number" ? doc.referencePrice : null,
     stockQuantity,
     featuredImage: doc.image ? { ...doc.image } : null,
     galleryImages: [],

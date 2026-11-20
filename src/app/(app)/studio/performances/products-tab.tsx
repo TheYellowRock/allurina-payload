@@ -2,7 +2,7 @@ import { getPayload } from "payload"
 import type { Where } from "payload"
 
 import config from "@payload-config"
-import { getReferencePrice, PROMO_LABEL, REFERENCE_PRICE } from "@/lib/pricing/reference-price"
+import { getReferencePrice, PROMO_LABEL } from "@/lib/pricing/reference-price"
 import { rangeToWhereBounds, resolveDateRange } from "@/lib/studio/date-range"
 import { formatDh, formatPercent, formatSignedPercent } from "@/lib/studio/format"
 import { neverSoldProducts } from "@/lib/studio/never-sold"
@@ -108,7 +108,7 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
       collection: "scarves",
       depth: 0,
       limit: 1000,
-      select: { title: true, slug: true, price: true, stockQuantity: true, createdAt: true },
+      select: { title: true, slug: true, price: true, referencePrice: true, stockQuantity: true, createdAt: true },
       overrideAccess: true,
     }),
   ])
@@ -129,6 +129,7 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
       title: String(doc.title ?? ""),
       slug: String(doc.slug ?? ""),
       price: Number(doc.price ?? 0),
+      referencePrice: typeof doc.referencePrice === "number" ? doc.referencePrice : null,
       stockQuantity: Number(doc.stockQuantity ?? 0),
       createdAt:
         doc.createdAt instanceof Date ? doc.createdAt.toISOString() : String(doc.createdAt ?? ""),
@@ -300,8 +301,8 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
           En stock uniquement — vélocité = unités vendues sur 30 jours ÷ jours de disponibilité sur la
           fenêtre, pas les unités brutes, pour ne pas pénaliser les nouveautés. Produits à moins de{" "}
           {14} jours de disponibilité exclus du classement (liste séparée ci-dessous). Prix marqué{" "}
-          <span className="font-semibold text-[#e0102a]">{PROMO_LABEL}</span> : déjà sous le seuil de
-          référence ({formatDh(REFERENCE_PRICE)}).
+          <span className="font-semibold text-[#e0102a]">{PROMO_LABEL}</span> : un prix barré est
+          renseigné sur la fiche (déjà en promo).
         </p>
         <p className="mt-1 text-[11px] text-stone-500">
           Vélocité médiane (tous produits en stock) :{" "}
@@ -355,7 +356,7 @@ export async function ProductsTab({ searchParams }: { searchParams: SearchParams
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {formatDh(r.price)}
-                      {getReferencePrice(r.price) !== null ? (
+                      {getReferencePrice(r.price, r.referencePrice) !== null ? (
                         <span className="ml-1.5 inline-flex items-center rounded-sm bg-[#e0102a]/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-[#e0102a] uppercase">
                           {PROMO_LABEL}
                         </span>

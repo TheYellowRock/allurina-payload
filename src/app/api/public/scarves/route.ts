@@ -22,6 +22,8 @@ type PublicScarfDoc = {
   slug: string
   title: string
   price: number
+  /** The product's "prix barré" — null when the price is plain. */
+  referencePrice: number | null
   image: PublicScarfImage | null
   /** Sold in sizes/colours — the card links to the product page instead of adding to cart. */
   hasVariants: boolean
@@ -160,6 +162,7 @@ export async function GET(request: Request) {
         slug: String(d.slug ?? ""),
         title: String(d.title ?? ""),
         price: typeof d.price === "number" ? d.price : 0,
+        referencePrice: typeof d.referencePrice === "number" ? d.referencePrice : null,
         image: readPrimaryImage(d),
         hasVariants: d.hasVariants === true,
         stockQuantity: typeof d.stockQuantity === "number" ? d.stockQuantity : 0,

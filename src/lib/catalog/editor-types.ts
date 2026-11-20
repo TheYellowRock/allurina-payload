@@ -29,6 +29,8 @@ export function variantKey(sizeId: number, colorId: number): string {
 export type ProductEditorValues = {
   title: string
   price: string
+  /** "Prix barré" — empty string = no crossed-out price. */
+  referencePrice: string
   stockQuantity: string
   productTypeId: number | null
   hasVariants: boolean
@@ -50,6 +52,8 @@ export type ProductEditorValues = {
 export type ProductSavePayload = {
   title: string
   price: number
+  /** "Prix barré" — null clears it (plain price). */
+  referencePrice: number | null
   stockQuantity: number
   productType: number
   hasVariants: boolean
@@ -80,6 +84,17 @@ export function parseProductSavePayload(
   const price = typeof b.price === "number" ? b.price : NaN
   if (!Number.isFinite(price) || price < 0 || price > 100000) {
     return { ok: false, error: "Prix invalide." }
+  }
+
+  let referencePrice: number | null = null
+  if (b.referencePrice !== undefined && b.referencePrice !== null) {
+    if (typeof b.referencePrice !== "number" || !Number.isFinite(b.referencePrice) || b.referencePrice < 0 || b.referencePrice > 100000) {
+      return { ok: false, error: "Prix barré invalide." }
+    }
+    if (b.referencePrice <= price) {
+      return { ok: false, error: "Le prix barré doit être supérieur au prix. Laissez-le vide pour un prix normal." }
+    }
+    referencePrice = Math.round(b.referencePrice * 100) / 100
   }
 
   const hasVariants = b.hasVariants === true
@@ -145,6 +160,7 @@ export function parseProductSavePayload(
     data: {
       title,
       price: Math.round(price * 100) / 100,
+      referencePrice,
       stockQuantity: hasVariants ? 0 : stockQuantity,
       productType: productType as number,
       hasVariants,
