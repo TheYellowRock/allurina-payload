@@ -29,12 +29,14 @@ export type PromoCartStatus = {
 }
 
 export type PromoBannerChip = {
-  /** The large numeral this chip leads with — e.g. 3, 5, or a bundle price. */
-  value: number
+  /** The large numeral (or short word, e.g. "NEW") this chip leads with. */
+  value: number | string
   /** Small label above/after the numeral — e.g. "châles". Omit if `value` is self-explanatory. */
   unit?: string
   /** Short line under the numeral — target under 5 words. */
   label: string
+  /** Card colour: "red" = solid red card with white text; default is white with red numeral. Alternate tones for contrast between neighbouring cards. */
+  tone?: "red" | "white"
   highlight?: boolean
   /** Hero chip — rendered first-class: full width on mobile, larger numeral. Use for the one offer the promo is built around. */
   featured?: boolean

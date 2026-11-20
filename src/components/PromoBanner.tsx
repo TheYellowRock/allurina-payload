@@ -17,39 +17,61 @@ export function PromoBanner({ banner, className }: { banner: PromoBannerContent;
     <section className={cn("bg-[#faf9f7] px-4 py-6 sm:px-6 sm:py-8", className)} aria-label="Offre promotionnelle">
       <div className="mx-auto max-w-4xl">
         <ul className="flex flex-wrap justify-center gap-3 sm:gap-4">
-          {banner.chips.map((chip) => (
+          {banner.chips.map((chip) => {
+            const red = chip.tone === "red"
+            return (
             <li
               key={`${chip.value}-${chip.label}`}
               className={cn(
-                "relative flex min-w-[104px] flex-1 flex-col items-center border bg-white px-3 py-4 text-center sm:px-4 sm:py-5",
+                "relative flex min-w-[104px] flex-1 flex-col items-center border px-3 py-4 text-center sm:px-4 sm:py-5",
+                red ? "border-[#e0102a] bg-[#e0102a]" : "bg-white",
                 chip.featured
                   ? "basis-full py-6 sm:basis-0 sm:grow-[1.4] sm:py-7"
                   : "basis-[calc(50%-0.375rem)] sm:basis-0",
-                chip.highlight ? "border-2 border-[#e0102a]" : "border-stone-200",
+                !red && (chip.highlight ? "border-2 border-[#e0102a]" : "border-stone-200"),
               )}
             >
               {chip.highlight ? (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#e0102a] px-2 py-0.5 text-[9px] font-black tracking-widest text-white uppercase">
+                <span
+                  className={cn(
+                    "absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 text-[9px] font-black tracking-widest uppercase",
+                    red ? "bg-white text-[#e0102a]" : "bg-[#e0102a] text-white",
+                  )}
+                >
                   {chip.badge ?? "Meilleure offre"}
                 </span>
               ) : null}
 
               <span
                 className={cn(
-                  "font-black leading-none text-[#e0102a]",
+                  "font-black leading-none",
+                  red ? "text-white" : "text-[#e0102a]",
                   chip.featured ? "text-7xl sm:text-7xl" : "text-5xl sm:text-6xl",
                 )}
               >
                 {chip.value}
               </span>
               {chip.unit ? (
-                <span className="mt-1.5 text-[10px] font-bold tracking-widest text-stone-500 uppercase">
+                <span
+                  className={cn(
+                    "mt-1.5 text-[10px] font-bold tracking-widest uppercase",
+                    red ? "text-white/85" : "text-stone-500",
+                  )}
+                >
                   {chip.unit}
                 </span>
               ) : null}
-              <span className="mt-2 text-xs font-bold leading-tight text-stone-800 sm:text-sm">{chip.label}</span>
+              <span
+                className={cn(
+                  "mt-2 text-xs font-bold leading-tight sm:text-sm",
+                  red ? "text-white" : "text-stone-800",
+                )}
+              >
+                {chip.label}
+              </span>
             </li>
-          ))}
+            )
+          })}
         </ul>
 
         {banner.footnote ? (

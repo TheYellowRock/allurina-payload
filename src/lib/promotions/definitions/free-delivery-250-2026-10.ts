@@ -50,24 +50,32 @@ function offerBarFor(_itemCount: number, subtotalDh: number): string {
 export const freeDelivery250202610: PromoDefinition = {
   id: "free-delivery-250-2026-10",
   label: `Livraison offerte dès ${FREE_DELIVERY_MIN_DH} DH`,
-  // Sale banner copy only — the 250 DH free-delivery cart rule below (milestones,
-  // statusFor, offerBarFor, resolve) is untouched by the 65 DH scarf sale.
-  topBar: `TOUS LES CHÂLES À 65 DH · LIVRAISON GRATUITE dès ${FREE_DELIVERY_MIN_DH} DH d’achat · Paiement à la réception`,
+  // Sale/launch banner copy only — the 250 DH free-delivery cart rule below (milestones,
+  // statusFor, offerBarFor, resolve) is untouched by the Outlet sale and the Hiver launch.
+  topBar: `NOUVELLE COLLECTION HIVER · OUTLET : TOUS LES CHÂLES À 65 DH · LIVRAISON GRATUITE dès ${FREE_DELIVERY_MIN_DH} DH d’achat · Paiement à la réception`,
   banner: {
     subline: "Commandez aujourd’hui, vous payez seulement à la réception",
+    // red / white / red on purpose: the white Hiver card between two red ones is the launch hero.
     chips: [
       {
         value: 65,
         unit: "DH",
-        label: "Tous les châles",
+        label: "Outlet — tous les châles",
+        tone: "red",
+      },
+      {
+        value: "NEW",
+        label: "Collection Hiver — dès 85 DH",
+        tone: "white",
         highlight: true,
         featured: true,
-        badge: "GRANDE VENTE",
+        badge: "NOUVELLE COLLECTION",
       },
       {
         value: FREE_DELIVERY_MIN_DH,
         unit: "DH d’achat",
         label: "Livraison GRATUITE partout au Maroc",
+        tone: "red",
       },
     ],
   },
